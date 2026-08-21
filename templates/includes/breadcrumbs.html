@@ -1,0 +1,12 @@
+<!-- breadcrumbs.html -->
+<div class="breadcrumb" style="display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:16px;">
+  <a href="{% url 'dashboard:index' %}" style="color:var(--text-muted);">Home</a>
+  {% for crumb in breadcrumbs %}
+    <span class="breadcrumb-sep" style="color:var(--text-muted);">/</span>
+    {% if crumb.url %}
+      <a href="{{ crumb.url }}" style="color:var(--text-muted);">{{ crumb.label }}</a>
+    {% else %}
+      <span style="color:var(--color-primary); font-weight:500;">{{ crumb.label }}</span>
+    {% endif %}
+  {% endfor %}
+</div>

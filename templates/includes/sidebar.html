@@ -1,0 +1,82 @@
+<!-- sidebar.html -->
+<aside class="sidebar" :class="{ 'collapsed': !sidebarOpen, 'mobile-open': mobileOpen }" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">⚡</div>
+    <div>
+      <div class="brand-text">{{ company_settings.company_name|default:"Fenix IT Mall" }}</div>
+      <div class="brand-sub">{{ company_settings.tagline|default:"Smart IT Shop" }}</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+
+    <a href="{% url 'dashboard:index' %}" class="nav-item {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}">
+      <span class="nav-icon">📊</span><span class="nav-label">Dashboard</span>
+    </a>
+
+    <div class="nav-section-label">Catalogue</div>
+
+    <a href="{% url 'products:list' %}" class="nav-item {% if request.resolver_match.app_name == 'products' %}active{% endif %}">
+      <span class="nav-icon">📦</span><span class="nav-label">Products</span>
+    </a>
+    <a href="{% url 'inventory:list' %}" class="nav-item {% if request.resolver_match.app_name == 'inventory' %}active{% endif %}">
+      <span class="nav-icon">🏭</span><span class="nav-label">Inventory</span>
+    </a>
+
+    <div class="nav-section-label">Sales</div>
+
+    <a href="{% url 'sales:pos' %}" class="nav-item {% if request.resolver_match.url_name == 'pos' %}active{% endif %}">
+      <span class="nav-icon">🛒</span><span class="nav-label">POS / New Sale</span>
+    </a>
+    <a href="{% url 'sales:list' %}" class="nav-item {% if request.resolver_match.app_name == 'sales' and request.resolver_match.url_name != 'pos' %}active{% endif %}">
+      <span class="nav-icon">🧾</span><span class="nav-label">Sales History</span>
+    </a>
+    <a href="{% url 'customers:list' %}" class="nav-item {% if request.resolver_match.app_name == 'customers' %}active{% endif %}">
+      <span class="nav-icon">👥</span><span class="nav-label">Customers</span>
+    </a>
+
+    <div class="nav-section-label">Procurement</div>
+
+    <a href="{% url 'purchase:list' %}" class="nav-item {% if request.resolver_match.app_name == 'purchase' %}active{% endif %}">
+      <span class="nav-icon">🚚</span><span class="nav-label">Purchases</span>
+    </a>
+    <a href="{% url 'suppliers:list' %}" class="nav-item {% if request.resolver_match.app_name == 'suppliers' %}active{% endif %}">
+      <span class="nav-icon">🏢</span><span class="nav-label">Suppliers</span>
+    </a>
+
+    {% if request.user.is_manager %}
+    <div class="nav-section-label">HR</div>
+
+    <a href="{% url 'employees:list' %}" class="nav-item {% if request.resolver_match.app_name == 'employees' %}active{% endif %}">
+      <span class="nav-icon">👤</span><span class="nav-label">Employees</span>
+    </a>
+
+    <div class="nav-section-label">Analytics</div>
+
+    <a href="{% url 'reports:home' %}" class="nav-item {% if request.resolver_match.app_name == 'reports' %}active{% endif %}">
+      <span class="nav-icon">📈</span><span class="nav-label">Reports</span>
+    </a>
+    {% endif %}
+
+    {% if request.user.is_admin %}
+    <div class="nav-section-label">System</div>
+
+    <a href="{% url 'accounts:user_list' %}" class="nav-item {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
+      <span class="nav-icon">🔐</span><span class="nav-label">Users</span>
+    </a>
+    <a href="{% url 'settings_app:settings' %}" class="nav-item {% if request.resolver_match.app_name == 'settings_app' %}active{% endif %}">
+      <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+    </a>
+    {% endif %}
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="{% url 'accounts:profile' %}" class="nav-item">
+      <span class="nav-icon">👤</span><span class="nav-label">{{ request.user.get_full_name|default:request.user.username }}</span>
+    </a>
+    <a href="{% url 'accounts:logout' %}" class="nav-item" style="color:#ef4444">
+      <span class="nav-icon">🚪</span><span class="nav-label">Logout</span>
+    </a>
+  </div>
+</aside>

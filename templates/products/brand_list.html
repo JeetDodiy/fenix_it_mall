@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Brands{% endblock %}
+{% block page_title %}Brands{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><div class="page-header-title">Brands</div></div>
+  <div class="page-header-actions">
+    <a href="{% url 'products:list' %}" class="btn btn-outline">← Products</a>
+    {% if request.user.is_manager %}<a href="{% url 'products:brand_add' %}" class="btn btn-primary">➕ Add Brand</a>{% endif %}
+  </div>
+</div>
+<div class="card">
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead><tr><th>Brand</th><th>Website</th><th>Products</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for brand in brands %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              {% if brand.logo %}<img src="{{ brand.logo.url }}" style="width:36px;height:36px;object-fit:contain;border-radius:8px;background:#fff;padding:2px;" />{% else %}<div style="width:36px;height:36px;background:var(--bg-glass);border-radius:8px;display:flex;align-items:center;justify-content:center;">🏪</div>{% endif %}
+              <span class="td-bold">{{ brand.name }}</span>
+            </div>
+          </td>
+          <td>{% if brand.website %}<a href="{{ brand.website }}" target="_blank" style="font-size:12px;">{{ brand.website|truncatechars:30 }}</a>{% else %}—{% endif %}</td>
+          <td><span class="badge badge-info">{{ brand.products.count }}</span></td>
+          <td>{% if brand.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-muted">Inactive</span>{% endif %}</td>
+          <td>
+            {% if request.user.is_manager %}
+            <div style="display:flex;gap:6px;">
+              <a href="{% url 'products:brand_edit' brand.pk %}" class="btn btn-outline btn-sm">✏️</a>
+              <form method="post" action="{% url 'products:brand_delete' brand.pk %}" onsubmit="return confirmDelete('Delete {{ brand.name }}?')">{% csrf_token %}<button class="btn btn-danger btn-sm">🗑️</button></form>
+            </div>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px;">No brands yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

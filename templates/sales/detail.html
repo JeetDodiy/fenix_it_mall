@@ -1,0 +1,342 @@
+{% extends 'base.html' %}
+{% block title %}Sale {{ sale.invoice_number }}{% endblock %}
+{% block page_title %}Sale Details{% endblock %}
+
+{% block extra_head %}
+<style>
+/* Audit Timeline Styles */
+.audit-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  padding-left: 24px;
+}
+.audit-timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--border-glass);
+}
+.audit-event {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.audit-event::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-card);
+  box-shadow: 0 0 0 2px var(--border-glass);
+}
+.audit-event.created::before   { background: var(--accent-green); }
+.audit-event.corrected::before { background: var(--accent-cyan); }
+.audit-event.voided::before    { background: var(--accent-red); }
+.audit-event.printed::before   { background: var(--accent-orange); }
+.audit-event.downloaded::before{ background: var(--accent-purple); }
+
+.audit-event-hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+}
+.audit-event-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.audit-event-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.audit-event-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Void banner */
+.void-banner {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1.5px solid rgba(239, 68, 68, 0.35);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'sales:list' %}" class="breadcrumb-item">Sales</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">{{ sale.invoice_number }}</span>
+</div>
+
+<!-- Voided Status Warning Banner -->
+{% if sale.status == 'voided' %}
+<div class="void-banner">
+  <div style="width:36px;height:36px;border-radius:8px;background:rgba(239,68,68,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+  </div>
+  <div style="flex:1;">
+    <div style="font-size:15px;font-weight:800;color:var(--accent-red);margin-bottom:3px;">
+      VOIDED INVOICE — CANCELLED TRANSACTION
+    </div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.4;">
+      This invoice was voided on <strong>{{ sale.voided_at|date:"d M Y, h:i A" }}</strong> by <strong>{{ sale.voided_by.get_full_name|default:sale.voided_by.username|default:"Authorized Staff" }}</strong>.<br>
+      Reason: <em>"{{ sale.void_reason|default:'Voided for audit reasons' }}"</em>.
+      All item quantities have been safely restored to stock inventory.
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Corrected Status Banner -->
+{% if sale.status == 'corrected' %}
+<div style="background:rgba(6,182,212,0.08);border:1.5px solid rgba(6,182,212,0.3);border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px;">
+  <div style="font-size:20px;">✏️</div>
+  <div style="font-size:13px;color:var(--text-secondary);">
+    <strong style="color:var(--accent-cyan);">CORRECTED INVOICE:</strong>
+    Updated on <strong>{{ sale.corrected_at|date:"d M Y, h:i A" }}</strong> by <strong>{{ sale.corrected_by.get_full_name|default:sale.corrected_by.username }}</strong>.
+    Reason: <em>"{{ sale.correction_reason }}"</em>.
+  </div>
+</div>
+{% endif %}
+
+<div class="page-header">
+  <div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="page-header-title">{{ sale.invoice_number }}</div>
+      {% if sale.status == 'completed' %}
+        <span class="badge badge-success">Completed</span>
+      {% elif sale.status == 'corrected' %}
+        <span class="badge badge-info">Corrected</span>
+      {% elif sale.status == 'voided' %}
+        <span class="badge badge-danger">Voided / Cancelled</span>
+      {% elif sale.status == 'refunded' %}
+        <span class="badge badge-warning">Refunded</span>
+      {% else %}
+        <span class="badge badge-muted">{{ sale.get_status_display }}</span>
+      {% endif %}
+    </div>
+    <div class="page-header-sub">
+      Processed on {{ sale.sale_date|date:"d M Y, h:i A" }} · Billed by <strong>{{ sale.created_by.get_full_name|default:sale.created_by.username }}</strong>
+    </div>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'sales:invoice' sale.pk %}" class="btn btn-primary" target="_blank" onclick="fetch('{% url 'sales:log_print' sale.pk %}');">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print Invoice
+    </a>
+    <a href="{% url 'sales:invoice_pdf' sale.pk %}" class="btn btn-danger">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      PDF
+    </a>
+
+    {% if request.user.is_manager and sale.status != 'voided' %}
+    <a href="{% url 'sales:edit' sale.pk %}" class="btn btn-warning" title="Correct data entry mistake">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit / Correct
+    </a>
+    <a href="{% url 'sales:void' sale.pk %}" class="btn btn-outline" style="color:var(--accent-red);border-color:rgba(239,68,68,0.4);" title="Void sale and return stock">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      Void Invoice
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;">
+  <!-- Left: Items list & Audit History -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <!-- Items Card -->
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border-glass);display:flex;justify-content:space-between;align-items:center;">
+        <h3 class="card-title" style="margin:0;">Purchased Items ({{ sale.items.count }})</h3>
+        <span style="font-size:12px;color:var(--text-muted);">Tax Inclusive (GST 18%)</span>
+      </div>
+      <div class="table-wrapper" style="border:none;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:40px;">#</th>
+              <th>Product & Details</th>
+              <th style="text-align:center;">Qty</th>
+              <th style="text-align:right;">Unit Price</th>
+              <th style="text-align:center;">GST %</th>
+              <th style="text-align:right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in sale.items.all %}
+            <tr>
+              <td style="color:var(--text-muted);">{{ forloop.counter }}</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:36px;height:36px;border-radius:8px;background:var(--bg-glass);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+                    {% if item.product.main_image %}
+                      <img src="{{ item.product.main_image.image.url }}" alt="{{ item.product.name }}" style="width:100%;height:100%;object-fit:cover;" />
+                    {% else %}
+                      <span>📦</span>
+                    {% endif %}
+                  </div>
+                  <div>
+                    <a href="{% url 'products:detail' item.product.pk %}" class="td-bold">{{ item.product.name }}</a>
+                    <div style="font-size:11px;color:var(--text-muted);">Code: {{ item.product.product_code }}</div>
+                  </div>
+                </div>
+              </td>
+              <td style="text-align:center;font-weight:700;">{{ item.quantity }}</td>
+              <td style="text-align:right;">₹{{ item.unit_price|floatformat:2 }}</td>
+              <td style="text-align:center;color:var(--text-muted);">{{ item.gst_percentage }}%</td>
+              <td style="text-align:right;color:var(--accent-cyan);font-weight:700;">₹{{ item.total_price|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Summary Box -->
+      <div style="padding:20px;border-top:1px solid var(--border-glass);background:rgba(255,255,255,0.01);">
+        <div style="max-width:300px;margin-left:auto;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:var(--text-muted);">
+            <span>Subtotal</span>
+            <span style="color:var(--text-primary);">₹{{ sale.subtotal|floatformat:2 }}</span>
+          </div>
+          {% if sale.discount_amount > 0 %}
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:var(--accent-red);">
+            <span>Discount ({{ sale.discount_percentage }}%)</span>
+            <span>−₹{{ sale.discount_amount|floatformat:2 }}</span>
+          </div>
+          {% endif %}
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border-glass);color:var(--text-muted);">
+            <span>GST (18%)</span>
+            <span style="color:var(--text-primary);">₹{{ sale.gst_amount|floatformat:2 }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:700;font-size:15px;">Grand Total</span>
+            <span style="font-size:24px;font-weight:800;color:{% if sale.status == 'voided' %}var(--accent-red){% else %}var(--accent-cyan){% endif %};">
+              ₹{{ sale.grand_total|floatformat:2 }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AUDIT TIMELINE & HISTORY ── -->
+    <div class="card">
+      <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <h3 class="card-title" style="margin:0;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:6px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Invoice Audit History
+        </h3>
+        <span style="font-size:11px;color:var(--text-muted);font-weight:600;">Immutable Audit Trail</span>
+      </div>
+      <div style="padding:20px;">
+        <div class="audit-timeline">
+          {% for log in audit_logs %}
+          <div class="audit-event {{ log.action }}">
+            <div class="audit-event-hd">
+              <span class="audit-event-title">{{ log.get_action_display }}</span>
+              <span class="audit-event-time">{{ log.created_at|date:"d M Y, h:i A" }}</span>
+            </div>
+            <div class="audit-event-desc">{{ log.details }}</div>
+            {% if log.user %}
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">By: {{ log.user.get_full_name|default:log.user.username }}</div>
+            {% endif %}
+          </div>
+          {% empty %}
+          <!-- Fallback timeline if no log entries -->
+          <div class="audit-event created">
+            <div class="audit-event-hd">
+              <span class="audit-event-title">Invoice Created</span>
+              <span class="audit-event-time">{{ sale.sale_date|date:"d M Y, h:i A" }}</span>
+            </div>
+            <div class="audit-event-desc">Created via POS terminal. Total: ₹{{ sale.grand_total|floatformat:2 }}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Cashier: {{ sale.created_by.get_full_name|default:sale.created_by.username }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Customer & Payment Details -->
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    <!-- Customer Details -->
+    <div class="card">
+      <div class="card-header">
+        <h4 class="card-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:6px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Customer
+        </h4>
+      </div>
+      {% if sale.customer %}
+        <div style="font-weight:700;font-size:15px;color:var(--text-primary);margin-bottom:4px;">{{ sale.customer.name }}</div>
+        {% if sale.customer.phone %}<div style="font-size:13px;color:var(--text-muted);margin-bottom:2px;">📞 {{ sale.customer.phone }}</div>{% endif %}
+        {% if sale.customer.email %}<div style="font-size:13px;color:var(--text-muted);margin-bottom:2px;">✉️ {{ sale.customer.email }}</div>{% endif %}
+        {% if sale.customer.gstin %}<div style="font-size:12px;color:var(--text-muted);margin-bottom:2px;">GSTIN: <code>{{ sale.customer.gstin }}</code></div>{% endif %}
+        <a href="{% url 'customers:detail' sale.customer.pk %}" class="btn btn-outline btn-sm" style="margin-top:12px;width:100%;justify-content:center;">View Customer Profile</a>
+      {% else %}
+        <div style="color:var(--text-muted);text-align:center;padding:16px;">
+          <div style="font-size:24px;margin-bottom:4px;">🚶‍♂️</div>
+          Walk-in Retail Customer
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Payment & Settlement -->
+    <div class="card">
+      <div class="card-header">
+        <h4 class="card-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:6px;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Payment & Status
+        </h4>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--text-muted);">Method:</span>
+          {% if sale.payment_method == 'cash' %}
+            <span class="badge badge-success">💵 Cash</span>
+          {% elif sale.payment_method == 'upi' %}
+            <span class="badge badge-info">📱 UPI</span>
+          {% elif sale.payment_method == 'card' %}
+            <span class="badge badge-purple">💳 Card</span>
+          {% else %}
+            <span class="badge badge-muted">{{ sale.get_payment_method_display }}</span>
+          {% endif %}
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--text-muted);">Status:</span>
+          <span class="badge {% if sale.status == 'voided' %}badge-danger{% elif sale.status == 'completed' %}badge-success{% elif sale.status == 'corrected' %}badge-info{% else %}badge-warning{% endif %}">
+            {{ sale.get_status_display }}
+          </span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--text-muted);">Amount Paid:</span>
+          <span style="font-weight:700;color:var(--text-primary);">₹{{ sale.amount_paid|default:sale.grand_total|floatformat:2 }}</span>
+        </div>
+        {% if sale.change_amount > 0 %}
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--text-muted);">Change Returned:</span>
+          <span style="color:var(--accent-green);font-weight:700;">₹{{ sale.change_amount|floatformat:2 }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Users{% endblock %}
+{% block page_title %}Users{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header-title">System Users</div>
+    <div class="page-header-sub">{{ users|length }} registered users</div>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'accounts:user_add' %}" class="btn btn-primary">➕ Add User</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>User</th><th>Username</th><th>Role</th><th>Email</th><th>Phone</th><th>Status</th><th>Joined</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--gradient-main);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;">
+                {% if u.profile_picture %}<img src="{{ u.profile_picture.url }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />{% else %}{{ u.username|first|upper }}{% endif %}
+              </div>
+              <span class="td-bold">{{ u.get_full_name|default:u.username }}</span>
+            </div>
+          </td>
+          <td>{{ u.username }}</td>
+          <td>
+            {% if u.role == 'admin' %}<span class="badge badge-danger">Admin</span>
+            {% elif u.role == 'manager' %}<span class="badge badge-purple">Manager</span>
+            {% elif u.role == 'cashier' %}<span class="badge badge-info">Cashier</span>
+            {% else %}<span class="badge badge-muted">Employee</span>{% endif %}
+          </td>
+          <td>{{ u.email|default:"—" }}</td>
+          <td>{{ u.phone|default:"—" }}</td>
+          <td>{% if u.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-danger">Inactive</span>{% endif %}</td>
+          <td>{{ u.date_joined|date:"d M Y" }}</td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-outline btn-sm" title="Edit User">✏️</a>
+              <a href="{% url 'accounts:admin_change_password' u.pk %}" class="btn btn-warning btn-sm" title="Change Password">🔑</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">No users found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

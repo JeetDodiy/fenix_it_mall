@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div style="max-width:600px;margin:0 auto;">
+  <div class="breadcrumb">
+    <a href="{% url 'accounts:user_list' %}" class="breadcrumb-item">Users</a>
+    <span class="breadcrumb-sep">/</span>
+    <span class="breadcrumb-item active">{{ title }}</span>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">{{ title }}</h3>
+      {% if user_obj %}
+      <a href="{% url 'accounts:admin_change_password' user_obj.pk %}" class="btn btn-warning btn-sm">🔑 Change Password</a>
+      {% endif %}
+    </div>
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        {% for field in form %}
+        <div class="form-group {% if field.name == 'address' or field.name == 'username' or field.name == 'email' %}col-span-2{% endif %}">
+          <label class="form-label">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+          {{ field }}
+          {% if field.errors %}<div class="form-error">{{ field.errors.0 }}</div>{% endif %}
+          {% if field.help_text %}<div class="form-hint">{{ field.help_text }}</div>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <button type="submit" class="btn btn-primary">💾 {{ title }}</button>
+        <a href="{% url 'accounts:user_list' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

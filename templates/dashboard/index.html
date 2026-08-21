@@ -1,0 +1,393 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+.greeting-bar {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.greeting-text h2 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+.greeting-text p  { font-size: 14px; color: var(--text-muted); }
+.greeting-actions { display: flex; gap: 10px; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
+@media(max-width:1280px){ .kpi-grid { grid-template-columns: repeat(3,1fr); } }
+@media(max-width:768px){ .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:480px){ .kpi-grid { grid-template-columns: 1fr; } }
+
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition);
+}
+.kpi-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.kpi-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.kpi-card.cyan::before   { background: linear-gradient(90deg,#06b6d4,#22d3ee); }
+.kpi-card.green::before  { background: linear-gradient(90deg,#10b981,#34d399); }
+.kpi-card.purple::before { background: linear-gradient(90deg,#a855f7,#c084fc); }
+.kpi-card.orange::before { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
+.kpi-card.red::before    { background: linear-gradient(90deg,#ef4444,#f87171); }
+.kpi-card.blue::before   { background: linear-gradient(90deg,#3b82f6,#60a5fa); }
+
+.kpi-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+.kpi-icon { width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center; }
+.kpi-icon.cyan   { background: rgba(6,182,212,.13);   }
+.kpi-icon.green  { background: rgba(16,185,129,.13);  }
+.kpi-icon.purple { background: rgba(168,85,247,.13);  }
+.kpi-icon.orange { background: rgba(245,158,11,.13);  }
+.kpi-icon.red    { background: rgba(239,68,68,.13);   }
+.kpi-icon.blue   { background: rgba(59,130,246,.13);  }
+
+.kpi-value { font-size: 26px; font-weight: 800; color: var(--text-primary); line-height: 1.1; margin-bottom: 4px; }
+.kpi-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+.kpi-trend {
+  font-size: 11px; font-weight: 600; margin-top: 10px;
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 8px; border-radius: 20px;
+}
+.kpi-trend.up   { background: rgba(16,185,129,.12); color: #10b981; }
+.kpi-trend.down { background: rgba(239,68,68,.12); color: #ef4444; }
+.kpi-trend.flat { background: rgba(100,116,139,.1); color: var(--text-muted); }
+
+/* Alert item for low-stock */
+.alert-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--border-glass);
+  background: var(--bg-glass);
+  margin-bottom: 8px;
+  transition: all var(--transition);
+}
+.alert-item:hover { border-color: var(--accent-orange); }
+.alert-item-img {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--bg-glass); display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0; overflow: hidden;
+}
+.alert-item-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+.stock-pill {
+  font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: 10px;
+  white-space: nowrap;
+}
+.stock-pill.out  { background: rgba(239,68,68,.12); color: #ef4444; border: 1px solid rgba(239,68,68,.2); }
+.stock-pill.low  { background: rgba(245,158,11,.12); color: #f59e0b; border: 1px solid rgba(245,158,11,.2); }
+
+html.light-theme .greeting-bar { background: #fff; border-color: rgba(0,0,0,.07); }
+html.light-theme .kpi-card { background: #fff; border-color: rgba(0,0,0,.07); box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+html.light-theme .alert-item { background: rgba(0,0,0,.02); border-color: rgba(0,0,0,.07); }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ── Greeting Bar ── -->
+<div class="greeting-bar">
+  <div class="greeting-text">
+    <h2 id="greeting-msg">Good day, {{ request.user.get_full_name|default:request.user.username }} 👋</h2>
+    <p>Here's what's happening at {{ company_settings.company_name|default:"Fenix IT Mall" }} today.</p>
+  </div>
+  <div class="greeting-actions">
+    <a href="{% url 'sales:pos' %}" class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      New Sale
+    </a>
+    {% if request.user.is_manager %}
+    <a href="{% url 'reports:home' %}" class="btn btn-outline">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Reports
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── KPI Cards ── -->
+<div class="kpi-grid">
+
+  <!-- Today's Revenue -->
+  <div class="kpi-card cyan">
+    <div class="kpi-header">
+      <div class="kpi-icon cyan">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" data-count="{{ today_revenue }}" data-prefix="₹" data-float="1">₹{{ today_revenue|floatformat:0 }}</div>
+    <div class="kpi-label">Today's Revenue</div>
+    {% if revenue_trend is not None %}
+      {% if revenue_trend > 0 %}
+        <span class="kpi-trend up">▲ {{ revenue_trend }}% vs yesterday</span>
+      {% elif revenue_trend < 0 %}
+        <span class="kpi-trend down">▼ {{ revenue_trend|stringformat:".1f"|slice:"1:" }}% vs yesterday</span>
+      {% else %}
+        <span class="kpi-trend flat">↔ Same as yesterday</span>
+      {% endif %}
+    {% else %}
+      <span class="kpi-trend flat">No data yesterday</span>
+    {% endif %}
+  </div>
+
+  <!-- Today's Orders -->
+  <div class="kpi-card purple">
+    <div class="kpi-header">
+      <div class="kpi-icon purple">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" data-count="{{ today_sales_count }}">{{ today_sales_count }}</div>
+    <div class="kpi-label">Orders Today</div>
+    {% if count_trend is not None %}
+      {% if count_trend > 0 %}
+        <span class="kpi-trend up">▲ {{ count_trend }}% vs yesterday</span>
+      {% elif count_trend < 0 %}
+        <span class="kpi-trend down">▼ {{ count_trend|stringformat:".1f"|slice:"1:" }}% vs yesterday</span>
+      {% else %}
+        <span class="kpi-trend flat">Same as yesterday</span>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <!-- Gross Profit -->
+  {% if request.user.is_manager %}
+  <div class="kpi-card green">
+    <div class="kpi-header">
+      <div class="kpi-icon green">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" data-count="{{ today_profit }}" data-prefix="₹" data-float="1">₹{{ today_profit|floatformat:0 }}</div>
+    <div class="kpi-label">Today's Profit</div>
+    <span class="kpi-trend flat">Monthly: ₹{{ monthly_profit|floatformat:0 }}</span>
+  </div>
+  {% endif %}
+
+  <!-- Low Stock -->
+  <div class="kpi-card orange">
+    <div class="kpi-header">
+      <div class="kpi-icon orange">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" style="color:var(--accent-orange);">{{ low_stock_count }}</div>
+    <div class="kpi-label">Low Stock Items</div>
+    <a href="{% url 'inventory:low_stock' %}" class="kpi-trend flat" style="text-decoration:none;">View list →</a>
+  </div>
+
+  <!-- Pending PO -->
+  {% if request.user.is_manager %}
+  <div class="kpi-card blue">
+    <div class="kpi-header">
+      <div class="kpi-icon blue">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" style="color:var(--accent-blue);">{{ pending_po_count }}</div>
+    <div class="kpi-label">Pending Orders</div>
+    <a href="{% url 'purchase:list' %}" class="kpi-trend flat" style="text-decoration:none;">View POs →</a>
+  </div>
+  {% endif %}
+
+  <!-- Out of Stock -->
+  <div class="kpi-card red">
+    <div class="kpi-header">
+      <div class="kpi-icon red">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" style="color:var(--accent-red);">{{ out_of_stock_count }}</div>
+    <div class="kpi-label">Out of Stock</div>
+    <a href="{% url 'inventory:out_of_stock' %}" class="kpi-trend flat" style="text-decoration:none;">View items →</a>
+  </div>
+
+</div><!-- /kpi-grid -->
+
+<!-- ── Charts Row ── -->
+<div class="grid-3" style="margin-bottom:24px;">
+  <div class="card col-span-2">
+    <div class="card-header">
+      <h3 class="card-title">Revenue & Sales Trend</h3>
+      <span style="font-size:12px;color:var(--text-muted);">Last 6 months</span>
+    </div>
+    <div style="height:260px;">
+      <canvas id="revenueChart"
+        data-labels="{{ chart_labels }}"
+        data-revenue="{{ chart_revenue }}"
+        data-profit="{{ chart_profit }}"
+        data-sales="{{ chart_sales }}">
+      </canvas>
+    </div>
+  </div>
+
+  <!-- Inventory Alerts -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title" style="color:var(--accent-orange);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:6px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Stock Alerts
+      </h3>
+      <a href="{% url 'inventory:low_stock' %}" class="btn btn-outline btn-sm">View All</a>
+    </div>
+    {% for p in low_stock_items %}
+    <div class="alert-item">
+      <div class="alert-item-img">
+        {% if p.main_image %}
+          <img src="{{ p.main_image.image.url }}" alt="{{ p.name }}" />
+        {% else %}📦{% endif %}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.name|truncatechars:28 }}</div>
+        <div style="font-size:11px;color:var(--text-muted);">{{ p.category.name|default:"General" }}</div>
+      </div>
+      {% if p.stock_quantity <= 0 %}
+        <span class="stock-pill out">0 left</span>
+      {% else %}
+        <span class="stock-pill low">{{ p.stock_quantity }} left</span>
+      {% endif %}
+    </div>
+    {% empty %}
+    <div class="empty-state" style="padding:30px 16px;">
+      <div style="font-size:28px;margin-bottom:8px;">✅</div>
+      <div style="font-size:14px;font-weight:500;color:var(--text-primary);">All stocked up!</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">No items below threshold.</div>
+    </div>
+    {% endfor %}
+    {% if request.user.is_manager and low_stock_items %}
+    <a href="{% url 'purchase:add' %}" class="btn btn-outline btn-sm btn-full" style="margin-top:10px;">
+      + Create Purchase Order
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── Bottom Row ── -->
+<div class="grid-2" style="margin-bottom:24px;">
+
+  <!-- Recent Sales -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Recent Sales</h3>
+      <a href="{% url 'sales:list' %}" class="btn btn-outline btn-sm">View All</a>
+    </div>
+    {% if recent_sales %}
+    <div class="table-wrapper" style="border:none;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Invoice</th>
+            <th>Customer</th>
+            <th>Amount</th>
+            <th>Payment</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sale in recent_sales %}
+          <tr>
+            <td><a href="{% url 'sales:detail' sale.pk %}" class="td-bold" style="color:var(--accent-cyan);">{{ sale.invoice_number }}</a></td>
+            <td style="color:var(--text-secondary);">{{ sale.customer.name|default:"Walk-in" }}</td>
+            <td style="font-weight:600;color:var(--text-primary);">₹{{ sale.grand_total|floatformat:0 }}</td>
+            <td><span class="badge badge-info badge-sm">{{ sale.get_payment_method_display }}</span></td>
+            <td style="font-size:11px;color:var(--text-muted);">{{ sale.created_at|date:"H:i" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:40px 16px;">
+      <div class="empty-state-icon">🧾</div>
+      <div class="empty-state-title">No sales today yet</div>
+      <div class="empty-state-desc">Start selling from the POS terminal.</div>
+      <a href="{% url 'sales:pos' %}" class="btn btn-primary btn-sm">Open POS</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Charts column -->
+  <div class="flex-col" style="gap:20px;">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Stock Status</h3>
+      </div>
+      <div style="height:180px;">
+        <canvas id="inventoryChart" data-values="{{ inventory_status }}"></canvas>
+      </div>
+      <div style="display:flex;justify-content:space-around;margin-top:14px;font-size:12px;gap:8px;flex-wrap:wrap;">
+        <span style="color:#10b981;display:flex;align-items:center;gap:4px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#10b981;flex-shrink:0;"></span>
+          In Stock: {{ in_stock_count }}
+        </span>
+        <span style="color:#f59e0b;display:flex;align-items:center;gap:4px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0;"></span>
+          Low: {{ low_stock_count }}
+        </span>
+        <span style="color:#ef4444;display:flex;align-items:center;gap:4px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;"></span>
+          Out: {{ out_of_stock_count }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Quick Actions</h3></div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <a href="{% url 'sales:pos' %}" class="btn btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          New Sale (POS)
+        </a>
+        {% if request.user.is_manager %}
+        <a href="{% url 'products:add' %}" class="btn btn-success">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Product
+        </a>
+        <a href="{% url 'purchase:add' %}" class="btn btn-outline">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/></svg>
+          Create Purchase Order
+        </a>
+        <a href="{% url 'inventory:low_stock' %}" class="btn btn-warning">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+          Low Stock Items
+        </a>
+        {% endif %}
+        <a href="{% url 'customers:add' %}" class="btn btn-outline">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Add Customer
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+<script>
+// Time-aware greeting
+(function() {
+  var h = new Date().getHours();
+  var name = '{{ request.user.get_full_name|default:request.user.username|escapejs }}';
+  var greeting = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  var el = document.getElementById('greeting-msg');
+  if (el) el.textContent = greeting + ', ' + name + ' 👋';
+})();
+</script>
+{% endblock %}

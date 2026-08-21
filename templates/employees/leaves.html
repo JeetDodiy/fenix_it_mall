@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Leave Requests{% endblock %}
+{% block page_title %}Leave Management{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><div class="page-header-title">Leave Requests</div></div>
+  <div class="page-header-actions">
+    <a href="{% url 'employees:leave_add' %}" class="btn btn-primary">➕ Apply Leave</a>
+  </div>
+</div>
+<div class="card" style="margin-bottom:20px;padding:16px 20px;">
+  <form method="get" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+    <select name="status" class="form-select">
+      <option value="">All Status</option>
+      {% for val,label in status_choices %}<option value="{{ val }}" {% if selected_status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a href="{% url 'employees:leave_list' %}" class="btn btn-outline btn-sm">Clear</a>
+  </form>
+</div>
+<div class="card">
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead><tr><th>Employee</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for leave in leaves %}
+        <tr>
+          <td class="td-bold">{{ leave.employee.full_name }}</td>
+          <td><span class="badge badge-info">{{ leave.get_leave_type_display }}</span></td>
+          <td>{{ leave.start_date|date:"d M Y" }}</td>
+          <td>{{ leave.end_date|date:"d M Y" }}</td>
+          <td>{{ leave.total_days }}</td>
+          <td style="font-size:12px;color:var(--text-muted);">{{ leave.reason|truncatechars:40 }}</td>
+          <td>
+            {% if leave.status == 'approved' %}<span class="badge badge-success">Approved</span>
+            {% elif leave.status == 'rejected' %}<span class="badge badge-danger">Rejected</span>
+            {% else %}<span class="badge badge-warning">Pending</span>{% endif %}
+          </td>
+          <td>
+            {% if request.user.is_manager and leave.status == 'pending' %}
+            <form method="post" action="{% url 'employees:leave_approve' leave.pk %}" style="display:flex;gap:6px;">
+              {% csrf_token %}
+              <button name="action" value="approve" class="btn btn-success btn-sm">✅</button>
+              <button name="action" value="reject" class="btn btn-danger btn-sm">❌</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">No leave requests found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% if leaves.has_other_pages %}
+<div class="pagination">
+  {% if leaves.has_previous %}<a href="?page={{ leaves.previous_page_number }}" class="page-btn">‹</a>{% endif %}
+  {% for n in leaves.paginator.page_range %}{% if leaves.number == n %}<span class="page-btn active">{{ n }}</span>{% elif n >= leaves.number|add:"-3" and n <= leaves.number|add:"3" %}<a href="?page={{ n }}" class="page-btn">{{ n }}</a>{% endif %}{% endfor %}
+  {% if leaves.has_next %}<a href="?page={{ leaves.next_page_number }}" class="page-btn">›</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,35 @@
+/* glass.css */
+.glass {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--radius);
+}
+
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  border-top: 1px solid var(--border-glass);
+  border-left: 1px solid var(--border-glass);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius);
+}
+
+.liquid-glass {
+  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.1), transparent),
+              radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.05), transparent);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  backdrop-filter: blur(20px);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg), inset 0 0 0 1px rgba(255,255,255,0.05);
+}

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Receive Stock{% endblock %}
+{% block page_title %}Receive Stock{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'purchase:list' %}" class="breadcrumb-item">Purchases</a>
+  <span class="breadcrumb-sep">/</span>
+  <a href="{% url 'purchase:detail' order.pk %}" class="breadcrumb-item">{{ order.order_number }}</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">Receive Stock</span>
+</div>
+
+<div style="max-width:900px;margin:0 auto;">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">📦 Receive Stock – {{ order.order_number }}</h3>
+    </div>
+    
+    <div class="alert alert-info" style="margin-bottom:20px;">
+      <strong>Instructions:</strong> Enter the quantity you're receiving for each item. You can receive partial quantities. Items will be added to inventory immediately.
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="table-wrapper" style="margin-bottom:20px;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:40%;">Product</th>
+              <th style="text-align:center;">Ordered</th>
+              <th style="text-align:center;">Already Received</th>
+              <th style="text-align:center;width:150px;">Receive Now</th>
+              <th style="text-align:right;">Unit Price</th>
+              <th style="text-align:right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in order.items.all %}
+            {% with remaining=item.quantity|add:item.received_quantity|add:"-"|add:item.received_quantity %}
+            <tr>
+              <td class="td-bold">
+                <div>{{ item.product.name }}</div>
+                <div style="font-size:11px;color:var(--text-muted);">{{ item.product.product_code }}</div>
+              </td>
+              <td style="text-align:center;font-weight:600;">{{ item.quantity }}</td>
+              <td style="text-align:center;">
+                {% if item.received_quantity > 0 %}
+                <span class="badge badge-success">{{ item.received_quantity }}</span>
+                {% else %}
+                <span class="badge badge-muted">0</span>
+                {% endif %}
+              </td>
+              <td style="text-align:center;">
+                {% with pending=item.quantity|add:"-"|add:item.received_quantity %}
+                <input 
+                  type="number" 
+                  name="receive_qty_{{ item.pk }}" 
+                  class="form-input" 
+                  value="{{ pending }}" 
+                  min="0" 
+                  max="{{ pending }}"
+                  style="width:100px;text-align:center;padding:6px 8px;"
+                  {% if pending <= 0 %}disabled{% endif %}
+                />
+                {% endwith %}
+              </td>
+              <td style="text-align:right;">₹{{ item.purchase_price }}</td>
+              <td style="text-align:right;color:var(--accent-cyan);font-weight:600;">₹{{ item.total_price }}</td>
+            </tr>
+            {% endwith %}
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr style="font-weight:700;background:rgba(255,255,255,0.03);">
+              <td colspan="5" style="text-align:right;padding:14px 16px;color:var(--text-primary);">Grand Total:</td>
+              <td style="padding:14px 16px;color:var(--accent-cyan);font-size:18px;text-align:right;">₹{{ order.total_amount }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:12px;padding:16px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="font-size:24px;">💡</div>
+          <div>
+            <div style="font-weight:600;margin-bottom:4px;">Partial Receiving Supported</div>
+            <div style="font-size:13px;color:var(--text-secondary);">
+              You can receive partial quantities now and receive the rest later. The order will be marked as "Partially Received" until all items are received.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;">
+        <button type="submit" class="btn btn-success btn-lg">✅ Receive Stock</button>
+        <a href="{% url 'purchase:detail' order.pk %}" class="btn btn-outline btn-lg">Cancel</a>
+        <button type="button" onclick="setAllMaxQuantities()" class="btn btn-outline">📦 Receive All Pending</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function setAllMaxQuantities() {
+  document.querySelectorAll('input[type="number"][name^="receive_qty_"]').forEach(input => {
+    if (!input.disabled) {
+      input.value = input.max;
+    }
+  });
+}
+</script>
+{% endblock %}

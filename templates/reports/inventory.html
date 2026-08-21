@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Inventory Report{% endblock %}
+{% block page_title %}Inventory Report{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><div class="page-header-title">🏭 Inventory Report</div></div>
+  <div class="page-header-actions">
+    <a href="{% url 'reports:inventory_pdf' %}" class="btn btn-danger btn-sm">📄 PDF</a>
+  </div>
+</div>
+<div class="card" style="margin-bottom:20px;padding:16px 20px;">
+  <form method="get" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+    <select name="category" class="form-select">
+      <option value="">All Categories</option>
+      {% for cat in categories %}<option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}
+    </select>
+    <select name="stock_status" class="form-select">
+      <option value="">All Stock</option>
+      <option value="ok" {% if selected_stock_status == 'ok' %}selected{% endif %}>In Stock</option>
+      <option value="low" {% if selected_stock_status == 'low' %}selected{% endif %}>Low Stock</option>
+      <option value="out" {% if selected_stock_status == 'out' %}selected{% endif %}>Out of Stock</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Apply</button>
+    <a href="{% url 'reports:inventory' %}" class="btn btn-outline">Reset</a>
+  </form>
+</div>
+<div class="grid-2" style="margin-bottom:20px;">
+  <div class="stat-card purple"><div class="stat-icon purple">💰</div><div class="stat-value">₹{{ total_cost_value|floatformat:0 }}</div><div class="stat-label">Cost Value</div></div>
+  <div class="stat-card cyan"><div class="stat-icon cyan">🏷️</div><div class="stat-value">₹{{ total_retail_value|floatformat:0 }}</div><div class="stat-label">Retail Value</div></div>
+</div>
+<div class="card">
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead><tr><th>Code</th><th>Product</th><th>Category</th><th>Stock</th><th>Cost Price</th><th>Selling Price</th><th>Stock Value</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td><code style="font-size:11px;">{{ p.product_code }}</code></td>
+          <td><a href="{% url 'products:detail' p.pk %}" class="td-bold">{{ p.name|truncatechars:30 }}</a></td>
+          <td>{{ p.category.name|default:"—" }}</td>
+          <td class="td-bold">{{ p.stock_quantity }}</td>
+          <td>₹{{ p.purchase_price }}</td>
+          <td>₹{{ p.selling_price }}</td>
+          <td>₹{{ p.purchase_price|floatformat:2 }}</td>
+          <td>{% if p.is_out_of_stock %}<span class="badge badge-danger">Out</span>{% elif p.is_low_stock %}<span class="badge badge-warning">Low</span>{% else %}<span class="badge badge-success">OK</span>{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">No products found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}{{ supplier.company_name }}{% endblock %}
+{% block page_title %}Supplier Detail{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'suppliers:list' %}" class="breadcrumb-item">Suppliers</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">{{ supplier.company_name }}</span>
+</div>
+<div style="display:grid;grid-template-columns:280px 1fr;gap:20px;align-items:start;">
+  <div class="card">
+    <div style="font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:4px;">{{ supplier.company_name }}</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">{{ supplier.contact_person }}</div>
+    <div style="font-size:13px;color:var(--text-secondary);display:flex;flex-direction:column;gap:6px;">
+      <div>📱 {{ supplier.phone }}</div>
+      {% if supplier.email %}<div>📧 {{ supplier.email }}</div>{% endif %}
+      {% if supplier.address %}<div>📍 {{ supplier.address|truncatechars:60 }}</div>{% endif %}
+      {% if supplier.gst_number %}<div>🏛️ GST: {{ supplier.gst_number }}</div>{% endif %}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;">
+      <div style="background:var(--bg-glass);border:1px solid var(--border-glass);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:16px;font-weight:700;color:var(--accent-purple);">₹{{ total_ordered|floatformat:0 }}</div>
+        <div style="font-size:11px;color:var(--text-muted);">Ordered</div>
+      </div>
+      <div style="background:var(--bg-glass);border:1px solid var(--border-glass);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:16px;font-weight:700;color:var(--accent-red);">₹{{ outstanding|floatformat:0 }}</div>
+        <div style="font-size:11px;color:var(--text-muted);">Outstanding</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px;">
+      {% if request.user.is_manager %}
+      <a href="{% url 'suppliers:edit' supplier.pk %}" class="btn btn-primary btn-sm">✏️ Edit</a>
+      <a href="{% url 'purchase:add' %}?supplier={{ supplier.pk }}" class="btn btn-success btn-sm">📋 New PO</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:14px 20px;border-bottom:1px solid var(--border-glass);font-weight:600;">Purchase Orders ({{ total_orders }})</div>
+    <div class="table-wrapper" style="border:none;">
+      <table class="table">
+        <thead><tr><th>PO Number</th><th>Date</th><th>Status</th><th>Total</th><th>Paid</th><th>Balance</th></tr></thead>
+        <tbody>
+          {% for o in orders %}
+          <tr>
+            <td><a href="{% url 'purchase:detail' o.pk %}" class="td-bold">{{ o.order_number }}</a></td>
+            <td style="font-size:12px;">{{ o.order_date }}</td>
+            <td>{% if o.status == 'received' %}<span class="badge badge-success">Received</span>{% elif o.status == 'cancelled' %}<span class="badge badge-danger">Cancelled</span>{% else %}<span class="badge badge-warning">{{ o.get_status_display }}</span>{% endif %}</td>
+            <td>₹{{ o.total_amount }}</td>
+            <td style="color:var(--accent-green);">₹{{ o.paid_amount }}</td>
+            <td style="color:var(--accent-red);">₹{{ o.balance_amount }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No orders yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

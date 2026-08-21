@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Out of Stock{% endblock %}
+{% block page_title %}Out of Stock{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><div class="page-header-title">❌ Out of Stock</div><div class="page-header-sub">{{ products|length }} product{{ products|length|pluralize }} with zero stock</div></div>
+  <div class="page-header-actions">
+    <a href="{% url 'inventory:low_stock' %}" class="btn btn-warning">⚠️ Low Stock</a>
+    <a href="{% url 'purchase:add' %}" class="btn btn-primary">📋 Create PO</a>
+  </div>
+</div>
+<div class="card">
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead><tr><th>Product</th><th>Category</th><th>Last Price</th><th>Supplier</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td><a href="{% url 'products:detail' p.pk %}" class="td-bold">{{ p.name }}</a></td>
+          <td>{{ p.category.name|default:"—" }}</td>
+          <td>₹{{ p.selling_price }}</td>
+          <td>{{ p.supplier.company_name|default:"—" }}</td>
+          <td>
+            {% if request.user.is_manager %}
+            <a href="{% url 'inventory:stock_in' %}" class="btn btn-success btn-sm">📥 Stock In</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;color:var(--accent-green);padding:40px;">✅ All products have stock!</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

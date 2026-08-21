@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Supplier Report{% endblock %}
+{% block page_title %}Supplier Report{% endblock %}
+{% block content %}
+<div class="page-header"><div><div class="page-header-title">🏢 Supplier Report</div></div></div>
+<div class="card">
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead><tr><th>Supplier</th><th>Contact</th><th>Orders</th><th>Total Ordered</th><th>Total Paid</th><th>Balance</th></tr></thead>
+      <tbody>
+        {% for s in suppliers %}
+        <tr>
+          <td><a href="{% url 'suppliers:detail' s.pk %}" class="td-bold">{{ s.company_name }}</a></td>
+          <td>{{ s.contact_person }}</td>
+          <td><span class="badge badge-info">{{ s.order_count|default:0 }}</span></td>
+          <td style="font-weight:600;">₹{{ s.total_ordered|default:0|floatformat:0 }}</td>
+          <td style="color:var(--accent-green);">₹{{ s.total_paid|default:0|floatformat:0 }}</td>
+          <td style="color:var(--accent-red);">₹{% if s.total_ordered and s.total_paid %}{{ s.total_ordered|add:"-"|add:s.total_paid|floatformat:0 }}{% else %}0{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No suppliers yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

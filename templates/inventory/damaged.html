@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Damaged Stock{% endblock %}
+{% block page_title %}Record Damaged Stock{% endblock %}
+{% block content %}
+<div style="max-width:540px;margin:0 auto;">
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">🔴 Record Damaged Stock</h3></div>
+    <div class="alert alert-warning">⚠️ This will reduce stock and mark items as damaged.</div>
+    <form method="post" novalidate style="margin-top:16px;">
+      {% csrf_token %}
+      <input type="hidden" name="adjustment_type" value="reduce" />
+      {% for field in form %}{% if field.name != 'adjustment_type' %}
+      <div class="form-group">
+        <label class="form-label">{{ field.label }}</label>{{ field }}
+        {% if field.errors %}<div class="form-error">{{ field.errors.0 }}</div>{% endif %}
+      </div>
+      {% endif %}{% endfor %}
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button type="submit" class="btn btn-danger">🔴 Record Damage</button>
+        <a href="{% url 'inventory:list' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

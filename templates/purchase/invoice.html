@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}PO Invoice – {{ order.order_number }}{% endblock %}
+{% block page_title %}Purchase Order Invoice{% endblock %}
+{% block content %}
+<div style="max-width:760px;margin:0 auto;">
+  <div class="page-header">
+    <div></div>
+    <div class="page-header-actions">
+      <a href="javascript:window.print()" class="btn btn-primary">🖨️ Print</a>
+      <a href="{% url 'purchase:detail' order.pk %}" class="btn btn-outline">← Back</a>
+    </div>
+  </div>
+  <div class="card" id="printable">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:20px;border-bottom:2px solid var(--border-glass);">
+      <div>
+        <div style="font-size:28px;font-weight:800;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ company.company_name|default:"Fenix IT Mall" }}</div>
+        {% if company %}<div style="color:var(--text-muted);font-size:13px;margin-top:4px;">{{ company.address }}</div>{% endif %}
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:22px;font-weight:700;">PURCHASE ORDER</div>
+        <div style="color:var(--accent-cyan);font-size:18px;font-weight:600;">{{ order.order_number }}</div>
+        <div style="color:var(--text-muted);font-size:13px;">Date: {{ order.order_date }}</div>
+        <span class="badge {% if order.status == 'received' %}badge-success{% elif order.status == 'cancelled' %}badge-danger{% else %}badge-warning{% endif %}">{{ order.get_status_display }}</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+      <div>
+        <div style="font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Supplier</div>
+        <div style="font-weight:700;font-size:16px;color:var(--text-primary);">{{ order.supplier.company_name }}</div>
+        <div style="color:var(--text-muted);font-size:13px;">{{ order.supplier.contact_person }}</div>
+        <div style="color:var(--text-muted);font-size:13px;">{{ order.supplier.phone }}</div>
+        {% if order.supplier.gst_number %}<div style="color:var(--text-muted);font-size:13px;">GST: {{ order.supplier.gst_number }}</div>{% endif %}
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Order Info</div>
+        <div style="font-size:13px;color:var(--text-secondary);">Order Date: <strong>{{ order.order_date }}</strong></div>
+        {% if order.expected_delivery %}<div style="font-size:13px;color:var(--text-secondary);">Expected: <strong>{{ order.expected_delivery }}</strong></div>{% endif %}
+        <div style="font-size:13px;color:var(--text-secondary);">Created by: <strong>{{ order.created_by.get_full_name|default:order.created_by.username }}</strong></div>
+      </div>
+    </div>
+    <div class="table-wrapper" style="margin-bottom:24px;">
+      <table class="table">
+        <thead><tr><th>#</th><th>Product</th><th>Code</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead>
+        <tbody>
+          {% for item in order.items.all %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td class="td-bold">{{ item.product.name }}</td>
+            <td><code style="font-size:11px;">{{ item.product.product_code }}</code></td>
+            <td>{{ item.quantity }}</td>
+            <td>₹{{ item.purchase_price }}</td>
+            <td style="font-weight:600;color:var(--accent-cyan);">₹{{ item.total_price }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr style="background:rgba(6,182,212,0.05);">
+            <td colspan="5" style="text-align:right;padding:14px 16px;font-weight:700;color:var(--text-primary);">GRAND TOTAL</td>
+            <td style="padding:14px 16px;font-size:20px;font-weight:700;color:var(--accent-cyan);">₹{{ order.total_amount }}</td>
+          </tr>
+          <tr>
+            <td colspan="5" style="text-align:right;padding:10px 16px;color:var(--text-muted);">Paid Amount</td>
+            <td style="padding:10px 16px;color:var(--accent-green);font-weight:600;">₹{{ order.paid_amount }}</td>
+          </tr>
+          <tr>
+            <td colspan="5" style="text-align:right;padding:10px 16px;color:var(--text-muted);">Balance Due</td>
+            <td style="padding:10px 16px;color:var(--accent-red);font-weight:600;">₹{{ order.balance_amount }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    {% if order.notes %}
+    <div style="padding:16px;background:var(--bg-glass);border-radius:10px;font-size:13px;color:var(--text-secondary);">
+      <strong>Notes:</strong> {{ order.notes }}
+    </div>
+    {% endif %}
+  </div>
+</div>
+<style>@media print { .navbar,.sidebar,.page-header,.btn { display:none!important; } .main-content { margin:0!important; padding:0!important; } }</style>
+{% endblock %}

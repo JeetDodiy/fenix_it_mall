@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}Reports{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><div class="page-header-title">📊 Reports & Analytics</div><div class="page-header-sub">Generate, view, and export business reports</div></div>
+</div>
+<div class="grid-3">
+  <a href="{% url 'reports:sales' %}" class="card" style="text-decoration:none;text-align:center;cursor:pointer;">
+    <div style="font-size:40px;margin-bottom:12px;">🧾</div>
+    <div style="font-size:16px;font-weight:700;color:var(--text-primary);">Sales Report</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">Revenue, invoices, payment breakdown</div>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;">
+      <span class="badge badge-info">PDF</span><span class="badge badge-success">CSV</span>
+    </div>
+  </a>
+  <a href="{% url 'reports:purchase' %}" class="card" style="text-decoration:none;text-align:center;cursor:pointer;">
+    <div style="font-size:40px;margin-bottom:12px;">🚚</div>
+    <div style="font-size:16px;font-weight:700;color:var(--text-primary);">Purchase Report</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">Purchase orders, supplier payments</div>
+    <div style="margin-top:12px;"><span class="badge badge-info">PDF</span></div>
+  </a>
+  <a href="{% url 'reports:profit' %}" class="card" style="text-decoration:none;text-align:center;cursor:pointer;">
+    <div style="font-size:40px;margin-bottom:12px;">💹</div>
+    <div style="font-size:16px;font-weight:700;color:var(--text-primary);">Profit & Loss</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">Revenue vs cost, margin analysis</div>
+  </a>
+  <a href="{% url 'reports:inventory' %}" class="card" style="text-decoration:none;text-align:center;cursor:pointer;">
+    <div style="font-size:40px;margin-bottom:12px;">🏭</div>
+    <div style="font-size:16px;font-weight:700;color:var(--text-primary);">Inventory Report</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">Stock levels, valuation, alerts</div>
+    <div style="margin-top:12px;"><span class="badge badge-info">PDF</span></div>
+  </a>
+  <a href="{% url 'reports:customers' %}" class="card" style="text-decoration:none;text-align:center;cursor:pointer;">
+    <div style="font-size:40px;margin-bottom:12px;">👥</div>
+    <div style="font-size:16px;font-weight:700;color:var(--text-primary);">Customer Report</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">Top customers, loyalty points</div>
+  </a>
+  <a href="{% url 'reports:suppliers' %}" class="card" style="text-decoration:none;text-align:center;cursor:pointer;">
+    <div style="font-size:40px;margin-bottom:12px;">🏢</div>
+    <div style="font-size:16px;font-weight:700;color:var(--text-primary);">Supplier Report</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">Outstanding balances, order history</div>
+  </a>
+  <a href="{% url 'reports:employees' %}" class="card" style="text-decoration:none;text-align:center;cursor:pointer;">
+    <div style="font-size:40px;margin-bottom:12px;">👤</div>
+    <div style="font-size:16px;font-weight:700;color:var(--text-primary);">Employee Report</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">Attendance, salary, leave summary</div>
+  </a>
+</div>
+{% endblock %}

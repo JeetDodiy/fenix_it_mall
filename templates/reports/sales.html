@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Sales Report{% endblock %}
+{% block page_title %}Sales Report{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><div class="page-header-title">📊 Sales Report</div></div>
+  <div class="page-header-actions">
+    <a href="{% url 'reports:sales_pdf' %}?date_from={{ date_from }}&date_to={{ date_to }}" class="btn btn-danger btn-sm">📄 PDF</a>
+    <a href="{% url 'reports:sales_csv' %}?date_from={{ date_from }}&date_to={{ date_to }}" class="btn btn-success btn-sm">📥 CSV</a>
+  </div>
+</div>
+<div class="card" style="margin-bottom:20px;padding:16px 20px;">
+  <form method="get" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+    <div class="form-group" style="margin:0;">
+      <label class="form-label">From</label>
+      <input type="date" name="date_from" class="form-input" value="{{ date_from }}" />
+    </div>
+    <div class="form-group" style="margin:0;">
+      <label class="form-label">To</label>
+      <input type="date" name="date_to" class="form-input" value="{{ date_to }}" />
+    </div>
+    <div class="form-group" style="margin:0;">
+      <label class="form-label">Payment</label>
+      <select name="payment" class="form-select">
+        <option value="">All</option>
+        {% for val,label in payment_methods %}<option value="{{ val }}" {% if selected_payment == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Apply</button>
+    <a href="{% url 'reports:sales' %}" class="btn btn-outline">Reset</a>
+  </form>
+</div>
+{% if totals %}
+<div class="grid-4" style="margin-bottom:20px;">
+  <div class="stat-card cyan"><div class="stat-icon cyan">🧾</div><div class="stat-value">{{ totals.count|default:0 }}</div><div class="stat-label">Invoices</div></div>
+  <div class="stat-card green"><div class="stat-icon green">💰</div><div class="stat-value">₹{{ totals.revenue|default:0|floatformat:0 }}</div><div class="stat-label">Revenue</div></div>
+  <div class="stat-card orange"><div class="stat-icon orange">🎁</div><div class="stat-value">₹{{ totals.discount|default:0|floatformat:0 }}</div><div class="stat-label">Discount</div></div>
+  <div class="stat-card purple"><div class="stat-icon purple">🏛️</div><div class="stat-value">₹{{ totals.tax|default:0|floatformat:0 }}</div><div class="stat-label">GST Collected</div></div>
+</div>
+{% endif %}
+<div class="card">
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Payment</th><th>Subtotal</th><th>Discount</th><th>GST</th><th>Total</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for s in sales %}
+        <tr>
+          <td><a href="{% url 'sales:detail' s.pk %}" class="td-bold">{{ s.invoice_number }}</a></td>
+          <td style="font-size:12px;">{{ s.sale_date|date:"d M Y H:i" }}</td>
+          <td>{{ s.customer.name|default:"Walk-in" }}</td>
+          <td><span class="badge badge-info">{{ s.get_payment_method_display }}</span></td>
+          <td>₹{{ s.subtotal }}</td>
+          <td style="color:var(--accent-orange);">-₹{{ s.discount_amount }}</td>
+          <td>₹{{ s.gst_amount }}</td>
+          <td class="td-bold" style="color:var(--accent-cyan);">₹{{ s.grand_total }}</td>
+          <td><span class="badge badge-success">{{ s.get_status_display }}</span></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:32px;">No sales in this period.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

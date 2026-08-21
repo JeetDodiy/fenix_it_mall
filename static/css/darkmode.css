@@ -1,0 +1,38 @@
+/* darkmode.css */
+[data-theme="dark"] {
+  --bg-body: #0B1120;
+  --bg-sidebar: #0F172A;
+  
+  /* Text */
+  --text-primary: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-inverse: #0B1120;
+  
+  /* Glass and Borders */
+  --bg-card: rgba(15, 23, 42, 0.6);
+  --bg-glass: rgba(255, 255, 255, 0.05);
+  --border-glass: rgba(255, 255, 255, 0.18);
+  
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+/* Base Body Application */
+body {
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+a:hover {
+  color: var(--color-secondary);
+}

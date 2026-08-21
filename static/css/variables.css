@@ -1,0 +1,40 @@
+/* variables.css */
+:root {
+  /* Fenix IT Mall - Light Theme Default Variables */
+  --color-primary: #2563EB;
+  --color-secondary: #06B6D4;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  
+  --bg-body: #F8FAFC;
+  --bg-sidebar: #0F172A;
+  
+  /* Text */
+  --text-primary: #1E293B;
+  --text-muted: #64748B;
+  --text-inverse: #FFFFFF;
+  
+  /* Glass and Borders */
+  --bg-card: rgba(255, 255, 255, 0.7);
+  --bg-glass: rgba(255, 255, 255, 0.12);
+  --border-glass: rgba(0, 0, 0, 0.05); /* Softer for light mode */
+  
+  /* Dimensions */
+  --sidebar-width: 260px;
+  --sidebar-collapsed: 70px;
+  --navbar-height: 64px;
+  
+  /* Utilities */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --transition: 0.25s ease;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.2);
+}

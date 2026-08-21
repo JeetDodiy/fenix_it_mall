@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}{{ employee.full_name }}{% endblock %}
+{% block page_title %}Employee Detail{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'employees:list' %}" class="breadcrumb-item">Employees</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">{{ employee.full_name }}</span>
+</div>
+<div style="display:grid;grid-template-columns:260px 1fr;gap:20px;align-items:start;">
+  <div class="card" style="text-align:center;">
+    <div style="width:72px;height:72px;border-radius:50%;background:var(--gradient-main);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;margin:0 auto 12px;overflow:hidden;">
+      {% if employee.profile_picture %}<img src="{{ employee.profile_picture.url }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />{% else %}{{ employee.first_name|first|upper }}{% endif %}
+    </div>
+    <div style="font-size:17px;font-weight:700;">{{ employee.full_name }}</div>
+    <div style="font-size:13px;color:var(--text-muted);">{{ employee.designation }}</div>
+    <div style="margin-top:6px;"><code style="font-size:12px;color:var(--accent-cyan);">{{ employee.employee_id }}</code></div>
+    <div style="margin-top:8px;">
+      {% if employee.status == 'active' %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-warning">{{ employee.get_status_display }}</span>{% endif %}
+    </div>
+    <div style="margin-top:12px;font-size:13px;color:var(--text-muted);display:flex;flex-direction:column;gap:5px;">
+      <div>📱 {{ employee.phone }}</div>
+      {% if employee.email %}<div>📧 {{ employee.email }}</div>{% endif %}
+      <div>💼 {{ employee.department|default:"—" }}</div>
+      <div>💰 ₹{{ employee.salary }}/month</div>
+      <div>📅 Joined: {{ employee.join_date|date:"d M Y" }}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
+      <a href="{% url 'employees:edit' employee.pk %}" class="btn btn-primary btn-sm">✏️ Edit</a>
+      {% if request.user.is_admin %}
+      <a href="{% url 'employees:delete' employee.pk %}" class="btn btn-danger btn-sm">🗑️ Terminate</a>
+      {% endif %}
+    </div>
+  </div>
+  <div>
+    <div class="card" style="margin-bottom:20px;padding:0;overflow:hidden;">
+      <div style="padding:14px 20px;border-bottom:1px solid var(--border-glass);font-weight:600;">Recent Attendance</div>
+      <div class="table-wrapper" style="border:none;">
+        <table class="table">
+          <thead><tr><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th></tr></thead>
+          <tbody>
+            {% for a in recent_attendance %}
+            <tr>
+              <td>{{ a.date|date:"d M Y" }}</td>
+              <td>{% if a.status == 'present' %}<span class="badge badge-success">Present</span>{% elif a.status == 'absent' %}<span class="badge badge-danger">Absent</span>{% elif a.status == 'late' %}<span class="badge badge-warning">Late</span>{% else %}<span class="badge badge-muted">{{ a.get_status_display }}</span>{% endif %}</td>
+              <td style="font-size:12px;">{{ a.check_in|default:"—" }}</td>
+              <td style="font-size:12px;">{{ a.check_out|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No attendance records.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="padding:14px 20px;border-bottom:1px solid var(--border-glass);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-weight:600;">Leave Requests</span>
+        <a href="{% url 'employees:leave_add' %}" class="btn btn-outline btn-sm">+ Apply</a>
+      </div>
+      <div class="table-wrapper" style="border:none;">
+        <table class="table">
+          <thead><tr><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for l in recent_leaves %}
+            <tr>
+              <td><span class="badge badge-info">{{ l.get_leave_type_display }}</span></td>
+              <td style="font-size:12px;">{{ l.start_date|date:"d M Y" }}</td>
+              <td style="font-size:12px;">{{ l.end_date|date:"d M Y" }}</td>
+              <td>{{ l.total_days }}</td>
+              <td>{% if l.status == 'approved' %}<span class="badge badge-success">Approved</span>{% elif l.status == 'rejected' %}<span class="badge badge-danger">Rejected</span>{% else %}<span class="badge badge-warning">Pending</span>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">No leave requests.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

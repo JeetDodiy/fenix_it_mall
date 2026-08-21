@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}{{ customer.name }}{% endblock %}
+{% block page_title %}Customer Detail{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'customers:list' %}" class="breadcrumb-item">Customers</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">{{ customer.name }}</span>
+</div>
+<div style="display:grid;grid-template-columns:280px 1fr;gap:20px;align-items:start;">
+  <div class="card" style="text-align:center;">
+    <div style="width:72px;height:72px;border-radius:50%;background:var(--gradient-main);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;margin:0 auto 14px;">{{ customer.name|first|upper }}</div>
+    <div style="font-size:17px;font-weight:700;color:var(--text-primary);">{{ customer.name }}</div>
+    <div style="margin-top:6px;font-size:13px;color:var(--text-muted);">📱 {{ customer.phone }}</div>
+    {% if customer.email %}<div style="font-size:13px;color:var(--text-muted);">📧 {{ customer.email }}</div>{% endif %}
+    {% if customer.address %}<div style="font-size:12px;color:var(--text-muted);margin-top:6px;">{{ customer.address }}</div>{% endif %}
+    <div style="margin-top:12px;"><span class="badge badge-purple">⭐ {{ customer.reward_points }} points</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;">
+      <div style="background:var(--bg-glass);border:1px solid var(--border-glass);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:18px;font-weight:700;color:var(--accent-cyan);">{{ total_orders }}</div>
+        <div style="font-size:11px;color:var(--text-muted);">Orders</div>
+      </div>
+      <div style="background:var(--bg-glass);border:1px solid var(--border-glass);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:18px;font-weight:700;color:var(--accent-green);">₹{{ total_spent|floatformat:0 }}</div>
+        <div style="font-size:11px;color:var(--text-muted);">Spent</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;">
+      <a href="{% url 'customers:edit' customer.pk %}" class="btn btn-primary btn-sm">✏️ Edit</a>
+      {% if request.user.is_manager %}
+      <form method="post" action="{% url 'customers:delete' customer.pk %}" onsubmit="return confirmDelete('Delete {{ customer.name }}?')">
+        {% csrf_token %}<button class="btn btn-danger btn-sm">🗑️</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:14px 20px;border-bottom:1px solid var(--border-glass);font-weight:600;">Purchase History</div>
+    <div class="table-wrapper" style="border:none;">
+      <table class="table">
+        <thead><tr><th>Invoice</th><th>Date</th><th>Items</th><th>Payment</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for s in sales %}
+          <tr>
+            <td><a href="{% url 'sales:detail' s.pk %}" class="td-bold">{{ s.invoice_number }}</a></td>
+            <td style="font-size:12px;">{{ s.sale_date|date:"d M Y" }}</td>
+            <td><span class="badge badge-muted">{{ s.items.count }}</span></td>
+            <td><span class="badge badge-info">{{ s.get_payment_method_display }}</span></td>
+            <td style="color:var(--accent-cyan);font-weight:600;">₹{{ s.grand_total }}</td>
+            <td><span class="badge badge-success">{{ s.get_status_display }}</span></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No purchases yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if sales.has_other_pages %}
+    <div class="pagination" style="padding:12px 16px;">
+      {% if sales.has_previous %}<a href="?page={{ sales.previous_page_number }}" class="page-btn">‹</a>{% endif %}
+      {% for n in sales.paginator.page_range %}{% if sales.number == n %}<span class="page-btn active">{{ n }}</span>{% elif n >= sales.number|add:"-2" and n <= sales.number|add:"2" %}<a href="?page={{ n }}" class="page-btn">{{ n }}</a>{% endif %}{% endfor %}
+      {% if sales.has_next %}<a href="?page={{ sales.next_page_number }}" class="page-btn">›</a>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block page_title %}Product Detail{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'products:list' %}" class="breadcrumb-item">Products</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">{{ product.name }}</span>
+</div>
+
+<div style="display:grid;grid-template-columns:380px 1fr;gap:24px;align-items:start;">
+  <!-- Images -->
+  <div>
+    <div class="card" style="padding:16px;">
+      {% if product.images.all %}
+        <img id="main-img" src="{{ product.main_image.image.url }}" alt="{{ product.name }}" style="width:100%;height:300px;object-fit:cover;border-radius:12px;margin-bottom:12px;" />
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          {% for img in product.images.all %}
+          <img src="{{ img.image.url }}" alt="" onclick="document.getElementById('main-img').src=this.src" style="width:64px;height:64px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid var(--border-glass);" />
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="width:100%;height:300px;background:linear-gradient(135deg,rgba(6,182,212,0.1),rgba(168,85,247,0.1));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:80px;">📦</div>
+      {% endif %}
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="card-header"><h4 class="card-title">Barcode & QR</h4></div>
+      <div style="display:flex;gap:12px;">
+        <a href="{% url 'products:barcode' product.pk %}" class="btn btn-outline btn-sm" style="flex:1;justify-content:center;">🔢 Barcode</a>
+        <a href="{% url 'products:qrcode' product.pk %}" class="btn btn-outline btn-sm" style="flex:1;justify-content:center;">📷 QR Code</a>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text-muted);">
+        <div>Product Code: <strong style="color:var(--accent-cyan)">{{ product.product_code }}</strong></div>
+        <div style="margin-top:4px;">Barcode Number: <strong style="color:var(--accent-purple)">{{ product.barcode_number }}</strong></div>
+      </div>
+      {% if request.user.is_manager %}
+      <form method="post" action="{% url 'products:regenerate_codes' product.pk %}" style="margin-top:10px;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline btn-sm btn-full" onclick="return confirm('Regenerate barcode and QR code?')" style="font-size:11px;">
+          🔄 Regenerate Codes
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Details -->
+  <div>
+    <div class="card" style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+        <div>
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px;">{{ product.category.name|default:"Uncategorized" }} {% if product.brand %}· {{ product.brand.name }}{% endif %}</div>
+          <h1 style="font-size:22px;font-weight:700;color:var(--text-primary);">{{ product.name }}</h1>
+        </div>
+        <div>
+          {% if product.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif product.status == 'inactive' %}<span class="badge badge-warning">Inactive</span>
+          {% else %}<span class="badge badge-muted">Discontinued</span>{% endif %}
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
+        <div style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:var(--accent-cyan);">₹{{ product.selling_price }}</div>
+          <div style="font-size:12px;color:var(--text-muted);">Selling Price</div>
+        </div>
+        <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:var(--accent-purple);">₹{{ product.purchase_price }}</div>
+          <div style="font-size:12px;color:var(--text-muted);">Cost Price</div>
+        </div>
+        {% if product.is_out_of_stock %}
+        <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:var(--accent-red);">{{ product.stock_quantity }}</div>
+          <div style="font-size:12px;color:var(--text-muted);">Stock</div>
+        </div>
+        {% elif product.is_low_stock %}
+        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:var(--accent-orange);">{{ product.stock_quantity }}</div>
+          <div style="font-size:12px;color:var(--text-muted);">Stock</div>
+        </div>
+        {% else %}
+        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:var(--accent-green);">{{ product.stock_quantity }}</div>
+          <div style="font-size:12px;color:var(--text-muted);">Stock</div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px;">
+        <div><span style="color:var(--text-muted);">GST:</span> <strong>{{ product.gst_percentage }}%</strong></div>
+        <div><span style="color:var(--text-muted);">Warranty:</span> <strong>{{ product.warranty|default:"N/A" }}</strong></div>
+        <div><span style="color:var(--text-muted);">Low Stock Threshold:</span> <strong>{{ product.low_stock_threshold }}</strong></div>
+        <div><span style="color:var(--text-muted);">Profit Margin:</span> <strong class="text-success">{{ product.profit_margin|floatformat:1 }}%</strong></div>
+        {% if product.supplier %}<div><span style="color:var(--text-muted);">Supplier:</span> <a href="{% url 'suppliers:detail' product.supplier.pk %}">{{ product.supplier.company_name }}</a></div>{% endif %}
+        <div><span style="color:var(--text-muted);">Added:</span> <strong>{{ product.created_at|date:"d M Y" }}</strong></div>
+      </div>
+
+      {% if product.description %}
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-glass);">
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px;">Description</div>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.7;">{{ product.description }}</p>
+      </div>
+      {% endif %}
+
+      {% if request.user.is_manager %}
+      <div style="display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border-glass);">
+        <a href="{% url 'products:edit' product.pk %}" class="btn btn-primary">✏️ Edit Product</a>
+        <a href="{% url 'inventory:adjust' %}?product={{ product.pk }}" class="btn btn-success">📦 Adjust Stock</a>
+        <a href="{% url 'inventory:history' %}?q={{ product.name }}" class="btn btn-outline">📋 Stock History</a>
+        <form method="post" action="{% url 'products:delete' product.pk %}" onsubmit="return confirmDelete('Delete {{ product.name }}?')">
+          {% csrf_token %}<button class="btn btn-danger">🗑️ Delete</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Recent stock movements -->
+    <div class="card">
+      <div class="card-header">
+        <h4 class="card-title">Recent Stock Movements</h4>
+        <a href="{% url 'inventory:history' %}?q={{ product.name }}" class="btn btn-outline btn-sm">View All</a>
+      </div>
+      <div class="table-wrapper" style="border:none;">
+        <table class="table">
+          <thead><tr><th>Type</th><th>Qty</th><th>Before</th><th>After</th><th>Reference</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for m in product.stock_movements.all|slice:":8" %}
+            <tr>
+              <td>{% if m.movement_type == 'in' %}<span class="badge badge-success">IN</span>{% elif m.movement_type == 'out' %}<span class="badge badge-danger">OUT</span>{% elif m.movement_type == 'damaged' %}<span class="badge badge-warning">DMG</span>{% else %}<span class="badge badge-info">ADJ</span>{% endif %}</td>
+              <td class="td-bold">{{ m.quantity }}</td>
+              <td>{{ m.quantity_before }}</td>
+              <td>{{ m.quantity_after }}</td>
+              <td style="font-size:12px;">{{ m.reference|default:"—" }}</td>
+              <td style="font-size:12px;">{{ m.created_at|date:"d M Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px;">No movements yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

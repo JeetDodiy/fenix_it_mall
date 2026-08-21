@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Add Payment{% endblock %}
+{% block page_title %}Add Payment{% endblock %}
+{% block content %}
+<div style="max-width:540px;margin:0 auto;">
+  <div class="breadcrumb">
+    <a href="{% url 'purchase:list' %}" class="breadcrumb-item">Purchases</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'purchase:detail' order.pk %}" class="breadcrumb-item">{{ order.order_number }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span class="breadcrumb-item active">Add Payment</span>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">💳 Record Payment</h3></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div style="background:var(--bg-glass);border:1px solid var(--border-glass);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:18px;font-weight:700;color:var(--text-primary);">₹{{ order.total_amount }}</div>
+        <div style="font-size:11px;color:var(--text-muted);">Total</div>
+      </div>
+      <div style="background:var(--bg-glass);border:1px solid var(--border-glass);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:18px;font-weight:700;color:var(--accent-green);">₹{{ order.paid_amount }}</div>
+        <div style="font-size:11px;color:var(--text-muted);">Paid</div>
+      </div>
+      <div style="background:var(--bg-glass);border:1px solid var(--border-glass);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:18px;font-weight:700;color:var(--accent-red);">₹{{ order.balance_amount }}</div>
+        <div style="font-size:11px;color:var(--text-muted);">Balance</div>
+      </div>
+    </div>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Amount (₹) *</label>
+        <input type="number" name="amount" class="form-input" step="0.01" min="0.01" max="{{ order.balance_amount }}" placeholder="Enter payment amount" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Payment Method</label>
+        <select name="payment_method" class="form-select">
+          <option value="cash">Cash</option>
+          <option value="upi">UPI</option>
+          <option value="card">Card</option>
+          <option value="bank">Bank Transfer</option>
+          <option value="cheque">Cheque</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note</label>
+        <textarea name="note" class="form-textarea" rows="2" placeholder="Optional note…"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button type="submit" class="btn btn-success">💳 Record Payment</button>
+        <a href="{% url 'purchase:detail' order.pk %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

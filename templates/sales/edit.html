@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% block title %}Edit / Correct Invoice {{ sale.invoice_number }}{% endblock %}
+{% block page_title %}Invoice Correction{% endblock %}
+
+{% block extra_head %}
+<style>
+  .edit-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+  .item-row { display: grid; grid-template-columns: 1fr 90px 130px 40px; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .item-row .form-input, .item-row .form-select { margin: 0; }
+  .item-row-header { font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .totals-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
+  .totals-row.grand { font-size: 20px; font-weight: 800; color: var(--accent-cyan, #06b6d4); padding-top: 10px; border-top: 1px solid var(--border-glass); margin-top: 6px; }
+  
+  .card-reason { margin-bottom: 20px; border-left: 4px solid var(--accent-cyan); }
+  .card-reason-body { padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .card-section { margin-bottom: 20px; }
+  .card-header-flex { display: flex; align-items: center; justify-content: space-between; }
+  .card-header-flex .card-title { margin: 0; }
+  .card-subtext { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .card-body-padded { padding: 16px; }
+  .card-body-stack { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  
+  .side-stack { display: flex; flex-direction: column; gap: 16px; }
+  .form-group-compact { margin: 0; }
+  .form-label-bold { font-weight: 700; }
+  .required-star { color: var(--accent-red); }
+  .icon-inline { vertical-align: -2px; margin-right: 6px; }
+  .btn-remove-row { color: var(--accent-red); padding: 6px 8px; }
+  .empty-items-msg { text-align: center; color: var(--text-muted); padding: 24px; }
+  .text-muted-label { color: var(--text-muted); }
+  .text-bold-value { font-weight: 700; }
+  .text-discount-neg { color: var(--accent-red); }
+  .btn-submit-save { width: 100%; padding: 14px; font-size: 15px; font-weight: 700; }
+
+  @media (max-width: 900px) {
+    .edit-grid { grid-template-columns: 1fr; }
+    .card-reason-body { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'sales:list' %}" class="breadcrumb-item">Sales</a>
+  <span class="breadcrumb-sep">/</span>
+  <a href="{% url 'sales:detail' sale.pk %}" class="breadcrumb-item">{{ sale.invoice_number }}</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">Correct Invoice</span>
+</div>
+
+<div class="page-header">
+  <div>
+    <div class="page-header-title">Correct Invoice {{ sale.invoice_number }}</div>
+    <div class="page-header-sub">Billed on {{ sale.sale_date|date:"d M Y, H:i" }} · Authorized correction workflow</div>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'sales:detail' sale.pk %}" class="btn btn-outline">Cancel</a>
+  </div>
+</div>
+
+<form method="post" id="edit-form" x-data="editSale()">
+  {% csrf_token %}
+
+  <div class="edit-grid">
+
+    <!-- ── LEFT: Items & Correction Reason ──────────────────────── -->
+    <div>
+      <!-- Reason for Correction -->
+      <div class="card card-reason">
+        <div class="card-header">
+          <h3 class="card-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-inline"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Reason for Correction (Required)
+          </h3>
+        </div>
+        <div class="card-reason-body">
+          <div>
+            <label class="form-label form-label-bold">Select Reason Category <span class="required-star">*</span></label>
+            <select name="correction_reason" class="form-select" required x-model="reasonCategory">
+              <option value="Wrong quantity entered">Wrong quantity entered</option>
+              <option value="Incorrect product selected">Incorrect product selected</option>
+              <option value="Wrong customer assigned">Wrong customer assigned</option>
+              <option value="Wrong price / discount adjusted">Wrong price / discount adjusted</option>
+              <option value="Payment method correction">Payment method correction</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Specific Note / Explanation</label>
+            <input type="text" name="additional_notes" class="form-input" placeholder="e.g. Changed RAM qty from 2 to 1 on customer request" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Items Section -->
+      <div class="card card-section">
+        <div class="card-header card-header-flex">
+          <div>
+            <h3 class="card-title">Invoice Items</h3>
+            <div class="card-subtext">Stock levels will automatically adjust for changes.</div>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" @click="addRow()">+ Add Item</button>
+        </div>
+        <div class="card-body-padded">
+
+          <!-- Header Labels -->
+          <div class="item-row item-row-header">
+            <span>Product</span><span>Qty</span><span>Unit Price (₹)</span><span></span>
+          </div>
+
+          <!-- Existing + new rows -->
+          <template x-for="(row, i) in rows" :key="i">
+            <div class="item-row">
+              <select :name="'product_id[]'" x-model="row.product_id" @change="onProductChange(i)" class="form-select" required>
+                <option value="">— Select Product —</option>
+                {% for p in products %}
+                <option value="{{ p.pk }}" data-price="{{ p.selling_price }}">{{ p.name }} (Stock: {{ p.stock_quantity }})</option>
+                {% endfor %}
+              </select>
+              <input type="number" :name="'quantity[]'" x-model.number="row.qty" min="1" class="form-input" @input="recalc()" required />
+              <input type="number" :name="'price[]'" x-model.number="row.price" min="0" step="0.01" class="form-input" @input="recalc()" required />
+              <button type="button" @click="removeRow(i)" class="btn btn-outline btn-sm btn-remove-row" title="Remove">✕</button>
+            </div>
+          </template>
+
+          <template x-if="rows.length === 0">
+            <div class="empty-items-msg">No items in invoice. Click "+ Add Item".</div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Invoice Notes</h3></div>
+        <div class="card-body-padded">
+          <textarea name="notes" class="form-input" rows="2" placeholder="Optional notes…">{{ sale.notes|default:'' }}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RIGHT: Summary & Settings ──────────────────────── -->
+    <div class="side-stack">
+
+      <!-- Sale Settings -->
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Invoice Settings</h3></div>
+        <div class="card-body-stack">
+
+          <div class="form-group form-group-compact">
+            <label class="form-label">Customer</label>
+            <select name="customer_id" class="form-select">
+              <option value="">Walk-in Customer</option>
+              {% for c in customers %}
+              <option value="{{ c.pk }}" {% if sale.customer_id == c.pk %}selected{% endif %}>{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group form-group-compact">
+            <label class="form-label">Payment Method</label>
+            <select name="payment_method" class="form-select">
+              {% for val, label in payment_methods %}
+              <option value="{{ val }}" {% if sale.payment_method == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group form-group-compact">
+            <label class="form-label">Discount %</label>
+            <input type="number" name="discount_percentage" x-model.number="discount"
+                   min="0" max="100" step="0.01" class="form-input"
+                   @input="recalc()" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison Summary -->
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Amount Comparison</h3></div>
+        <div class="card-body-padded">
+          <div class="totals-row">
+            <span class="text-muted-label">Original Total:</span>
+            <span class="text-bold-value">₹{{ sale.grand_total|floatformat:2 }}</span>
+          </div>
+          <div class="totals-row">
+            <span class="text-muted-label">New Subtotal:</span>
+            <span x-text="'₹' + subtotal.toFixed(2)"></span>
+          </div>
+          <div class="totals-row">
+            <span class="text-muted-label">New Discount:</span>
+            <span class="text-discount-neg" x-text="'-₹' + discountAmt.toFixed(2)"></span>
+          </div>
+          <div class="totals-row">
+            <span class="text-muted-label">GST (18%):</span>
+            <span x-text="'₹' + gst.toFixed(2)"></span>
+          </div>
+          <div class="totals-row grand">
+            <span>New Total:</span>
+            <span x-text="'₹' + grandTotal.toFixed(2)"></span>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-submit-save">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Save & Log Correction
+      </button>
+    </div>
+
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const PRODUCT_PRICES = {
+  {% for p in products %}
+  "{{ p.pk }}": {{ p.selling_price }},
+  {% endfor %}
+};
+
+const EXISTING_ROWS = [
+  {% for item in sale.items.all %}
+  { product_id: "{{ item.product_id }}", qty: {{ item.quantity }}, price: {{ item.unit_price }} },
+  {% endfor %}
+];
+
+function editSale() {
+  return {
+    rows: EXISTING_ROWS.map(r => ({ ...r })),
+    discount: {{ sale.discount_percentage|default:0 }},
+    reasonCategory: 'Wrong quantity entered',
+    subtotal: 0,
+    discountAmt: 0,
+    gst: 0,
+    grandTotal: 0,
+
+    init() { this.recalc(); },
+
+    addRow() {
+      this.rows.push({ product_id: '', qty: 1, price: 0 });
+    },
+
+    removeRow(i) {
+      this.rows.splice(i, 1);
+      this.recalc();
+    },
+
+    onProductChange(i) {
+      const pid = this.rows[i].product_id;
+      if (pid && PRODUCT_PRICES[pid]) {
+        this.rows[i].price = parseFloat(PRODUCT_PRICES[pid]);
+      }
+      this.recalc();
+    },
+
+    recalc() {
+      this.subtotal = this.rows.reduce((s, r) => s + (parseFloat(r.price) || 0) * (parseInt(r.qty) || 0), 0);
+      this.discountAmt = this.subtotal * (parseFloat(this.discount) || 0) / 100;
+      const taxable = this.subtotal - this.discountAmt;
+      this.gst = taxable * 0.18;
+      this.grandTotal = taxable + this.gst;
+    },
+  };
+}
+</script>
+{% endblock %}

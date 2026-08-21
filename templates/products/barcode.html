@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Barcode – {{ product.name }}{% endblock %}
+{% block page_title %}Barcode{% endblock %}
+{% block content %}
+<div style="max-width:400px;margin:0 auto;text-align:center;">
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">Barcode – {{ product.name }}</h3></div>
+    {% if product.barcode_image %}
+      <img src="{{ product.barcode_image.url }}" alt="barcode" style="width:100%;border-radius:10px;background:#fff;padding:16px;" />
+    {% else %}
+      <div style="padding:40px;color:var(--text-muted);">Barcode not generated yet. Save the product to generate.</div>
+    {% endif %}
+    <div style="margin-top:16px;">
+      <code style="font-size:18px;color:var(--accent-cyan);">{{ product.product_code }}</code>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:center;">
+      <a href="javascript:window.print()" class="btn btn-primary">🖨️ Print</a>
+      <a href="{% url 'products:detail' product.pk %}" class="btn btn-outline">← Back</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

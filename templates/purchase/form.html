@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'purchase:list' %}" class="breadcrumb-item">Purchases</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">{{ title }}</span>
+</div>
+<form method="post" novalidate>
+{% csrf_token %}
+<div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start;">
+  <div>
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header"><h3 class="card-title">Order Details</h3></div>
+      {% for field in form %}
+      <div class="form-group">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="form-error">{{ field.errors.0 }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Order Items</h3></div>
+      {{ formset.management_form }}
+
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 40px;gap:12px;padding:0 4px 8px;border-bottom:1px solid var(--border-glass);margin-bottom:8px;">
+        <span class="form-label" style="margin:0;">Product</span>
+        <span class="form-label" style="margin:0;">Qty</span>
+        <span class="form-label" style="margin:0;">Unit Price (Rs.)</span>
+        <span></span>
+      </div>
+
+      <div id="formset-container">
+        {% for f in formset %}
+        <div class="formset-row" style="display:grid;grid-template-columns:2fr 1fr 1fr 40px;gap:12px;align-items:center;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div>{{ f.product }}{% if f.product.errors %}<div class="form-error">{{ f.product.errors.0 }}</div>{% endif %}</div>
+          <div>{{ f.quantity }}{% if f.quantity.errors %}<div class="form-error">{{ f.quantity.errors.0 }}</div>{% endif %}</div>
+          <div>{{ f.purchase_price }}{% if f.purchase_price.errors %}<div class="form-error">{{ f.purchase_price.errors.0 }}</div>{% endif %}</div>
+          <div style="display:flex;align-items:center;justify-content:center;">
+            <label style="cursor:pointer;display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted);">
+              {{ f.DELETE }}
+              <span style="color:var(--accent-red);font-size:18px;">×</span>
+            </label>
+          </div>
+          {{ f.id }}
+        </div>
+        {% endfor %}
+      </div>
+
+      <button type="button" class="btn btn-outline btn-sm" onclick="addFormRow()" style="margin-top:4px;">
+        + Add Item
+      </button>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h4 class="card-title">Actions</h4></div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button type="submit" class="btn btn-primary btn-full btn-lg">Save Purchase Order</button>
+        <a href="{% url 'purchase:list' %}" class="btn btn-outline btn-full">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+
+<style>
+.formset-row input[type="checkbox"] { width:14px;height:14px;accent-color:var(--accent-red); }
+</style>
+
+<script>
+function addFormRow() {
+  var container = document.getElementById('formset-container');
+  var rows = container.querySelectorAll('.formset-row');
+  var totalInput = document.getElementById('id_items-TOTAL_FORMS');
+  var newIdx = rows.length;
+  var newRow = rows[0].cloneNode(true);
+  newRow.querySelectorAll('input, select').forEach(function(el) {
+    el.name = el.name.replace(/-\d+-/, '-' + newIdx + '-');
+    el.id   = el.id.replace(/-\d+-/, '-' + newIdx + '-');
+    if (el.type === 'checkbox') el.checked = false;
+    else el.value = '';
+  });
+  container.appendChild(newRow);
+  totalInput.value = newIdx + 1;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}{{ order.order_number }}{% endblock %}
+{% block page_title %}Purchase Order{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'purchase:list' %}" class="breadcrumb-item">Purchases</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">{{ order.order_number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="page-header-title">{{ order.order_number }}</div>
+      {% if order.status == 'received' %}<span class="badge badge-success">Received</span>
+      {% elif order.status == 'cancelled' %}<span class="badge badge-danger">Cancelled</span>
+      {% else %}<span class="badge badge-warning">{{ order.get_status_display }}</span>{% endif %}
+    </div>
+    <div class="page-header-sub">
+      {{ order.supplier.company_name }} · {{ order.order_date }}
+      {% if order.bill_number %} · Bill #{{ order.bill_number }}{% endif %}
+    </div>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'purchase:invoice' order.pk %}" class="btn btn-outline" target="_blank">🖨️ Print</a>
+    {% if request.user.is_manager %}
+      {% if order.status != 'cancelled' %}
+      <a href="{% url 'purchase:receive_stock' order.pk %}" class="btn btn-success">📦 Receive Stock</a>
+      <a href="{% url 'purchase:edit' order.pk %}" class="btn btn-outline">✏️ Edit</a>
+      {% endif %}
+      {% if order.balance_amount > 0 %}
+      <a href="{% url 'purchase:add_payment' order.pk %}" class="btn btn-primary">💳 Add Payment</a>
+      {% endif %}
+    {% endif %}
+    {% if request.user.is_admin and order.status != 'received' %}
+    <form method="post" action="{% url 'purchase:delete' order.pk %}" onsubmit="return confirmDelete('Delete this PO?')" style="display:inline;">
+      {% csrf_token %}<button class="btn btn-danger">🗑️</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;">
+  <div>
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:14px 20px;border-bottom:1px solid var(--border-glass);font-weight:600;">Order Items</div>
+      <div class="table-wrapper" style="border:none;">
+        <table class="table">
+          <thead><tr><th>#</th><th>Product</th><th>Code</th><th>Quantity</th><th>Unit Price</th><th>Total</th></tr></thead>
+          <tbody>
+            {% for item in order.items.all %}
+            <tr>
+              <td style="color:var(--text-muted);">{{ forloop.counter }}</td>
+              <td class="td-bold"><a href="{% url 'products:detail' item.product.pk %}">{{ item.product.name }}</a></td>
+              <td><code style="font-size:11px;">{{ item.product.product_code }}</code></td>
+              <td><span class="badge badge-info">{{ item.quantity }}</span></td>
+              <td>₹{{ item.purchase_price }}</td>
+              <td style="color:var(--accent-cyan);font-weight:600;">₹{{ item.total_price }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr style="background:rgba(255,255,255,.03);">
+              <td colspan="5" style="text-align:right;padding:14px 16px;font-weight:700;">Grand Total</td>
+              <td style="padding:14px 16px;font-size:18px;font-weight:800;color:var(--accent-cyan);">₹{{ order.total_amount }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+    {% if payments %}
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="padding:14px 20px;border-bottom:1px solid var(--border-glass);font-weight:600;">Payment History</div>
+      <div class="table-wrapper" style="border:none;">
+        <table class="table">
+          <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Note</th></tr></thead>
+          <tbody>
+            {% for pay in payments %}
+            <tr>
+              <td style="font-size:12px;">{{ pay.payment_date }}</td>
+              <td style="color:var(--accent-green);font-weight:600;">₹{{ pay.amount }}</td>
+              <td><span class="badge badge-info">{{ pay.get_payment_method_display }}</span></td>
+              <td style="font-size:12px;color:var(--text-muted);">{{ pay.note|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    <div class="card">
+      <div class="card-header"><h4 class="card-title">🏢 Supplier</h4></div>
+      <div style="font-weight:600;font-size:15px;margin-bottom:4px;">{{ order.supplier.company_name }}</div>
+      <div style="font-size:13px;color:var(--text-muted);">{{ order.supplier.contact_person }}</div>
+      <div style="font-size:13px;color:var(--text-muted);">{{ order.supplier.phone }}</div>
+      <a href="{% url 'suppliers:detail' order.supplier.pk %}" class="btn btn-outline btn-sm" style="margin-top:10px;">View Supplier</a>
+    </div>
+    <div class="card">
+      <div class="card-header"><h4 class="card-title">💰 Payment Summary</h4></div>
+      <div style="font-size:13px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Total</span><span class="td-bold">₹{{ order.total_amount }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Paid</span><span style="color:var(--accent-green);">₹{{ order.paid_amount }}</span></div>
+        <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border-glass);padding-top:8px;"><span style="color:var(--text-muted);">Balance</span><span style="color:{% if order.balance_amount > 0 %}var(--accent-red){% else %}var(--accent-green){% endif %};font-weight:700;">₹{{ order.balance_amount }}</span></div>
+      </div>
+      {% if order.balance_amount > 0 and request.user.is_manager %}
+      <a href="{% url 'purchase:add_payment' order.pk %}" class="btn btn-primary btn-sm btn-full" style="margin-top:12px;">💳 Pay Now</a>
+      {% endif %}
+    </div>
+    {% if order.notes %}
+    <div class="card">
+      <div class="card-header"><h4 class="card-title">📝 Notes</h4></div>
+      <p style="font-size:13px;color:var(--text-secondary);">{{ order.notes }}</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

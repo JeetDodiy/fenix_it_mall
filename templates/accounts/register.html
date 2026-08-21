@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register – Fenix IT Mall</title>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+  <style>
+    body { background: var(--bg-primary); display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .auth-wrap { width:100%; max-width:520px; padding:24px; }
+    .auth-card { background:rgba(15,23,42,0.9); border:1px solid var(--border-glass); border-radius:20px; padding:36px; backdrop-filter:blur(20px); }
+    .auth-card h2 { font-size:20px; font-weight:700; margin-bottom:4px; }
+    .auth-card .sub { color:var(--text-muted); font-size:13px; margin-bottom:24px; }
+    .grid-2f { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  </style>
+</head>
+<body>
+<div class="auth-wrap">
+  <div style="text-align:center;margin-bottom:24px;">
+    <div style="font-size:40px;">⚡</div>
+    <h1 style="font-size:22px;font-weight:800;background:var(--gradient-main);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">Fenix IT Mall</h1>
+  </div>
+  <div class="auth-card">
+    <h2>Create Account</h2>
+    <p class="sub">Fill in the details to register</p>
+    {% if messages %}{% for m in messages %}<div class="alert alert-{{ m.tags }}">{{ m }}</div>{% endfor %}{% endif %}
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      <div class="grid-2f">
+        <div class="form-group">
+          <label class="form-label">First Name</label>
+          <input type="text" name="first_name" class="form-input" value="{{ form.first_name.value|default:'' }}" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input type="text" name="last_name" class="form-input" value="{{ form.last_name.value|default:'' }}" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Username *</label>
+        <input type="text" name="username" class="form-input" required value="{{ form.username.value|default:'' }}" />
+        {% if form.username.errors %}<div class="form-error">{{ form.username.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-input" value="{{ form.email.value|default:'' }}" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone</label>
+        <input type="text" name="phone" class="form-input" value="{{ form.phone.value|default:'' }}" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role</label>
+        <select name="role" class="form-select">
+          <option value="employee">Employee</option>
+          <option value="cashier">Cashier</option>
+          <option value="manager">Manager</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="grid-2f">
+        <div class="form-group">
+          <label class="form-label">Password *</label>
+          <input type="password" name="password1" class="form-input" required />
+          {% if form.password1.errors %}<div class="form-error">{{ form.password1.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password *</label>
+          <input type="password" name="password2" class="form-input" required />
+          {% if form.password2.errors %}<div class="form-error">{{ form.password2.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" style="margin-top:8px;">Create Account</button>
+    </form>
+    <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--text-muted)">
+      Already have an account? <a href="{% url 'accounts:login' %}">Sign in</a>
+    </p>
+  </div>
+</div>
+</body>
+</html>

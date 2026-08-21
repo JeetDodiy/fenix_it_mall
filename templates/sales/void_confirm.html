@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Void Invoice {{ sale.invoice_number }}{% endblock %}
+{% block page_title %}Void Invoice{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'sales:list' %}" class="breadcrumb-item">Sales</a>
+  <span class="breadcrumb-sep">/</span>
+  <a href="{% url 'sales:detail' sale.pk %}" class="breadcrumb-item">{{ sale.invoice_number }}</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">Void</span>
+</div>
+
+<div style="max-width: 620px; margin: 20px auto;">
+  <div class="card" style="padding: 32px; border: 1.5px solid var(--accent-red); box-shadow: var(--shadow);">
+    
+    <!-- Warning Icon & Title -->
+    <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px;">
+      <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(239, 68, 68, 0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      </div>
+      <div>
+        <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">Void Invoice {{ sale.invoice_number }}?</h2>
+        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0;">
+          This action will cancel the sale, mark the invoice as <strong>VOIDED</strong>, and automatically restore all item quantities back to inventory. The invoice will remain in your records for audit and compliance.
+        </p>
+      </div>
+    </div>
+
+    <!-- Invoice Summary Box -->
+    <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 10px; padding: 16px; margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+        <span style="color: var(--text-muted);">Customer:</span>
+        <span style="font-weight: 600;">{{ sale.customer.name|default:"Walk-in Customer" }}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+        <span style="color: var(--text-muted);">Sale Date:</span>
+        <span>{{ sale.sale_date|date:"d M Y, h:i A" }}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+        <span style="color: var(--text-muted);">Items to Restock:</span>
+        <span style="font-weight: 600; color: var(--accent-cyan);">{{ sale.items.count }} item(s)</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; border-top: 1px dashed var(--border-glass); padding-top: 8px; margin-top: 8px;">
+        <span>Grand Total:</span>
+        <span style="color: var(--accent-red); font-size: 16px;">₹{{ sale.grand_total|floatformat:2 }}</span>
+      </div>
+    </div>
+
+    <!-- Items Preview -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Inventory Items to be Returned:</div>
+      <div style="max-height: 140px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">
+        {% for item in sale.items.all %}
+        <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 6px 10px; background: var(--bg-secondary); border-radius: 6px;">
+          <span>{{ item.product.name }}</span>
+          <span style="color: var(--accent-green); font-weight: 700;">+{{ item.quantity }} units</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label class="form-label" style="font-weight: 700;">Reason for Voiding <span style="color:var(--accent-red);">*</span></label>
+        <select name="void_reason" class="form-select" required style="width: 100%; font-size: 13px;">
+          <option value="Duplicate invoice">Duplicate invoice</option>
+          <option value="Wrong sale / cashier error">Wrong sale / cashier error</option>
+          <option value="Incorrect customer entered">Incorrect customer entered</option>
+          <option value="Incorrect products selected">Incorrect products selected</option>
+          <option value="Payment issue / declined">Payment issue / declined</option>
+          <option value="Customer cancelled before handover">Customer cancelled before handover</option>
+          <option value="Test transaction">Test transaction</option>
+          <option value="Other">Other reason</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 24px;">
+        <label class="form-label">Additional Explanation / Note</label>
+        <input type="text" name="additional_notes" class="form-input" placeholder="e.g. customer requested immediate cancellation" style="font-size: 13px;" />
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <a href="{% url 'sales:detail' sale.pk %}" class="btn btn-outline">Cancel / Keep Invoice</a>
+        <button type="submit" class="btn btn-danger" style="font-weight: 700;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          Confirm & Void Invoice
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Purchases{% endblock %}
+{% block page_title %}Purchase Orders{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><div class="page-header-title">Purchase Orders</div></div>
+  <div class="page-header-actions">
+    {% if request.user.is_manager %}<a href="{% url 'purchase:add' %}" class="btn btn-primary">➕ New PO</a>{% endif %}
+  </div>
+</div>
+<div class="card" style="margin-bottom:20px;padding:14px 18px;">
+  <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+    <div class="search-bar" style="flex:1;min-width:180px;">
+      <input type="text" name="q" value="{{ q }}" placeholder="PO number or supplier…"/>
+      <button type="submit">🔍</button>
+    </div>
+    <select name="status" class="form-select" style="max-width:150px;">
+      <option value="">All Status</option>
+      {% for val,label in status_choices %}<option value="{{ val }}" {% if selected_status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a href="{% url 'purchase:list' %}" class="btn btn-outline btn-sm">Clear</a>
+  </form>
+</div>
+<div class="card">
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead><tr><th>PO Number</th><th>Bill Number</th><th>Supplier</th><th>Date</th><th>Status</th><th>Total</th><th>Paid</th><th>Balance</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td><a href="{% url 'purchase:detail' o.pk %}" class="td-bold">{{ o.order_number }}</a></td>
+          <td>{% if o.bill_number %}<code style="font-size:11px;color:var(--accent-cyan);">{{ o.bill_number }}</code>{% else %}<span style="color:var(--text-muted);font-size:12px;">—</span>{% endif %}</td>
+          <td>{{ o.supplier.company_name }}</td>
+          <td style="font-size:12px;">{{ o.order_date }}</td>
+          <td>
+            {% if o.status == 'received' %}<span class="badge badge-success">Received</span>
+            {% elif o.status == 'cancelled' %}<span class="badge badge-danger">Cancelled</span>
+            {% elif o.status == 'partial' %}<span class="badge badge-info">Partial</span>
+            {% else %}<span class="badge badge-warning">Pending</span>{% endif %}
+          </td>
+          <td>₹{{ o.total_amount }}</td>
+          <td style="color:var(--accent-green);">₹{{ o.paid_amount }}</td>
+          <td style="color:{% if o.balance_amount > 0 %}var(--accent-red){% else %}var(--accent-green){% endif %};">₹{{ o.balance_amount }}</td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <a href="{% url 'purchase:detail' o.pk %}" class="btn btn-outline btn-sm" title="View">👁️</a>
+              {% if request.user.is_manager and o.status != 'cancelled' %}
+                <a href="{% url 'purchase:edit' o.pk %}" class="btn btn-outline btn-sm" title="Edit">✏️</a>
+                <a href="{% url 'purchase:receive_stock' o.pk %}" class="btn btn-success btn-sm" title="Receive Stock">📦</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:32px;">No purchase orders yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% if orders.has_other_pages %}
+<div class="pagination">
+  {% if orders.has_previous %}<a href="?page={{ orders.previous_page_number }}&q={{ q }}" class="page-btn">‹</a>{% endif %}
+  {% for n in orders.paginator.page_range %}{% if orders.number == n %}<span class="page-btn active">{{ n }}</span>{% elif n >= orders.number|add:"-3" and n <= orders.number|add:"3" %}<a href="?page={{ n }}&q={{ q }}" class="page-btn">{{ n }}</a>{% endif %}{% endfor %}
+  {% if orders.has_next %}<a href="?page={{ orders.next_page_number }}&q={{ q }}" class="page-btn">›</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

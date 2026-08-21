@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}Products Catalog{% endblock %}
+{% block page_title %}Products{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <div class="page-header-title">Product Catalog</div>
+    <div class="page-header-sub">{{ total_count }} product{{ total_count|pluralize }} available in inventory</div>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'products:category_list' %}" class="btn btn-outline">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      Categories
+    </a>
+    <a href="{% url 'products:brand_list' %}" class="btn btn-outline">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      Brands
+    </a>
+    {% if request.user.is_manager %}
+    <a href="{% url 'products:add' %}" class="btn btn-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Product
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="card" style="margin-bottom:20px;padding:16px 20px;">
+  <form method="get" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+    <div style="flex:1;min-width:220px;">
+      <div class="search-bar">
+        <input type="text" name="q" value="{{ q }}" placeholder="Search by name, SKU code, barcode, or brand…" />
+        <button type="submit">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
+    </div>
+    <div>
+      <select name="category" class="form-select" style="min-width:150px;">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+        <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <select name="brand" class="form-select" style="min-width:140px;">
+        <option value="">All Brands</option>
+        {% for b in brands %}
+        <option value="{{ b.pk }}" {% if selected_brand == b.pk|stringformat:"s" %}selected{% endif %}>{{ b.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <select name="status" class="form-select" style="min-width:130px;">
+        <option value="">All Status</option>
+        <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+        <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
+      </select>
+    </div>
+    <div>
+      <select name="sort" class="form-select" style="min-width:150px;">
+        <option value="-created_at">Newest First</option>
+        <option value="name">Name A–Z</option>
+        <option value="selling_price">Price: Low to High</option>
+        <option value="-selling_price">Price: High to Low</option>
+        <option value="stock_quantity">Stock: Low to High</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a href="{% url 'products:list' %}" class="btn btn-outline btn-sm">Reset</a>
+  </form>
+</div>
+
+<!-- Product Grid -->
+<div class="grid-auto">
+  {% for product in products %}
+  <div class="card" style="padding:16px;display:flex;flex-direction:column;position:relative;cursor:pointer;" onclick="location.href='{% url 'products:detail' product.pk %}'">
+    <div style="position:relative;margin-bottom:12px;border-radius:10px;overflow:hidden;background:var(--bg-glass);height:170px;display:flex;align-items:center;justify-content:center;">
+      {% if product.main_image %}
+        <img src="{{ product.main_image.image.url }}" alt="{{ product.name }}" style="width:100%;height:100%;object-fit:contain;padding:8px;" loading="lazy" />
+      {% else %}
+        <div style="font-size:48px;opacity:0.4;">📦</div>
+      {% endif %}
+      
+      <!-- Stock Status Badge -->
+      <div style="position:absolute;top:8px;right:8px;">
+        {% if product.is_out_of_stock %}
+          <span class="badge badge-danger">Out of Stock</span>
+        {% elif product.is_low_stock %}
+          <span class="badge badge-warning">Low Stock ({{ product.stock_quantity }})</span>
+        {% else %}
+          <span class="badge badge-success">In Stock ({{ product.stock_quantity }})</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Category & Brand -->
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-muted);margin-bottom:4px;">
+      <span style="text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">{{ product.brand.name|default:product.category.name|default:"Hardware" }}</span>
+      <code>{{ product.product_code }}</code>
+    </div>
+
+    <!-- Product Title -->
+    <div style="font-weight:600;color:var(--text-primary);font-size:14px;line-height:1.4;margin-bottom:10px;height:40px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
+      {{ product.name }}
+    </div>
+
+    <!-- Price and Stock -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:auto;padding-top:8px;border-top:1px solid var(--border-glass);">
+      <div>
+        <div style="font-size:10px;color:var(--text-muted);">Selling Price</div>
+        <div style="font-size:18px;font-weight:800;color:var(--accent-cyan);">₹{{ product.selling_price|floatformat:0 }}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;color:var(--text-muted);">Available</div>
+        <div style="font-size:13px;font-weight:700;color:{% if product.stock_quantity <= 0 %}var(--accent-red){% elif product.stock_quantity <= product.low_stock_threshold %}var(--accent-orange){% else %}var(--accent-green){% endif %};">
+          {{ product.stock_quantity }} units
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    {% if request.user.is_manager %}
+    <div style="display:flex;gap:6px;margin-top:12px;" onclick="event.stopPropagation()">
+      <a href="{% url 'products:edit' product.pk %}" class="btn btn-outline btn-sm" style="flex:1;justify-content:center;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit
+      </a>
+      <a href="{% url 'inventory:stock_in' %}?product={{ product.pk }}" class="btn btn-outline btn-sm" title="Stock In" style="padding:5px 8px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </a>
+    </div>
+    {% endif %}
+  </div>
+  {% empty %}
+  <div style="grid-column:1/-1;">
+    <div class="empty-state">
+      <div class="empty-state-icon">📦</div>
+      <div class="empty-state-title">No products found</div>
+      <div class="empty-state-desc">
+        {% if q %}No products matching "{{ q }}". Try searching for something else.{% else %}Your product catalog is empty. Add your first item to begin.{% endif %}
+      </div>
+      {% if request.user.is_manager %}
+      <a href="{% url 'products:add' %}" class="btn btn-primary">+ Add New Product</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if products.has_other_pages %}
+<div class="pagination">
+  {% if products.has_previous %}
+  <a href="?page={{ products.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}" class="page-btn">‹</a>
+  {% endif %}
+  {% for n in products.paginator.page_range %}
+    {% if products.number == n %}
+    <span class="page-btn active">{{ n }}</span>
+    {% elif n >= products.number|add:"-3" and n <= products.number|add:"3" %}
+    <a href="?page={{ n }}{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}" class="page-btn">{{ n }}</a>
+    {% endif %}
+  {% endfor %}
+  {% if products.has_next %}
+  <a href="?page={{ products.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}" class="page-btn">›</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

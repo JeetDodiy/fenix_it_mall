@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Customers{% endblock %}
+{% block page_title %}Customers{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><div class="page-header-title">Customers</div></div>
+  <div class="page-header-actions">
+    <a href="{% url 'customers:add' %}" class="btn btn-primary">➕ Add Customer</a>
+  </div>
+</div>
+<div class="card" style="margin-bottom:20px;padding:14px 18px;">
+  <form method="get" style="display:flex;gap:10px;align-items:center;">
+    <div class="search-bar" style="flex:1;max-width:400px;">
+      <input type="text" name="q" value="{{ q }}" placeholder="Search name, phone, email…"/>
+      <button type="submit">🔍</button>
+    </div>
+    <a href="{% url 'customers:list' %}" class="btn btn-outline btn-sm">Clear</a>
+  </form>
+</div>
+<div class="card">
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead><tr><th>Customer</th><th>Phone</th><th>Email</th><th>Orders</th><th>Total Spent</th><th>Points</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for c in customers %}
+        <tr>
+          <td><a href="{% url 'customers:detail' c.pk %}" class="td-bold">{{ c.name }}</a></td>
+          <td>{{ c.phone }}</td>
+          <td style="font-size:12px;">{{ c.email|default:"—" }}</td>
+          <td><span class="badge badge-info">{{ c.total_orders }}</span></td>
+          <td style="color:var(--accent-cyan);font-weight:600;">₹{{ c.total_purchases|floatformat:0 }}</td>
+          <td><span class="badge badge-purple">{{ c.reward_points }}</span></td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <a href="{% url 'customers:edit' c.pk %}" class="btn btn-outline btn-sm">✏️</a>
+              <form method="post" action="{% url 'customers:delete' c.pk %}" onsubmit="return confirmDelete('Delete {{ c.name }}?')">
+                {% csrf_token %}<button class="btn btn-danger btn-sm">🗑️</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">No customers yet. <a href="{% url 'customers:add' %}">Add one →</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% if customers.has_other_pages %}
+<div class="pagination">
+  {% if customers.has_previous %}<a href="?page={{ customers.previous_page_number }}&q={{ q }}" class="page-btn">‹</a>{% endif %}
+  {% for n in customers.paginator.page_range %}{% if customers.number == n %}<span class="page-btn active">{{ n }}</span>{% elif n >= customers.number|add:"-3" and n <= customers.number|add:"3" %}<a href="?page={{ n }}&q={{ q }}" class="page-btn">{{ n }}</a>{% endif %}{% endfor %}
+  {% if customers.has_next %}<a href="?page={{ customers.next_page_number }}&q={{ q }}" class="page-btn">›</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Customer Report{% endblock %}
+{% block page_title %}Customer Report{% endblock %}
+{% block content %}
+<div class="page-header"><div><div class="page-header-title">👥 Customer Report</div></div></div>
+<div class="card">
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead><tr><th>Customer</th><th>Phone</th><th>Orders</th><th>Total Spent</th><th>Reward Points</th><th>Joined</th></tr></thead>
+      <tbody>
+        {% for c in customers %}
+        <tr>
+          <td><a href="{% url 'customers:detail' c.pk %}" class="td-bold">{{ c.name }}</a></td>
+          <td>{{ c.phone }}</td>
+          <td><span class="badge badge-info">{{ c.order_count|default:0 }}</span></td>
+          <td style="color:var(--accent-cyan);font-weight:600;">₹{{ c.total_spent|default:0|floatformat:0 }}</td>
+          <td><span class="badge badge-purple">{{ c.reward_points }} pts</span></td>
+          <td style="font-size:12px;">{{ c.created_at|date:"d M Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No customers yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

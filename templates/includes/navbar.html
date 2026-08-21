@@ -1,0 +1,47 @@
+<!-- navbar.html -->
+<header class="navbar" :class="{ 'sidebar-collapsed': !sidebarOpen }">
+  <div class="navbar-left">
+    <button class="sidebar-toggle" @click="sidebarOpen = !sidebarOpen" aria-label="Toggle sidebar">☰</button>
+    <button class="sidebar-toggle" @click="mobileOpen = !mobileOpen" style="display:none" id="mobile-toggle">☰</button>
+    <span class="page-title">{% block page_title %}{% endblock %}</span>
+  </div>
+  <div class="navbar-right">
+    <!-- Theme Switcher -->
+    {% include 'includes/theme_switch.html' %}
+    
+    <!-- Notifications -->
+    <a href="{% url 'notifications:list' %}" class="btn-icon" title="Notifications" style="position:relative; color:var(--text-muted);">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+      {% if unread_notifications_count > 0 %}
+      <span class="notif-badge" style="position:absolute; top:-2px; right:-2px; background:var(--color-danger); color:#fff; font-size:10px; padding:0 4px; border-radius:10px; font-weight:bold;">{{ unread_notifications_count }}</span>
+      {% endif %}
+    </a>
+
+    <!-- User dropdown -->
+    <div class="dropdown" x-data="{ open: false }" style="position:relative;">
+      <div class="user-avatar" @click="open = !open" @click.outside="open = false" style="cursor:pointer; width:36px; height:36px; border-radius:50%; background:var(--color-primary); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; overflow:hidden;">
+        {% if request.user.profile_picture %}
+          <img src="{{ request.user.profile_picture.url }}" alt="avatar" style="width:100%; height:100%; object-fit:cover;" />
+        {% else %}
+          {{ request.user.username|first|upper }}
+        {% endif %}
+      </div>
+      <div class="glass" x-show="open" style="position:absolute; top:calc(100% + 10px); right:0; width:220px; z-index:200; border-radius:var(--radius); padding:8px 0; box-shadow:var(--shadow-lg); display:none;" :style="{ display: open ? 'block' : 'none' }">
+        <div style="padding:10px 16px; border-bottom:1px solid var(--border-glass);">
+          <div style="font-weight:600; color:var(--text-primary); font-size:14px;">{{ request.user.get_full_name|default:request.user.username }}</div>
+          <div style="font-size:12px; color:var(--text-muted);">{{ request.user.get_role_display }}</div>
+        </div>
+        <a href="{% url 'accounts:profile' %}" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:var(--text-secondary); font-size:14px;">
+          <span>👤</span> Edit Profile
+        </a>
+        <a href="{% url 'accounts:change_password' %}" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:var(--text-secondary); font-size:14px;">
+          <span>🔑</span> Change Password
+        </a>
+        <div style="height:1px; background:var(--border-glass); margin:4px 0;"></div>
+        <a href="{% url 'accounts:logout' %}" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:var(--color-danger); font-size:14px;">
+          <span>🚪</span> Logout
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

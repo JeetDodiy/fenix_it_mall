@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<div style="max-width:640px;margin:0 auto;">
+  <div class="breadcrumb">
+    <a href="{% url 'employees:list' %}" class="breadcrumb-item">Employees</a>
+    <span class="breadcrumb-sep">/</span>
+    <span class="breadcrumb-item active">{{ title }}</span>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">{{ title }}</h3></div>
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        {% for field in form %}
+        <div class="form-group {% if field.name == 'address' or field.name == 'designation' %}col-span-2{% endif %}">
+          <label class="form-label">{{ field.label }}</label>{{ field }}
+          {% if field.errors %}<div class="form-error">{{ field.errors.0 }}</div>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button type="submit" class="btn btn-primary">💾 Save</button>
+        <a href="{% url 'employees:list' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

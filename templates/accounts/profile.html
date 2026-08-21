@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}My Profile{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header-title">My Profile</div>
+    <div class="page-header-sub">Manage your account details</div>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'accounts:change_password' %}" class="btn btn-outline">🔑 Change Password</a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:start;">
+  <!-- Avatar Card -->
+  <div class="card" style="text-align:center;">
+    <div style="width:96px;height:96px;border-radius:50%;background:var(--gradient-main);display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;margin:0 auto 16px;overflow:hidden;border:3px solid rgba(6,182,212,0.4);">
+      {% if request.user.profile_picture %}
+        <img src="{{ request.user.profile_picture.url }}" alt="avatar" style="width:100%;height:100%;object-fit:cover;" />
+      {% else %}
+        {{ request.user.username|first|upper }}
+      {% endif %}
+    </div>
+    <div style="font-size:18px;font-weight:700;color:var(--text-primary);">{{ request.user.get_full_name|default:request.user.username }}</div>
+    <div style="margin-top:8px;">
+      <span class="badge badge-info">{{ request.user.get_role_display }}</span>
+    </div>
+    <div style="margin-top:12px;font-size:13px;color:var(--text-muted);">
+      <div>📧 {{ request.user.email|default:"No email" }}</div>
+      <div style="margin-top:4px;">📱 {{ request.user.phone|default:"No phone" }}</div>
+      <div style="margin-top:4px;">📅 Joined {{ request.user.date_joined|date:"d M Y" }}</div>
+    </div>
+  </div>
+
+  <!-- Edit Form -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Edit Profile</h3>
+    </div>
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="form-group">
+          <label class="form-label">First Name</label>
+          <input type="text" name="first_name" class="form-input" value="{{ form.first_name.value|default:'' }}" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input type="text" name="last_name" class="form-input" value="{{ form.last_name.value|default:'' }}" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-input" value="{{ form.email.value|default:'' }}" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone</label>
+        <input type="text" name="phone" class="form-input" value="{{ form.phone.value|default:'' }}" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Profile Picture</label>
+        <input type="file" name="profile_picture" class="form-input" accept="image/*" />
+        {% if request.user.profile_picture %}
+          <div class="form-hint">Current: {{ request.user.profile_picture.name }}</div>
+        {% endif %}
+      </div>
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+        <a href="{% url 'dashboard:index' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

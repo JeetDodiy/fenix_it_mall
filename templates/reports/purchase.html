@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Purchase Report{% endblock %}
+{% block page_title %}Purchase Report{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><div class="page-header-title">🚚 Purchase Report</div></div>
+  <div class="page-header-actions">
+    <a href="{% url 'reports:purchase_pdf' %}?date_from={{ date_from }}&date_to={{ date_to }}" class="btn btn-danger btn-sm">📄 PDF</a>
+  </div>
+</div>
+<div class="card" style="margin-bottom:20px;padding:16px 20px;">
+  <form method="get" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+    <div class="form-group" style="margin:0;"><label class="form-label">From</label><input type="date" name="date_from" class="form-input" value="{{ date_from }}" /></div>
+    <div class="form-group" style="margin:0;"><label class="form-label">To</label><input type="date" name="date_to" class="form-input" value="{{ date_to }}" /></div>
+    <div class="form-group" style="margin:0;">
+      <label class="form-label">Status</label>
+      <select name="status" class="form-select">
+        <option value="">All</option>
+        {% for val,label in status_choices %}<option value="{{ val }}" {% if selected_status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Apply</button>
+    <a href="{% url 'reports:purchase' %}" class="btn btn-outline">Reset</a>
+  </form>
+</div>
+{% if totals %}
+<div class="grid-3" style="margin-bottom:20px;">
+  <div class="stat-card cyan"><div class="stat-icon cyan">📋</div><div class="stat-value">{{ totals.count|default:0 }}</div><div class="stat-label">Orders</div></div>
+  <div class="stat-card purple"><div class="stat-icon purple">💸</div><div class="stat-value">₹{{ totals.total|default:0|floatformat:0 }}</div><div class="stat-label">Total Value</div></div>
+  <div class="stat-card green"><div class="stat-icon green">✅</div><div class="stat-value">₹{{ totals.paid|default:0|floatformat:0 }}</div><div class="stat-label">Paid</div></div>
+</div>
+{% endif %}
+<div class="card">
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead><tr><th>PO Number</th><th>Date</th><th>Supplier</th><th>Status</th><th>Total</th><th>Paid</th><th>Balance</th></tr></thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td><a href="{% url 'purchase:detail' o.pk %}" class="td-bold">{{ o.order_number }}</a></td>
+          <td style="font-size:12px;">{{ o.order_date }}</td>
+          <td>{{ o.supplier.company_name }}</td>
+          <td>{% if o.status == 'received' %}<span class="badge badge-success">Received</span>{% elif o.status == 'cancelled' %}<span class="badge badge-danger">Cancelled</span>{% else %}<span class="badge badge-warning">{{ o.get_status_display }}</span>{% endif %}</td>
+          <td>₹{{ o.total_amount }}</td>
+          <td style="color:var(--accent-green);">₹{{ o.paid_amount }}</td>
+          <td style="color:var(--accent-red);">₹{{ o.balance_amount }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">No purchase orders in this period.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

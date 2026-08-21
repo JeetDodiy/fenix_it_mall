@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Employee Report{% endblock %}
+{% block page_title %}Employee Report{% endblock %}
+{% block content %}
+<div class="page-header"><div><div class="page-header-title">👤 Employee Report</div></div></div>
+<div class="card">
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead><tr><th>Employee</th><th>ID</th><th>Designation</th><th>Salary</th><th>Present Days</th><th>Absent Days</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for e in employees %}
+        <tr>
+          <td><a href="{% url 'employees:detail' e.pk %}" class="td-bold">{{ e.full_name }}</a></td>
+          <td><code style="font-size:11px;">{{ e.employee_id }}</code></td>
+          <td>{{ e.designation }}</td>
+          <td style="color:var(--accent-cyan);">₹{{ e.salary }}</td>
+          <td><span class="badge badge-success">{{ e.present_days }}</span></td>
+          <td><span class="badge badge-danger">{{ e.absent_days }}</span></td>
+          <td><span class="badge badge-info">{{ e.get_status_display }}</span></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">No employees found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

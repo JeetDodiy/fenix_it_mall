@@ -1,0 +1,56 @@
+/* animations.css */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; transform: translateX(100%); pointer-events: none; }
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes auroraGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.aurora-bg {
+  background: linear-gradient(135deg, rgba(37,99,235,0.2), rgba(6,182,212,0.3), rgba(168,85,247,0.2), rgba(16,185,129,0.2));
+  background-size: 300% 300%;
+  animation: auroraGradient 12s ease infinite;
+}
+
+.glowing-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.glowing-btn::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: conic-gradient(transparent, transparent, transparent, var(--color-secondary));
+  animation: rotate 4s linear infinite;
+  opacity: 0.3;
+}
+
+@keyframes rotate {
+  100% { transform: rotate(360deg); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}

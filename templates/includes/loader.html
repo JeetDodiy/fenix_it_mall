@@ -1,0 +1,17 @@
+<!-- loader.html -->
+<div id="page-loader" style="position:fixed; inset:0; background:var(--bg-body); z-index:9999; display:flex; align-items:center; justify-content:center; transition:opacity 0.3s ease;">
+  <div style="width:40px; height:40px; border:3px solid var(--border-glass); border-top-color:var(--color-primary); border-radius:50%; animation:spin 1s linear infinite;"></div>
+</div>
+<style>
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+  .loader-hidden { opacity: 0; pointer-events: none; }
+</style>
+<script>
+  window.addEventListener('load', () => {
+    const loader = document.getElementById('page-loader');
+    if(loader) {
+      loader.classList.add('loader-hidden');
+      setTimeout(() => loader.remove(), 300);
+    }
+  });
+</script>

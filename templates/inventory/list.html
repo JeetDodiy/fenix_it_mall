@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% block title %}Inventory & Stock Status{% endblock %}
+{% block page_title %}Inventory{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <div class="page-header-title">Inventory Overview</div>
+    <div class="page-header-sub">Track stock levels, valuations, and stock adjustments</div>
+  </div>
+  <div class="page-header-actions">
+    {% if request.user.is_manager %}
+    <a href="{% url 'inventory:stock_in' %}" class="btn btn-success">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Stock In
+    </a>
+    <a href="{% url 'inventory:stock_out' %}" class="btn btn-danger">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Stock Out
+    </a>
+    <a href="{% url 'inventory:adjust' %}" class="btn btn-outline">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Adjust
+    </a>
+    {% endif %}
+    <a href="{% url 'inventory:history' %}" class="btn btn-outline">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      History
+    </a>
+  </div>
+</div>
+
+<!-- Stock Health Summary Grid -->
+<div class="grid-4" style="margin-bottom:24px;">
+  <div class="stat-card green">
+    <div class="stat-header">
+      <div class="stat-icon green">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+    </div>
+    <div class="stat-value">₹{{ total_stock_value|floatformat:0 }}</div>
+    <div class="stat-label">Total Cost Valuation</div>
+  </div>
+
+  <div class="stat-card cyan">
+    <div class="stat-header">
+      <div class="stat-icon cyan">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+    </div>
+    <div class="stat-value">₹{{ total_retail_value|floatformat:0 }}</div>
+    <div class="stat-label">Estimated Retail Valuation</div>
+  </div>
+
+  <div class="stat-card orange">
+    <div class="stat-header">
+      <div class="stat-icon orange">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+    </div>
+    <div class="stat-value" style="color:var(--accent-orange);">
+      <a href="{% url 'inventory:low_stock' %}" style="color:inherit;text-decoration:none;">View Alerts →</a>
+    </div>
+    <div class="stat-label">Items Below Threshold</div>
+  </div>
+
+  <div class="stat-card red">
+    <div class="stat-header">
+      <div class="stat-icon red">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+      </div>
+    </div>
+    <div class="stat-value" style="color:var(--accent-red);">
+      <a href="{% url 'inventory:out_of_stock' %}" style="color:inherit;text-decoration:none;">Out of Stock →</a>
+    </div>
+    <div class="stat-label">Zero Stock Items</div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card" style="margin-bottom:20px;padding:16px 20px;">
+  <form method="get" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+    <div style="flex:1;min-width:200px;">
+      <div class="search-bar">
+        <input type="text" name="q" value="{{ q }}" placeholder="Search by product name, code, SKU…" />
+        <button type="submit">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
+    </div>
+    <div>
+      <select name="category" class="form-select" style="min-width:150px;">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+        <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <select name="stock_status" class="form-select" style="min-width:140px;">
+        <option value="">All Stock Levels</option>
+        <option value="ok" {% if selected_stock_status == 'ok' %}selected{% endif %}>In Stock</option>
+        <option value="low" {% if selected_stock_status == 'low' %}selected{% endif %}>Low Stock</option>
+        <option value="out" {% if selected_stock_status == 'out' %}selected{% endif %}>Out of Stock</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a href="{% url 'inventory:list' %}" class="btn btn-outline btn-sm">Clear</a>
+  </form>
+</div>
+
+<!-- Products Inventory Table -->
+<div class="card">
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Code / SKU</th>
+          <th>Category</th>
+          <th>Current Stock</th>
+          <th>Threshold</th>
+          <th>Cost Price</th>
+          <th>Retail Price</th>
+          <th>Inventory Value</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:38px;height:38px;border-radius:8px;overflow:hidden;background:var(--bg-glass);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                {% if p.main_image %}
+                  <img src="{{ p.main_image.image.url }}" alt="{{ p.name }}" style="width:100%;height:100%;object-fit:cover;" />
+                {% else %}
+                  <span style="font-size:18px;">📦</span>
+                {% endif %}
+              </div>
+              <div>
+                <a href="{% url 'products:detail' p.pk %}" class="td-bold">{{ p.name|truncatechars:32 }}</a>
+                {% if p.brand %}<div style="font-size:11px;color:var(--text-muted);">{{ p.brand.name }}</div>{% endif %}
+              </div>
+            </div>
+          </td>
+          <td><code style="font-size:12px;">{{ p.product_code }}</code></td>
+          <td style="color:var(--text-secondary);">{{ p.category.name|default:"—" }}</td>
+          <td>
+            {% if p.is_out_of_stock %}
+              <span class="badge badge-danger">0 — Out</span>
+            {% elif p.is_low_stock %}
+              <span class="badge badge-warning">{{ p.stock_quantity }} — Low</span>
+            {% else %}
+              <span class="badge badge-success">{{ p.stock_quantity }} units</span>
+            {% endif %}
+          </td>
+          <td style="color:var(--text-muted);">{{ p.low_stock_threshold }}</td>
+          <td>₹{{ p.purchase_price|floatformat:2 }}</td>
+          <td style="font-weight:600;color:var(--accent-cyan);">₹{{ p.selling_price|floatformat:2 }}</td>
+          <td style="font-weight:600;color:var(--text-primary);">₹{{ p.purchase_price|floatformat:2 }}</td>
+          <td>
+            <div class="td-actions">
+              {% if request.user.is_manager %}
+              <a href="{% url 'inventory:adjust' %}?product={{ p.pk }}" class="btn btn-outline btn-sm" title="Adjust Stock">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Adjust
+              </a>
+              <a href="{% url 'inventory:stock_in' %}?product={{ p.pk }}" class="btn btn-success btn-sm" title="Quick Stock In">
+                + In
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" style="padding:0;">
+            <div class="empty-state">
+              <div class="empty-state-icon">📋</div>
+              <div class="empty-state-title">No inventory records found</div>
+              <div class="empty-state-desc">Try clearing filters or search criteria.</div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if products.has_other_pages %}
+<div class="pagination">
+  {% if products.has_previous %}
+  <a href="?page={{ products.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_stock_status %}&stock_status={{ selected_stock_status }}{% endif %}" class="page-btn">‹</a>
+  {% endif %}
+  {% for n in products.paginator.page_range %}
+    {% if products.number == n %}
+    <span class="page-btn active">{{ n }}</span>
+    {% elif n >= products.number|add:"-3" and n <= products.number|add:"3" %}
+    <a href="?page={{ n }}{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_stock_status %}&stock_status={{ selected_stock_status }}{% endif %}" class="page-btn">{{ n }}</a>
+    {% endif %}
+  {% endfor %}
+  {% if products.has_next %}
+  <a href="?page={{ products.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_stock_status %}&stock_status={{ selected_stock_status }}{% endif %}" class="page-btn">›</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

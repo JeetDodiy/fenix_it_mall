@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}Low Stock Alert{% endblock %}
+{% block page_title %}Low Stock Alert{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <div class="page-header-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-orange)" stroke-width="2" style="vertical-align:-3px;margin-right:8px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Low Stock Items
+    </div>
+    <div class="page-header-sub">{{ products|length }} product{{ products|length|pluralize }} below minimum stock threshold</div>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'inventory:out_of_stock' %}" class="btn btn-danger">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+      Out of Stock
+    </a>
+    {% if request.user.is_manager %}
+    <a href="{% url 'purchase:add' %}" class="btn btn-primary">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      Create Purchase Order
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+{% if products %}
+<div class="card">
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Category</th>
+          <th>Stock Level</th>
+          <th>Min Threshold</th>
+          <th>Supplier</th>
+          <th>Sell Price</th>
+          {% if request.user.is_manager %}<th>Actions</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:40px;height:40px;border-radius:9px;overflow:hidden;background:var(--bg-glass);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                {% if p.main_image %}<img src="{{ p.main_image.image.url }}" style="width:100%;height:100%;object-fit:cover;" />
+                {% else %}<span style="font-size:18px;">📦</span>{% endif %}
+              </div>
+              <div>
+                <a href="{% url 'products:detail' p.pk %}" class="td-bold">{{ p.name|truncatechars:36 }}</a>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:1px;">{{ p.product_code }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="color:var(--text-secondary);">{{ p.category.name|default:"—" }}</td>
+          <td>
+            {% if p.stock_quantity <= 0 %}
+              <span class="badge badge-danger">0 — Out of Stock</span>
+            {% else %}
+              <span class="badge badge-warning">{{ p.stock_quantity }} remaining</span>
+            {% endif %}
+            <!-- Visual stock bar -->
+            <div class="stock-bar" style="margin-top:5px;width:100px;">
+              {% if p.low_stock_threshold > 0 %}
+                {% widthratio p.stock_quantity p.low_stock_threshold 100 as pct %}
+                <div class="stock-bar-fill" style="width:{% if pct > 100 %}100{% else %}{{ pct }}{% endif %}%;background:{% if p.stock_quantity <= 0 %}#ef4444{% elif pct < 50 %}#f59e0b{% else %}#10b981{% endif %};"></div>
+              {% else %}
+                <div class="stock-bar-fill" style="width:0%;background:#ef4444;"></div>
+              {% endif %}
+            </div>
+          </td>
+          <td style="color:var(--text-muted);">{{ p.low_stock_threshold }}</td>
+          <td style="color:var(--text-secondary);">{{ p.supplier.company_name|default:"—" }}</td>
+          <td style="font-weight:600;color:var(--accent-cyan);">₹{{ p.selling_price }}</td>
+          {% if request.user.is_manager %}
+          <td>
+            <div class="td-actions">
+              <a href="{% url 'inventory:stock_in' %}?product={{ p.pk }}" class="btn btn-success btn-sm">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Stock In
+              </a>
+              <a href="{% url 'purchase:add' %}{% if p.supplier %}?supplier={{ p.supplier.pk }}{% endif %}" class="btn btn-outline btn-sm">PO</a>
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-icon" style="background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.2);">✅</div>
+  <div class="empty-state-title" style="color:var(--accent-green);">All products are well stocked!</div>
+  <div class="empty-state-desc">No items are currently below their minimum stock threshold.</div>
+  <a href="{% url 'inventory:list' %}" class="btn btn-outline">Back to Inventory</a>
+</div>
+{% endif %}
+{% endblock %}

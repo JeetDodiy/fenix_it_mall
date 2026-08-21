@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Delete Purchase Order{% endblock %}
+{% block page_title %}Delete Purchase Order{% endblock %}
+{% block content %}
+<div style="max-width:480px;margin:0 auto;">
+  <div class="card">
+    <div class="card-header"><h3 class="card-title" style="color:var(--accent-red);">⚠️ Delete Purchase Order</h3></div>
+    <p style="margin-bottom:20px;color:var(--text-secondary);">Are you sure you want to delete <strong style="color:var(--text-primary);">{{ order.order_number }}</strong>? This cannot be undone.</p>
+    <form method="post" style="display:flex;gap:12px;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">🗑️ Yes, Delete</button>
+      <a href="{% url 'purchase:detail' order.pk %}" class="btn btn-outline">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

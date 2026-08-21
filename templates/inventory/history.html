@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Stock History{% endblock %}
+{% block page_title %}Stock History{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><div class="page-header-title">Stock Movement History</div></div>
+  <div class="page-header-actions">
+    <a href="{% url 'inventory:list' %}" class="btn btn-outline">← Inventory</a>
+    {% if request.user.is_manager %}<a href="{% url 'inventory:adjust' %}" class="btn btn-primary">⚙️ New Adjustment</a>{% endif %}
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:20px;padding:16px 20px;">
+  <form method="get" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+    <div style="flex:1;min-width:200px;"><div class="search-bar"><input type="text" name="q" value="{{ q }}" placeholder="Search product…" /><button type="submit">🔍</button></div></div>
+    <select name="type" class="form-select">
+      <option value="">All Types</option>
+      {% for val,label in movement_types %}<option value="{{ val }}" {% if selected_type == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a href="{% url 'inventory:history' %}" class="btn btn-outline btn-sm">Clear</a>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead><tr><th>Product</th><th>Type</th><th>Qty</th><th>Before</th><th>After</th><th>Reference</th><th>By</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for m in movements %}
+        <tr>
+          <td><a href="{% url 'products:detail' m.product.pk %}" class="td-bold">{{ m.product.name|truncatechars:28 }}</a></td>
+          <td>
+            {% if m.movement_type == 'in' %}<span class="badge badge-success">Stock In</span>
+            {% elif m.movement_type == 'out' %}<span class="badge badge-danger">Stock Out</span>
+            {% elif m.movement_type == 'damaged' %}<span class="badge badge-warning">Damaged</span>
+            {% elif m.movement_type == 'return' %}<span class="badge badge-info">Returned</span>
+            {% else %}<span class="badge badge-purple">Adjusted</span>{% endif %}
+          </td>
+          <td class="td-bold">{{ m.quantity }}</td>
+          <td style="color:var(--text-muted);">{{ m.quantity_before }}</td>
+          <td style="color:var(--text-muted);">{{ m.quantity_after }}</td>
+          <td style="font-size:12px;color:var(--text-muted);">{{ m.reference|default:"—" }}</td>
+          <td style="font-size:12px;">{{ m.created_by.username|default:"System" }}</td>
+          <td style="font-size:12px;">{{ m.created_at|date:"d M Y, H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">No movements recorded yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if movements.has_other_pages %}
+<div class="pagination">
+  {% if movements.has_previous %}<a href="?page={{ movements.previous_page_number }}&q={{ q }}" class="page-btn">‹</a>{% endif %}
+  {% for n in movements.paginator.page_range %}{% if movements.number == n %}<span class="page-btn active">{{ n }}</span>{% elif n >= movements.number|add:"-3" and n <= movements.number|add:"3" %}<a href="?page={{ n }}&q={{ q }}" class="page-btn">{{ n }}</a>{% endif %}{% endfor %}
+  {% if movements.has_next %}<a href="?page={{ movements.next_page_number }}&q={{ q }}" class="page-btn">›</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

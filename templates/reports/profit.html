@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Profit & Loss{% endblock %}
+{% block page_title %}Profit & Loss Report{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><div class="page-header-title">💹 Profit & Loss Report</div></div>
+</div>
+<div class="card" style="margin-bottom:20px;padding:16px 20px;">
+  <form method="get" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+    <div class="form-group" style="margin:0;"><label class="form-label">From</label><input type="date" name="date_from" class="form-input" value="{{ date_from }}" /></div>
+    <div class="form-group" style="margin:0;"><label class="form-label">To</label><input type="date" name="date_to" class="form-input" value="{{ date_to }}" /></div>
+    <button type="submit" class="btn btn-primary">Apply</button>
+    <a href="{% url 'reports:profit' %}" class="btn btn-outline">Reset</a>
+  </form>
+</div>
+<div class="grid-4" style="margin-bottom:20px;">
+  <div class="stat-card green"><div class="stat-icon green">💰</div><div class="stat-value">₹{{ total_revenue|floatformat:0 }}</div><div class="stat-label">Total Revenue</div></div>
+  <div class="stat-card red"><div class="stat-icon red">💸</div><div class="stat-value">₹{{ total_cost|floatformat:0 }}</div><div class="stat-label">Total Cost</div></div>
+  <div class="stat-card {% if total_profit >= 0 %}cyan{% else %}orange{% endif %}"><div class="stat-icon {% if total_profit >= 0 %}cyan{% else %}orange{% endif %}">📈</div><div class="stat-value">₹{{ total_profit|floatformat:0 }}</div><div class="stat-label">Net Profit</div></div>
+  <div class="stat-card purple"><div class="stat-icon purple">%</div><div class="stat-value">{{ profit_margin|floatformat:1 }}%</div><div class="stat-label">Margin</div></div>
+</div>
+<div class="card">
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead><tr><th>Invoice</th><th>Date</th><th>Product</th><th>Qty</th><th>Revenue</th><th>Cost</th><th>Profit</th><th>Margin%</th></tr></thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td class="td-bold">{{ r.invoice }}</td>
+          <td style="font-size:12px;">{{ r.date|date:"d M Y" }}</td>
+          <td>{{ r.product|truncatechars:28 }}</td>
+          <td>{{ r.qty }}</td>
+          <td>₹{{ r.revenue|floatformat:2 }}</td>
+          <td>₹{{ r.cost|floatformat:2 }}</td>
+          <td style="color:{% if r.profit >= 0 %}var(--accent-green){% else %}var(--accent-red){% endif %};font-weight:600;">₹{{ r.profit|floatformat:2 }}</td>
+          <td style="font-size:12px;">{{ r.margin }}%</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">No data for this period.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

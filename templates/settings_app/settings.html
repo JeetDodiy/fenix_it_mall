@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Settings{% endblock %}
+{% block page_title %}System Settings{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><div class="page-header-title">⚙️ Company Settings</div></div>
+  <div class="page-header-actions">
+    <a href="{% url 'settings_app:backup' %}" class="btn btn-outline">💾 Backup DB</a>
+  </div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start;">
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">Company Information</h3></div>
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        {% for field in form %}
+        <div class="form-group {% if field.name == 'address' or field.name == 'company_name' %}col-span-2{% endif %}">
+          <label class="form-label">{{ field.label }}</label>{{ field }}
+          {% if field.errors %}<div class="form-error">{{ field.errors.0 }}</div>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <div style="margin-top:16px;">
+        <button type="submit" class="btn btn-primary">💾 Save Settings</button>
+      </div>
+    </form>
+  </div>
+  <div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-header"><h4 class="card-title">Current Settings</h4></div>
+      {% if company_settings %}
+      <div style="font-size:13px;display:flex;flex-direction:column;gap:8px;color:var(--text-secondary);">
+        <div>🏢 <strong>{{ company_settings.company_name }}</strong></div>
+        <div>💱 {{ company_settings.currency_symbol }} ({{ company_settings.currency_code }})</div>
+        <div>📋 Invoice Prefix: <strong>{{ company_settings.invoice_prefix }}</strong></div>
+        <div>⚠️ Low Stock Alert: <strong>{{ company_settings.low_stock_threshold }}</strong></div>
+        <div>🎨 Theme: <strong>{{ company_settings.get_theme_display }}</strong></div>
+        {% if company_settings.gst_number %}<div>🏛️ GST: {{ company_settings.gst_number }}</div>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+    <div class="card">
+      <div class="card-header"><h4 class="card-title">Database Backup</h4></div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Download a full backup of the SQLite database.</p>
+      <a href="{% url 'settings_app:backup' %}" class="btn btn-success btn-sm">💾 Download Backup</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>403 – Forbidden</title>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+  <style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg-primary);text-align:center;}</style>
+</head>
+<body>
+  <div>
+    <div style="font-size:80px;margin-bottom:16px;">🚫</div>
+    <h1 style="font-size:80px;font-weight:900;color:var(--accent-orange);">403</h1>
+    <h2 style="font-size:22px;color:var(--text-primary);margin-bottom:8px;">Access Denied</h2>
+    <p style="color:var(--text-muted);margin-bottom:24px;">You don't have permission to access this page.</p>
+    <a href="/" class="btn btn-primary">🏠 Go Home</a>
+  </div>
+</body>
+</html>

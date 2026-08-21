@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Fenix IT Mall – Smart IT Shop Management</title>
+<link rel="stylesheet" href="{% static 'css/main.css' %}"/>
+<style>
+body{margin:0;background:var(--bg-primary);overflow-x:hidden;}
+#hero-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+.lnav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 48px;background:rgba(10,15,30,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-glass);}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-icon{width:38px;height:38px;background:var(--gradient-main);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(6,182,212,.4);}
+.logo-text{font-size:17px;font-weight:800;background:var(--gradient-main);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.hero{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:110px 24px 80px;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.3);border-radius:20px;padding:5px 16px;font-size:13px;color:var(--accent-cyan);margin-bottom:22px;}
+.hero-title{font-size:clamp(34px,6vw,70px);font-weight:900;line-height:1.1;margin-bottom:18px;}
+.grad{background:var(--gradient-main);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.hero-sub{font-size:17px;color:var(--text-secondary);max-width:540px;margin:0 auto 32px;line-height:1.7;}
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.section{position:relative;z-index:1;padding:70px 48px;background:var(--bg-primary);}
+.section-title{text-align:center;font-size:32px;font-weight:800;margin-bottom:6px;}
+.section-sub{text-align:center;color:var(--text-muted);margin-bottom:40px;font-size:15px;}
+.feat{background:var(--bg-card);border:1px solid var(--border-glass);border-radius:16px;padding:24px;text-align:center;transition:transform .25s, box-shadow .25s, border-color .25s;opacity:1;visibility:visible;}
+.feat:hover{transform:translateY(-6px);box-shadow:0 12px 36px rgba(6,182,212,.15);border-color:rgba(6,182,212,.3);}
+.feat-icon{font-size:36px;margin-bottom:12px;}
+.feat-title{font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:6px;}
+.feat-desc{font-size:13px;color:var(--text-muted);line-height:1.6;}
+.tech-section{position:relative;z-index:1;padding:50px 48px;text-align:center;background:var(--bg-primary);}
+.tech-badge{display:inline-flex;align-items:center;background:var(--bg-glass);border:1px solid var(--border-glass);border-radius:20px;padding:7px 16px;font-size:12px;color:var(--text-secondary);margin:5px;transition:all .2s;}
+.tech-badge:hover{border-color:var(--accent-cyan);color:var(--accent-cyan);}
+.cta-section{position:relative;z-index:1;padding:70px 48px;text-align:center;background:var(--bg-primary);}
+.cta-box{background:linear-gradient(135deg,rgba(6,182,212,.1),rgba(168,85,247,.1));border:1px solid rgba(6,182,212,.2);border-radius:24px;padding:56px 40px;max-width:660px;margin:0 auto;}
+.footer{position:relative;z-index:1;text-align:center;padding:22px;border-top:1px solid var(--border-glass);color:var(--text-muted);font-size:12px;background:var(--bg-primary);}
+@media(max-width:768px){.lnav{padding:12px 20px;}.section,.cta-section,.tech-section{padding:50px 20px;}}
+</style>
+</head>
+<body>
+<canvas id="hero-canvas"></canvas>
+<nav class="lnav">
+  <div class="logo"><div class="logo-icon">⚡</div><span class="logo-text">Fenix IT Mall</span></div>
+  <div style="display:flex;gap:10px;">
+    <a href="{% url 'accounts:login' %}" class="btn btn-outline btn-sm">Sign In</a>
+    <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm">Get Started</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div style="max-width:720px;">
+    <div class="hero-badge">⚡ Premium IT Shop Management System</div>
+    <h1 class="hero-title">Manage Your IT Shop<br/><span class="grad">Smarter & Faster</span></h1>
+    <p class="hero-sub">A complete inventory, sales, and business management platform built for modern IT retailers.</p>
+    <div class="hero-btns">
+      <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg">🚀 Launch Dashboard</a>
+      <a href="#features" class="btn btn-outline btn-lg">📖 Explore Features</a>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div style="max-width:1100px;margin:0 auto;">
+    <h2 class="section-title gradient-text">Everything You Need</h2>
+    <p class="section-sub">One platform to run your entire IT shop operation</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;">
+      {% for mod in modules %}
+      <div class="feat"><div class="feat-icon">{{ mod.icon }}</div><div class="feat-title">{{ mod.name }}</div><div class="feat-desc">{{ mod.desc }}</div></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="tech-section">
+  <h2 class="section-title" style="font-size:24px;">Built With</h2>
+  <div style="margin-top:20px;">{% for t in tech_stack %}<span class="tech-badge">{{ t }}</span>{% endfor %}</div>
+</section>
+
+<section class="cta-section">
+  <div class="cta-box">
+    <div style="font-size:44px;margin-bottom:14px;">⚡</div>
+    <h2 style="font-size:30px;font-weight:800;margin-bottom:10px;">Ready to Get Started?</h2>
+    <p style="color:var(--text-muted);margin-bottom:26px;">Login to your dashboard and start managing your IT shop today.</p>
+    <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg">Sign In Now →</a>
+  </div>
+</section>
+
+<footer class="footer">© 2024 Fenix IT Mall · Django 5 · Three.js · Chart.js · Alpine.js · GSAP</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+<script src="{% static 'js/three_hero.js' %}"></script>
+<script>
+  // Only run GSAP animations if GSAP loaded from CDN
+  window.addEventListener('load', function() {
+    if (typeof gsap !== 'undefined') {
+      gsap.from('.hero-badge', {opacity:0, y:30, duration:.8, ease:'power2.out'});
+      gsap.from('.hero-title', {opacity:0, y:40, duration:.9, ease:'power2.out', delay:.2});
+      gsap.from('.hero-sub',   {opacity:0, y:30, duration:.8, ease:'power2.out', delay:.4});
+      gsap.from('.hero-btns',  {opacity:0, y:20, duration:.7, ease:'power2.out', delay:.6});
+      gsap.from('.feat',       {opacity:0, y:40, duration:.6, stagger:.08, ease:'power2.out', delay:.3});
+    }
+  });
+</script>
+</body>
+</html>
