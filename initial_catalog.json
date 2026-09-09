@@ -1,0 +1,466 @@
+[
+{
+  "model": "products.category",
+  "pk": 1,
+  "fields": {
+    "name": "Laptop",
+    "slug": "laptop",
+    "image": "categories/download_1.png",
+    "description": "",
+    "is_active": true,
+    "created_at": "2026-09-08T11:30:23.120Z"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 2,
+  "fields": {
+    "name": "Audit Laptops",
+    "slug": "audit-laptops",
+    "image": "",
+    "description": "Testing",
+    "is_active": true,
+    "created_at": "2026-09-08T13:17:10.980Z"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 3,
+  "fields": {
+    "name": "Test Category Auto",
+    "slug": "test-category-auto",
+    "image": "",
+    "description": "QA",
+    "is_active": true,
+    "created_at": "2026-09-08T13:25:57.299Z"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 4,
+  "fields": {
+    "name": "Cabinet",
+    "slug": "cabinet",
+    "image": "categories/download_2.png",
+    "description": "cabinet",
+    "is_active": true,
+    "created_at": "2026-09-09T07:14:35.637Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 1,
+  "fields": {
+    "name": "ASUS",
+    "logo": "brands/download.png",
+    "description": "ASUS is a Taiwanese multinational company founded in 1989 that designs and manufactures computer hardware, consumer electronics, and gaming equipment.",
+    "website": "https://asus.com",
+    "is_active": true,
+    "created_at": "2026-09-08T11:26:48.889Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 2,
+  "fields": {
+    "name": "Audit Brand",
+    "logo": "",
+    "description": "Testing",
+    "website": null,
+    "is_active": true,
+    "created_at": "2026-09-08T13:17:11.066Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 3,
+  "fields": {
+    "name": "Test Brand Auto",
+    "logo": "",
+    "description": "QA",
+    "website": null,
+    "is_active": true,
+    "created_at": "2026-09-08T13:25:57.443Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 4,
+  "fields": {
+    "name": "ANT",
+    "logo": "brands/download_1.jpg",
+    "description": "Ant Esports",
+    "website": "https://antesports.com/",
+    "is_active": true,
+    "created_at": "2026-09-09T07:18:25.990Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 5,
+  "fields": {
+    "name": "MSI",
+    "logo": "brands/download.webp",
+    "description": "MSI Laptop brand",
+    "website": "https://msi.com",
+    "is_active": true,
+    "created_at": "2026-09-09T07:29:45.176Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 6,
+  "fields": {
+    "name": "HP",
+    "logo": "brands/download_1.webp",
+    "description": "HP Computers",
+    "website": "https://hp.com",
+    "is_active": true,
+    "created_at": "2026-09-09T09:01:17.011Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 1,
+  "fields": {
+    "name": "ASUS Gaming V16 (2025)",
+    "product_code": "FIM-2D724BA0",
+    "barcode_number": "8923336030706",
+    "barcode_image": "barcodes/barcode_8923336030706_1.png",
+    "qr_code": "qrcodes/qr_8923336030706_1.png",
+    "slug": "asus-gaming-v16-2025-fim-2d724ba0",
+    "category": 1,
+    "brand": 1,
+    "supplier": 1,
+    "purchase_price": "55000.00",
+    "selling_price": "65000.00",
+    "gst_percentage": "18.00",
+    "description": "ASUS Gaming V16 (2025),Intel Core 7 240H (i7-14th Gen),RTX 5050-8GB,16GB RAM,512GB SSD,FHD+,16\",144Hz,Backlit Keyboard,Windows 11,M365*,Office 2024,Matte Black,1.95 Kg V3607VH-RP038WS,Gaming Laptop",
+    "warranty": "2 year",
+    "status": "active",
+    "stock_quantity": 10,
+    "low_stock_threshold": 3,
+    "created_at": "2026-09-08T11:32:04.337Z",
+    "updated_at": "2026-09-08T12:48:29.315Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 2,
+  "fields": {
+    "name": "Audit High-Performance Laptop",
+    "product_code": "AUDIT-PROD-01",
+    "barcode_number": "AUDIT-PROD-01",
+    "barcode_image": "barcodes/barcode_AUDIT-PROD-01_2.png",
+    "qr_code": "qrcodes/qr_AUDIT-PROD-01_2.png",
+    "slug": "audit-high-performance-laptop-audit-prod-01",
+    "category": 2,
+    "brand": 2,
+    "supplier": null,
+    "purchase_price": "60000.00",
+    "selling_price": "75000.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 19,
+    "low_stock_threshold": 5,
+    "created_at": "2026-09-08T13:17:11.149Z",
+    "updated_at": "2026-09-09T10:59:58.946Z",
+    "is_active": false
+  }
+},
+{
+  "model": "products.product",
+  "pk": 4,
+  "fields": {
+    "name": "E2E Enterprise Server Pro",
+    "product_code": "E2E-PROD-99",
+    "barcode_number": "E2E-PROD-99",
+    "barcode_image": "barcodes/barcode_E2E-PROD-99_4.png",
+    "qr_code": "qrcodes/qr_E2E-PROD-99_4.png",
+    "slug": "e2e-enterprise-server-pro-e2e-prod-99",
+    "category": 2,
+    "brand": 1,
+    "supplier": null,
+    "purchase_price": "100000.00",
+    "selling_price": "135000.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 3,
+    "low_stock_threshold": 2,
+    "created_at": "2026-09-08T13:20:22.986Z",
+    "updated_at": "2026-09-08T13:20:24.080Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 7,
+  "fields": {
+    "name": "Ant Esports Crystal X7 ATX Computer Case/Gaming Cabinet",
+    "product_code": "FIM-8C09A01F",
+    "barcode_number": "8982463949961",
+    "barcode_image": "barcodes/barcode_8982463949961_7.png",
+    "qr_code": "qrcodes/qr_8982463949961_7.png",
+    "slug": "ant-esports-crystal-x7-atx-computer-casegaming-cabinet-fim-8c09a01f",
+    "category": 4,
+    "brand": 4,
+    "supplier": 1,
+    "purchase_price": "2500.00",
+    "selling_price": "5000.00",
+    "gst_percentage": "18.00",
+    "description": "Ant Esports Crystal X7 ATX Computer Case/Gaming Cabinet with Type-C - Black | Support ATX, Micro-ATX, Mini-ITX | Pre-Installed 3 M/B Plate Fans, 2 PSU Shroud Fans, 1 Bottom & 1 Rear Fan",
+    "warranty": "1 year",
+    "status": "active",
+    "stock_quantity": 5,
+    "low_stock_threshold": 1,
+    "created_at": "2026-09-09T07:21:18.043Z",
+    "updated_at": "2026-09-09T07:22:31.682Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 8,
+  "fields": {
+    "name": "MSI Stealth 14 AI Studio",
+    "product_code": "FIM-A151632F",
+    "barcode_number": "8982610005731",
+    "barcode_image": "barcodes/barcode_8982610005731_8.png",
+    "qr_code": "qrcodes/qr_8982610005731_8.png",
+    "slug": "msi-stealth-14-ai-studio-fim-a151632f",
+    "category": 1,
+    "brand": 5,
+    "supplier": 1,
+    "purchase_price": "165000.00",
+    "selling_price": "180000.00",
+    "gst_percentage": "18.00",
+    "description": "MSI Stealth 14 AI Studio, Intel 1st Gen. Ultra 7 155H,Built-in AI, 36CM FHD+ 165Hz Gaming Laptop(16GB/1TB NVMe SSD/Windows 11 Home/NVIDIA GeForce RTX 4060, GDDR6 6GB/Star Blue/1.7Kg), A1VFG-053IN",
+    "warranty": "3 year",
+    "status": "active",
+    "stock_quantity": 5,
+    "low_stock_threshold": 1,
+    "created_at": "2026-09-09T07:32:04.016Z",
+    "updated_at": "2026-09-09T08:57:35.241Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 9,
+  "fields": {
+    "name": "HP Victus, AMD Ryzen 7 7445HS, 6GB RTX 4050,",
+    "product_code": "FIM-449A672B",
+    "barcode_number": "8977659353011",
+    "barcode_image": "barcodes/barcode_8977659353011_9.png",
+    "qr_code": "qrcodes/qr_8977659353011_9.png",
+    "slug": "hp-victus-amd-ryzen-7-7445hs-6gb-rtx-4050-fim-449a672b",
+    "category": 1,
+    "brand": 6,
+    "supplier": 1,
+    "purchase_price": "920000.00",
+    "selling_price": "0.00",
+    "gst_percentage": "18.00",
+    "description": "HP Victus, AMD Ryzen 7 7445HS, 6GB RTX 4050, 16GB DDR5(Upgradeable) 512GB SSD, 144Hz, IPS, 300 nits, 15.6''/39.6cm, Win11, Office24, Blue, 2.29kg, fb3130AX, DTS Audio, Xbox Gamepass*, Gaming Laptop",
+    "warranty": "2 year",
+    "status": "active",
+    "stock_quantity": 6,
+    "low_stock_threshold": 2,
+    "created_at": "2026-09-09T09:02:31.483Z",
+    "updated_at": "2026-09-09T09:04:13.428Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 14,
+  "fields": {
+    "name": "QA Automated Product",
+    "product_code": "QA-TEST-PROD",
+    "barcode_number": "QA-TEST-PROD",
+    "barcode_image": "barcodes/barcode_QA-TEST-PROD_14.png",
+    "qr_code": "qrcodes/qr_QA-TEST-PROD_14.png",
+    "slug": "qa-automated-product-qa-test-prod",
+    "category": 3,
+    "brand": 3,
+    "supplier": null,
+    "purchase_price": "1000.00",
+    "selling_price": "1500.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 14,
+    "low_stock_threshold": 3,
+    "created_at": "2026-09-09T10:47:24.130Z",
+    "updated_at": "2026-09-09T10:47:28.064Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 1,
+  "fields": {
+    "product": 1,
+    "image": "products/images.jpg",
+    "is_primary": false,
+    "created_at": "2026-09-08T11:32:05.228Z"
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 2,
+  "fields": {
+    "product": 7,
+    "image": "products/download_2.jpg",
+    "is_primary": false,
+    "created_at": "2026-09-09T07:21:19.266Z"
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 3,
+  "fields": {
+    "product": 8,
+    "image": "products/shopping.webp",
+    "is_primary": false,
+    "created_at": "2026-09-09T07:32:04.783Z"
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 4,
+  "fields": {
+    "product": 9,
+    "image": "products/shopping_1.webp",
+    "is_primary": false,
+    "created_at": "2026-09-09T09:02:32.288Z"
+  }
+},
+{
+  "model": "suppliers.supplier",
+  "pk": 1,
+  "fields": {
+    "company_name": "Destiny Computer System",
+    "contact_person": "jeetu",
+    "phone": "9377509977",
+    "email": "destiny@gmail.com",
+    "address": "101-104, 1st Floor, J.P. Tower,, Tagore Rd, Bhakti Nagar, Rajkot, Gujarat 360002",
+    "gst_number": "24DRE12113ZE55",
+    "is_active": true,
+    "created_at": "2026-09-08T11:25:04.347Z",
+    "updated_at": "2026-09-08T11:25:04.347Z"
+  }
+},
+{
+  "model": "suppliers.supplier",
+  "pk": 2,
+  "fields": {
+    "company_name": "CEO Core Supplier",
+    "contact_person": "Anand Shah",
+    "phone": "9988776655",
+    "email": null,
+    "address": null,
+    "gst_number": null,
+    "is_active": true,
+    "created_at": "2026-09-08T13:18:38.108Z",
+    "updated_at": "2026-09-08T13:18:38.108Z"
+  }
+},
+{
+  "model": "suppliers.supplier",
+  "pk": 3,
+  "fields": {
+    "company_name": "QA Test Supplier Ltd",
+    "contact_person": "Ramesh",
+    "phone": "9876500000",
+    "email": null,
+    "address": null,
+    "gst_number": null,
+    "is_active": true,
+    "created_at": "2026-09-08T13:26:04.996Z",
+    "updated_at": "2026-09-08T13:26:04.996Z"
+  }
+},
+{
+  "model": "suppliers.supplier",
+  "pk": 4,
+  "fields": {
+    "company_name": "MSI Compny",
+    "contact_person": "MSI sales",
+    "phone": "5225447897",
+    "email": "msi@gmail.com",
+    "address": "55",
+    "gst_number": "12EDW3211WWS",
+    "is_active": true,
+    "created_at": "2026-09-09T08:56:50.339Z",
+    "updated_at": "2026-09-09T08:56:50.339Z"
+  }
+},
+{
+  "model": "customers.customer",
+  "pk": 1,
+  "fields": {
+    "name": "Jeet Shingh",
+    "phone": "58558997897",
+    "email": "jeetshingh@gmial.com",
+    "address": "jetpur",
+    "reward_points": 0,
+    "is_active": true,
+    "created_at": "2026-09-08T11:33:07.591Z",
+    "updated_at": "2026-09-08T11:33:07.591Z"
+  }
+},
+{
+  "model": "customers.customer",
+  "pk": 2,
+  "fields": {
+    "name": "CEO VIP Client",
+    "phone": "9876543210",
+    "email": "vip@fenix.com",
+    "address": null,
+    "reward_points": 0,
+    "is_active": true,
+    "created_at": "2026-09-08T13:17:12.139Z",
+    "updated_at": "2026-09-08T13:17:12.139Z"
+  }
+},
+{
+  "model": "customers.customer",
+  "pk": 3,
+  "fields": {
+    "name": "QA Customer",
+    "phone": "9990001111",
+    "email": "qa@fenix.com",
+    "address": null,
+    "reward_points": 0,
+    "is_active": true,
+    "created_at": "2026-09-08T13:26:03.785Z",
+    "updated_at": "2026-09-08T13:26:03.785Z"
+  }
+},
+{
+  "model": "settings_app.companysettings",
+  "pk": 1,
+  "fields": {
+    "company_name": "Fenix IT Mall",
+    "company_logo": "settings/images.png",
+    "tagline": "Smart Inventory • Smart Business",
+    "phone": null,
+    "email": null,
+    "address": "",
+    "gst_number": "24SRE22112DC2",
+    "invoice_prefix": "INV",
+    "currency_symbol": "₹",
+    "currency_code": "INR",
+    "low_stock_threshold": 5,
+    "theme": "dark",
+    "website": null,
+    "updated_at": "2026-09-08T11:59:42.563Z"
+  }
+}
+]
