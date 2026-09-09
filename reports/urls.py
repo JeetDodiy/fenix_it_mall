@@ -16,5 +16,7 @@ urlpatterns = [
     path('inventory/pdf/', views.inventory_report_pdf, name='inventory_pdf'),
     path('customers/', views.customer_report, name='customers'),
     path('suppliers/', views.supplier_report, name='suppliers'),
+    path('suppliers/pdf/', views.supplier_report_pdf, name='suppliers_pdf'),
+    path('suppliers/csv/', views.supplier_report_csv, name='suppliers_csv'),
     path('employees/', views.employee_report, name='employees'),
 ]

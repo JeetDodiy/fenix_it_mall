@@ -27,10 +27,11 @@
         <div style="font-size:11px;color:var(--text-muted);">Outstanding</div>
       </div>
     </div>
-    <div style="margin-top:14px;display:flex;gap:8px;">
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
       {% if request.user.is_manager %}
       <a href="{% url 'suppliers:edit' supplier.pk %}" class="btn btn-primary btn-sm">✏️ Edit</a>
       <a href="{% url 'purchase:add' %}?supplier={{ supplier.pk }}" class="btn btn-success btn-sm">📋 New PO</a>
+      <a href="{% url 'reports:suppliers' %}?supplier={{ supplier.pk }}" class="btn btn-info btn-sm">📊 Report</a>
       {% endif %}
     </div>
   </div>

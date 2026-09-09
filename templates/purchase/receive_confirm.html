@@ -15,10 +15,17 @@
     <div class="card-header">
       <h3 class="card-title">📦 Receive Stock – {{ order.order_number }}</h3>
     </div>
-    
+
+    {% if stock_missing %}
+    <div class="alert alert-warning" style="margin-bottom:20px;">
+      ⚠️ <strong>Stock was never added!</strong> This PO was marked as "Received" without going through the receive process. Please enter quantities below to add the stock to inventory now.
+    </div>
+    {% else %}
     <div class="alert alert-info" style="margin-bottom:20px;">
       <strong>Instructions:</strong> Enter the quantity you're receiving for each item. You can receive partial quantities. Items will be added to inventory immediately.
     </div>
+    {% endif %}
+
 
     <form method="post">
       {% csrf_token %}

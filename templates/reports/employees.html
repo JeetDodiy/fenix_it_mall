@@ -1,25 +1,54 @@
 {% extends 'base.html' %}
 {% block title %}Employee Report{% endblock %}
 {% block page_title %}Employee Report{% endblock %}
+
+{% block extra_head %}
+<style>
+  .table-wrapper-seamless { border: none; }
+  .emp-code { font-size: 11px; }
+  .emp-salary { color: var(--accent-cyan); }
+  .emp-empty { text-align: center; color: var(--text-muted); padding: 32px; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="page-header"><div><div class="page-header-title">👤 Employee Report</div></div></div>
+<div class="page-header">
+  <div>
+    <div class="page-header-title">👤 Employee Report</div>
+    <div class="page-header-sub">Employee attendance, payroll summaries, and status logs</div>
+  </div>
+</div>
 <div class="card">
-  <div class="table-wrapper" style="border:none;">
+  <div class="table-wrapper table-wrapper-seamless">
     <table class="table">
-      <thead><tr><th>Employee</th><th>ID</th><th>Designation</th><th>Salary</th><th>Present Days</th><th>Absent Days</th><th>Status</th></tr></thead>
+      <thead>
+        <tr>
+          <th scope="col">Employee</th>
+          <th scope="col">ID</th>
+          <th scope="col">Designation</th>
+          <th scope="col">Salary</th>
+          <th scope="col">Present Days</th>
+          <th scope="col">Absent Days</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
       <tbody>
         {% for e in employees %}
         <tr>
           <td><a href="{% url 'employees:detail' e.pk %}" class="td-bold">{{ e.full_name }}</a></td>
-          <td><code style="font-size:11px;">{{ e.employee_id }}</code></td>
+          <td><code class="emp-code">{{ e.employee_id }}</code></td>
           <td>{{ e.designation }}</td>
-          <td style="color:var(--accent-cyan);">₹{{ e.salary }}</td>
+          <td class="emp-salary">₹{{ e.salary }}</td>
           <td><span class="badge badge-success">{{ e.present_days }}</span></td>
           <td><span class="badge badge-danger">{{ e.absent_days }}</span></td>
           <td><span class="badge badge-info">{{ e.get_status_display }}</span></td>
         </tr>
         {% empty %}
-        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">No employees found.</td></tr>
+        <tr>
+          <td colspan="7" class="emp-empty">
+            No employees found.
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>

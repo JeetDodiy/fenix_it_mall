@@ -1,27 +1,539 @@
 {% extends 'base.html' %}
-{% block title %}Supplier Report{% endblock %}
+{% block title %}Supplier Bill & Payment Report{% endblock %}
 {% block page_title %}Supplier Report{% endblock %}
+
 {% block content %}
-<div class="page-header"><div><div class="page-header-title">🏢 Supplier Report</div></div></div>
-<div class="card">
-  <div class="table-wrapper" style="border:none;">
-    <table class="table">
-      <thead><tr><th>Supplier</th><th>Contact</th><th>Orders</th><th>Total Ordered</th><th>Total Paid</th><th>Balance</th></tr></thead>
-      <tbody>
+<div class="page-header">
+  <div>
+    <div class="page-header-title">🏢 Supplier Bill & Payment Report</div>
+    <div class="page-header-sub">Track supplier bills, given payments, and pending dues with item-level details</div>
+  </div>
+  <div class="page-header-actions" style="display:flex;gap:10px;flex-wrap:wrap;">
+    <a href="{% url 'reports:suppliers_pdf' %}?supplier={{ selected_supplier_id }}&amp;date_from={{ date_from }}&amp;date_to={{ date_to }}&amp;payment_status={{ payment_status }}&amp;q={{ q }}" 
+       class="btn btn-danger btn-sm" target="_blank">
+      📄 Export PDF
+    </a>
+    <a href="{% url 'reports:suppliers_csv' %}?supplier={{ selected_supplier_id }}&amp;date_from={{ date_from }}&amp;date_to={{ date_to }}&amp;payment_status={{ payment_status }}&amp;q={{ q }}" 
+       class="btn btn-success btn-sm">
+      📥 Export CSV
+    </a>
+    <a href="{% url 'purchase:add' %}" class="btn btn-primary btn-sm">
+      ➕ New Purchase Order
+    </a>
+  </div>
+</div>
+
+<!-- Filters Card -->
+<div class="card" style="margin-bottom:24px;padding:18px 22px;">
+  <form method="get" style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;">
+    <!-- Supplier Selector -->
+    <div class="form-group" style="margin:0;min-width:210px;flex:1;">
+      <label class="form-label" style="font-size:12px;font-weight:600;margin-bottom:5px;">🏢 Supplier</label>
+      <select name="supplier" class="form-select" style="font-size:13px;padding:8px 12px;">
+        <option value="">All Suppliers</option>
         {% for s in suppliers %}
+          {% if selected_supplier_id == s.pk %}
+            <option value="{{ s.pk }}" selected>{{ s.company_name }}</option>
+          {% else %}
+            <option value="{{ s.pk }}">{{ s.company_name }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Date From -->
+    <div class="form-group" style="margin:0;min-width:145px;">
+      <label class="form-label" style="font-size:12px;font-weight:600;margin-bottom:5px;">📅 From Date</label>
+      <input type="date" name="date_from" class="form-input" value="{{ date_from }}" style="font-size:13px;padding:7px 10px;" />
+    </div>
+
+    <!-- Date To -->
+    <div class="form-group" style="margin:0;min-width:145px;">
+      <label class="form-label" style="font-size:12px;font-weight:600;margin-bottom:5px;">📅 To Date</label>
+      <input type="date" name="date_to" class="form-input" value="{{ date_to }}" style="font-size:13px;padding:7px 10px;" />
+    </div>
+
+    <!-- Payment Status Filter -->
+    <div class="form-group" style="margin:0;min-width:160px;">
+      <label class="form-label" style="font-size:12px;font-weight:600;margin-bottom:5px;">💰 Payment Status</label>
+      <select name="payment_status" class="form-select" style="font-size:13px;padding:8px 12px;">
+        <option value="">All Statuses</option>
+        {% if payment_status == 'paid' %}
+          <option value="paid" selected>✅ Fully Paid</option>
+        {% else %}
+          <option value="paid">✅ Fully Paid</option>
+        {% endif %}
+        {% if payment_status == 'partial' %}
+          <option value="partial" selected>⏳ Partially Paid</option>
+        {% else %}
+          <option value="partial">⏳ Partially Paid</option>
+        {% endif %}
+        {% if payment_status == 'unpaid' %}
+          <option value="unpaid" selected>⚠️ Unpaid / Pending</option>
+        {% else %}
+          <option value="unpaid">⚠️ Unpaid / Pending</option>
+        {% endif %}
+      </select>
+    </div>
+
+    <!-- Bill/PO search -->
+    <div class="form-group" style="margin:0;min-width:180px;flex:1;">
+      <label class="form-label" style="font-size:12px;font-weight:600;margin-bottom:5px;">🔍 Search Bill / PO</label>
+      <input type="text" name="q" class="form-input" placeholder="Bill No., PO No., Notes..." value="{{ q }}" style="font-size:13px;padding:7px 12px;" />
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:flex-end;">
+      <button type="submit" class="btn btn-primary" style="padding:8px 18px;">
+        🔍 Filter
+      </button>
+      <a href="{% url 'reports:suppliers' %}" class="btn btn-outline" style="padding:8px 14px;">
+        Reset
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- KPI Summary Cards -->
+<div class="grid-4" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));gap:16px;margin-bottom:24px;">
+  <!-- Total Bills -->
+  <div class="stat-card cyan">
+    <div class="stat-header">
+      <div>
+        <div class="stat-value">{{ bill_count }}</div>
+        <div class="stat-label">Total Bills / POs</div>
+      </div>
+      <div class="stat-icon cyan">🧾</div>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);">Total purchase invoices</div>
+  </div>
+
+  <!-- Total Billed Amount -->
+  <div class="stat-card purple">
+    <div class="stat-header">
+      <div>
+        <div class="stat-value">₹{{ total_billed|floatformat:2 }}</div>
+        <div class="stat-label">Total Billed Amount</div>
+      </div>
+      <div class="stat-icon purple">📦</div>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);">Gross amount of all bills</div>
+  </div>
+
+  <!-- Given Payment (Paid) -->
+  <div class="stat-card green">
+    <div class="stat-header">
+      <div>
+        <div class="stat-value" style="color:#34d399;">₹{{ total_given|floatformat:2 }}</div>
+        <div class="stat-label">Given Payment (Paid)</div>
+      </div>
+      <div class="stat-icon green">💸</div>
+    </div>
+    <div style="font-size:11px;color:var(--accent-green);">Amount paid to suppliers</div>
+  </div>
+
+  <!-- Pending Payment (Due) -->
+  <div class="stat-card red">
+    <div class="stat-header">
+      <div>
+        {% if total_pending > 0 %}
+          <div class="stat-value" style="color:#f87171;">₹{{ total_pending|floatformat:2 }}</div>
+        {% else %}
+          <div class="stat-value" style="color:#34d399;">₹{{ total_pending|floatformat:2 }}</div>
+        {% endif %}
+        <div class="stat-label">Pending Payment (Due)</div>
+      </div>
+      <div class="stat-icon red">⏳</div>
+    </div>
+    {% if total_pending > 0 %}
+      <div style="font-size:11px;color:#f87171;">Outstanding balance due</div>
+    {% else %}
+      <div style="font-size:11px;color:var(--text-muted);">All payments settled!</div>
+    {% endif %}
+  </div>
+</div>
+
+{% if selected_supplier %}
+<!-- Selected Supplier Details Banner -->
+<div class="card" style="margin-bottom:24px;border-left:4px solid var(--accent-cyan);padding:18px 24px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <h3 style="margin:0;font-size:18px;font-weight:700;color:var(--text-primary);">
+          🏢 {{ selected_supplier.company_name }}
+        </h3>
+        {% if selected_supplier.gst_number %}
+          <span class="badge badge-info" style="font-size:11px;">GST: {{ selected_supplier.gst_number }}</span>
+        {% endif %}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;font-size:13px;color:var(--text-secondary);">
+        <div>👤 <strong>Contact:</strong> {{ selected_supplier.contact_person }}</div>
+        <div>📱 <strong>Phone:</strong> {{ selected_supplier.phone }}</div>
+        {% if selected_supplier.email %}<div>📧 <strong>Email:</strong> {{ selected_supplier.email }}</div>{% endif %}
+        {% if selected_supplier.address %}<div>📍 <strong>Address:</strong> {{ selected_supplier.address }}</div>{% endif %}
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <a href="{% url 'purchase:add' %}?supplier={{ selected_supplier.pk }}" class="btn btn-primary btn-sm">
+        ➕ New Bill / PO
+      </a>
+      <a href="{% url 'suppliers:detail' selected_supplier.pk %}" class="btn btn-outline btn-sm">
+        👤 View Profile
+      </a>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Bills & Payment Details Table -->
+<div class="card" style="margin-bottom:28px;">
+  <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+    <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+      <span>📑 All Bill Details & Payments</span>
+      <span class="badge badge-info" style="font-size:11px;">{{ orders|length }} Orders</span>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);">
+      💡 Click on any bill row or <strong>"View Details"</strong> to expand item breakdown & payment logs
+    </div>
+  </div>
+
+  <div class="table-wrapper" style="border:none;">
+    <table class="table" style="width:100%;">
+      <thead>
         <tr>
-          <td><a href="{% url 'suppliers:detail' s.pk %}" class="td-bold">{{ s.company_name }}</a></td>
-          <td>{{ s.contact_person }}</td>
-          <td><span class="badge badge-info">{{ s.order_count|default:0 }}</span></td>
-          <td style="font-weight:600;">₹{{ s.total_ordered|default:0|floatformat:0 }}</td>
-          <td style="color:var(--accent-green);">₹{{ s.total_paid|default:0|floatformat:0 }}</td>
-          <td style="color:var(--accent-red);">₹{% if s.total_ordered and s.total_paid %}{{ s.total_ordered|add:"-"|add:s.total_paid|floatformat:0 }}{% else %}0{% endif %}</td>
+          <th style="width:160px;">Bill / Invoice No.</th>
+          <th>Date</th>
+          {% if not selected_supplier %}<th>Supplier</th>{% endif %}
+          <th>Items</th>
+          <th style="text-align:right;">Bill Total</th>
+          <th style="text-align:right;">Given Payment</th>
+          <th style="text-align:right;">Pending Due</th>
+          <th style="text-align:center;">Status</th>
+          <th style="text-align:center;width:180px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+        <tr style="cursor:pointer;" onclick="toggleDetails('details-{{ o.pk }}', event)">
+          <!-- Bill Number & PO Number -->
+          <td>
+            <div style="font-weight:700;color:var(--accent-cyan);font-size:14px;">
+              {% if o.bill_number %}
+                🧾 {{ o.bill_number }}
+              {% else %}
+                <span style="color:var(--text-muted);">No Bill #</span>
+              {% endif %}
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">
+              PO: <a href="{% url 'purchase:detail' o.pk %}" class="td-bold" onclick="event.stopPropagation();">{{ o.order_number }}</a>
+            </div>
+          </td>
+
+          <!-- Date -->
+          <td style="font-size:13px;white-space:nowrap;">
+            {{ o.order_date|date:"d M Y" }}
+          </td>
+
+          <!-- Supplier -->
+          {% if not selected_supplier %}
+          <td>
+            <div style="font-weight:600;color:var(--text-primary);">
+              <a href="{% url 'reports:suppliers' %}?supplier={{ o.supplier.pk }}" onclick="event.stopPropagation();" style="color:inherit;text-decoration:none;">
+                {{ o.supplier.company_name }}
+              </a>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);">{{ o.supplier.phone }}</div>
+          </td>
+          {% endif %}
+
+          <!-- Items Badge -->
+          <td>
+            <span class="badge badge-info" style="font-size:12px;cursor:pointer;">
+              📦 {{ o.items.count }} item{{ o.items.count|pluralize }}
+            </span>
+          </td>
+
+          <!-- Total Bill Amount -->
+          <td style="text-align:right;font-weight:700;font-size:14px;color:var(--text-primary);">
+            ₹{{ o.total_amount|floatformat:2 }}
+          </td>
+
+          <!-- Given Payment (Paid) -->
+          <td style="text-align:right;font-weight:700;font-size:14px;color:#34d399;">
+            ₹{{ o.paid_amount|floatformat:2 }}
+          </td>
+
+          <!-- Pending Due (Balance) -->
+          {% if o.balance_amount > 0 %}
+            <td style="text-align:right;font-weight:700;font-size:14px;color:#f87171;">
+              ₹{{ o.balance_amount|floatformat:2 }}
+            </td>
+          {% else %}
+            <td style="text-align:right;font-weight:700;font-size:14px;color:#34d399;">
+              ₹{{ o.balance_amount|floatformat:2 }}
+            </td>
+          {% endif %}
+
+          <!-- Payment Status -->
+          <td style="text-align:center;">
+            {% if o.paid_amount >= o.total_amount %}
+              <span class="badge badge-success">✓ Fully Paid</span>
+            {% elif o.paid_amount > 0 %}
+              <span class="badge badge-warning">⏳ Partial</span>
+            {% else %}
+              <span class="badge badge-danger">⚠️ Unpaid</span>
+            {% endif %}
+          </td>
+
+          <!-- Actions -->
+          <td style="text-align:center;" onclick="event.stopPropagation();">
+            <div style="display:flex;gap:6px;justify-content:center;align-items:center;">
+              {% if o.balance_amount > 0 and request.user.is_manager %}
+              <a href="{% url 'purchase:add_payment' o.pk %}" class="btn btn-success btn-sm" style="padding:4px 9px;font-size:11px;" title="Give payment to supplier">
+                💰 Pay
+              </a>
+              {% endif %}
+              <button type="button" class="btn btn-outline btn-sm" style="padding:4px 9px;font-size:11px;" onclick="toggleDetails('details-{{ o.pk }}', event)" id="btn-toggle-{{ o.pk }}">
+                ▼ Details
+              </button>
+              <a href="{% url 'purchase:invoice' o.pk %}" class="btn btn-info btn-sm" style="padding:4px 8px;font-size:11px;" target="_blank" title="View / Print Bill">
+                🖨️
+              </a>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Expandable Bill Drawer (Items and Payments) -->
+        <tr id="details-{{ o.pk }}" style="display:none;background:rgba(15,23,42,0.65);">
+          {% if selected_supplier %}
+            <td colspan="8" style="padding:18px 24px;border-bottom:2px solid var(--border-glass);">
+          {% else %}
+            <td colspan="9" style="padding:18px 24px;border-bottom:2px solid var(--border-glass);">
+          {% endif %}
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:20px;">
+              
+              <!-- Left: Items in this Bill -->
+              <div style="background:var(--bg-glass);border:1px solid var(--border-glass);border-radius:12px;padding:14px 16px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:1px solid var(--border-glass);padding-bottom:6px;">
+                  <span style="font-weight:700;font-size:13px;color:var(--accent-cyan);">
+                    📦 Products in Bill ({{ o.items.count }})
+                  </span>
+                  <span style="font-size:11px;color:var(--text-muted);">
+                    Bill Total: <strong>₹{{ o.total_amount|floatformat:2 }}</strong>
+                  </span>
+                </div>
+                <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                  <thead>
+                    <tr style="color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,0.06);text-align:left;">
+                      <th style="padding:4px 0;">Item Name</th>
+                      <th style="padding:4px 8px;text-align:center;">Qty</th>
+                      <th style="padding:4px 8px;text-align:right;">Rate (₹)</th>
+                      <th style="padding:4px 0;text-align:right;">Subtotal (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for item in o.items.all %}
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                      <td style="padding:6px 0;">
+                        <span style="font-weight:600;color:var(--text-primary);">{{ item.product.name }}</span>
+                        {% if item.product.product_code %}
+                          <span style="font-size:10px;color:var(--text-muted);display:block;">Code: {{ item.product.product_code }}</span>
+                        {% endif %}
+                      </td>
+                      <td style="padding:6px 8px;text-align:center;">
+                        <span class="badge badge-info" style="font-size:11px;">{{ item.quantity }}</span>
+                      </td>
+                      <td style="padding:6px 8px;text-align:right;color:var(--text-secondary);">
+                        ₹{{ item.purchase_price }}
+                      </td>
+                      <td style="padding:6px 0;text-align:right;font-weight:600;color:var(--text-primary);">
+                        ₹{{ item.total_price }}
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" style="color:var(--text-muted);padding:10px 0;text-align:center;">No items recorded</td></tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Right: Given Payments History -->
+              <div style="background:var(--bg-glass);border:1px solid var(--border-glass);border-radius:12px;padding:14px 16px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:1px solid var(--border-glass);padding-bottom:6px;">
+                  <span style="font-weight:700;font-size:13px;color:#34d399;">
+                    💳 Given Payments ({{ o.payments.count }})
+                  </span>
+                  <div>
+                    <span style="font-size:11px;color:var(--text-muted);margin-right:8px;">
+                      Paid: <strong style="color:#34d399;">₹{{ o.paid_amount|floatformat:2 }}</strong>
+                    </span>
+                    {% if o.balance_amount > 0 and request.user.is_manager %}
+                    <a href="{% url 'purchase:add_payment' o.pk %}" class="btn btn-success btn-sm" style="padding:2px 8px;font-size:10px;">
+                      + Add Payment
+                    </a>
+                    {% endif %}
+                  </div>
+                </div>
+
+                {% if o.payments.all %}
+                <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                  <thead>
+                    <tr style="color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,0.06);text-align:left;">
+                      <th style="padding:4px 0;">Date</th>
+                      <th style="padding:4px 8px;">Method</th>
+                      <th style="padding:4px 8px;">Note</th>
+                      <th style="padding:4px 0;text-align:right;">Amount (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for p in o.payments.all %}
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                      <td style="padding:6px 0;color:var(--text-secondary);">
+                        {{ p.payment_date|date:"d M Y" }}
+                      </td>
+                      <td style="padding:6px 8px;">
+                        <span class="badge badge-purple" style="font-size:10px;text-transform:uppercase;">{{ p.get_payment_method_display }}</span>
+                      </td>
+                      <td style="padding:6px 8px;color:var(--text-muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                        {{ p.note|default:"-" }}
+                      </td>
+                      <td style="padding:6px 0;text-align:right;font-weight:700;color:#34d399;">
+                        ₹{{ p.amount|floatformat:2 }}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                {% else %}
+                <div style="padding:20px 10px;text-align:center;color:var(--text-muted);font-size:12px;">
+                  ⚠️ No payments recorded yet for this bill.
+                  {% if o.balance_amount > 0 and request.user.is_manager %}
+                  <div style="margin-top:8px;">
+                    <a href="{% url 'purchase:add_payment' o.pk %}" class="btn btn-success btn-sm" style="padding:4px 12px;font-size:11px;">
+                      💰 Record First Payment
+                    </a>
+                  </div>
+                  {% endif %}
+                </div>
+                {% endif %}
+
+                {% if o.notes %}
+                <div style="margin-top:10px;font-size:11px;color:var(--text-muted);border-top:1px dashed var(--border-glass);padding-top:6px;">
+                  📝 <strong>Note:</strong> {{ o.notes }}
+                </div>
+                {% endif %}
+              </div>
+
+            </div>
+          </td>
         </tr>
         {% empty %}
-        <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No suppliers yet.</td></tr>
+        <tr>
+          {% if selected_supplier %}
+            <td colspan="8" style="text-align:center;color:var(--text-muted);padding:44px;">
+          {% else %}
+            <td colspan="9" style="text-align:center;color:var(--text-muted);padding:44px;">
+          {% endif %}
+            <div style="font-size:36px;margin-bottom:8px;">📭</div>
+            <div style="font-size:15px;font-weight:600;">No bills found for the selected criteria.</div>
+            <div style="font-size:12px;margin-top:4px;">Try changing the supplier filter or date range.</div>
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
+
+{% if not selected_supplier and supplier_ledgers %}
+<!-- Supplier Breakdown Ledger Summary Table -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">🏢 Supplier Balances & Ledger Summary</div>
+    <div style="font-size:12px;color:var(--text-muted);">Overview across all registered suppliers</div>
+  </div>
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Supplier Name</th>
+          <th>Contact</th>
+          <th style="text-align:center;">Total Bills</th>
+          <th style="text-align:right;">Total Billed (₹)</th>
+          <th style="text-align:right;">Given Payment (₹)</th>
+          <th style="text-align:right;">Pending Balance (₹)</th>
+          <th style="text-align:center;">Status</th>
+          <th style="text-align:center;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sl in supplier_ledgers %}
+        <tr>
+          <td>
+            <a href="{% url 'suppliers:detail' sl.supplier.pk %}" class="td-bold">
+              {{ sl.supplier.company_name }}
+            </a>
+            {% if sl.supplier.gst_number %}
+              <div style="font-size:10px;color:var(--text-muted);">GST: {{ sl.supplier.gst_number }}</div>
+            {% endif %}
+          </td>
+          <td>
+            <div>{{ sl.supplier.contact_person }}</div>
+            <div style="font-size:11px;color:var(--text-muted);">{{ sl.supplier.phone }}</div>
+          </td>
+          <td style="text-align:center;">
+            <span class="badge badge-info">{{ sl.bill_count }}</span>
+          </td>
+          <td style="text-align:right;font-weight:600;">
+            ₹{{ sl.total_billed|floatformat:2 }}
+          </td>
+          <td style="text-align:right;font-weight:600;color:#34d399;">
+            ₹{{ sl.total_paid|floatformat:2 }}
+          </td>
+          {% if sl.pending_balance > 0 %}
+            <td style="text-align:right;font-weight:700;color:#f87171;">
+              ₹{{ sl.pending_balance|floatformat:2 }}
+            </td>
+            <td style="text-align:center;">
+              <span class="badge badge-danger">⚠️ Due</span>
+            </td>
+          {% else %}
+            <td style="text-align:right;font-weight:700;color:#34d399;">
+              ₹{{ sl.pending_balance|floatformat:2 }}
+            </td>
+            <td style="text-align:center;">
+              <span class="badge badge-success">✓ Settled</span>
+            </td>
+          {% endif %}
+          <td style="text-align:center;">
+            <a href="{% url 'reports:suppliers' %}?supplier={{ sl.supplier.pk }}" class="btn btn-primary btn-sm" style="padding:4px 10px;font-size:11px;">
+              📊 View Bills
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px;">No suppliers registered yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<script>
+function toggleDetails(rowId, evt) {
+  if (evt) {
+    evt.stopPropagation();
+  }
+  const row = document.getElementById(rowId);
+  if (!row) return;
+  const isHidden = row.style.display === 'none' || row.style.display === '';
+  row.style.display = isHidden ? 'table-row' : 'none';
+  
+  const idNum = rowId.replace('details-', '');
+  const btn = document.getElementById('btn-toggle-' + idNum);
+  if (btn) {
+    btn.innerHTML = isHidden ? '▲ Hide' : '▼ Details';
+  }
+}
+</script>
 {% endblock %}

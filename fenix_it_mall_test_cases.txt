@@ -1,0 +1,3271 @@
+================================================================================
+                    FENIX IT MALL — COMPLETE TEST CASE DOCUMENT
+                    For Kiro AI Automated Website Testing
+================================================================================
+Project: Fenix IT Mall (Django 5.0.6 + SQLite)
+Version: 1.0
+Date: 2026-08-24
+Tester: Kiro AI
+URL Base: http://127.0.0.1:8000/
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+1. Authentication & Authorization (ACC)
+2. Dashboard & Analytics (DASH)
+3. Products Module — Categories, Brands, Products (PROD)
+4. Inventory Module — Stock Management (INV)
+5. Sales Module — POS & Invoicing (SALE)
+6. Purchase Module — Purchase Orders (PUR)
+7. Customers Module — CRM (CUST)
+8. Suppliers Module (SUPP)
+9. Employees Module — HR (EMP)
+10. Reports Module (RPT)
+11. Notifications Module (NOTIF)
+12. Settings Module (SET)
+13. UI/UX & Responsive Testing (UI)
+14. Security & Role-Based Access Control (SEC)
+15. Edge Cases & Negative Testing (EDGE)
+16. Data Integrity & Auto-ID Generation (DATA)
+17. End-to-End Workflows (E2E)
+
+================================================================================
+TEST CASE FORMAT LEGEND
+================================================================================
+TC-ID       : Unique Test Case ID
+Module      : Functional module
+Title       : Short description
+Precond     : Required setup before test
+Steps       : Numbered execution steps
+Expected    : Expected result
+Priority    : P1 (Critical), P2 (High), P3 (Medium), P4 (Low)
+Role        : Which user role should execute this
+
+================================================================================
+1. AUTHENTICATION & AUTHORIZATION (ACC)
+================================================================================
+
+TC-ACC-001 | Login with Valid Credentials
+Module     : Accounts
+Title      : User can login with correct username and password
+Precond    : User account exists (role: admin)
+Steps      :
+  1. Navigate to /
+  2. Enter valid username
+  3. Enter valid password
+  4. Click "Login" button
+Expected   :
+  - User is redirected to /dashboard/
+  - Sidebar shows user's profile picture/name
+  - Toast "Welcome back, [username]" appears
+  - Dashboard KPIs load correctly
+Priority   : P1
+Role       : Any
+
+TC-ACC-002 | Login with Invalid Credentials
+Module     : Accounts
+Title      : System rejects invalid login attempts
+Precond    : User account exists
+Steps      :
+  1. Navigate to /accounts/login/
+  2. Enter invalid username
+  3. Enter wrong password
+  4. Click "Login"
+Expected   :
+  - Page reloads with error message
+  - "Please enter a correct username and password" displayed
+  - User remains on login page
+  - No dashboard access granted
+Priority   : P1
+Role       : N/A
+
+TC-ACC-003 | Login Page Company Logo Display
+Module     : Accounts
+Title      : Company logo appears on login page if uploaded
+Precond    : CompanySettings has logo uploaded
+Steps      :
+  1. Navigate to /accounts/login/
+  2. Observe above the login form
+Expected   :
+  - Company logo image is displayed (48x48px or responsive)
+  - Logo has glow/box-shadow effect
+  - If no logo: fallback ⚡ icon displayed
+Priority   : P3
+Role       : N/A
+
+TC-ACC-004 | Root URL Redirects to Login
+Module     : Accounts
+Title      : / redirects directly to login page
+Precond    : User is not logged in
+Steps      :
+  1. Navigate to http://127.0.0.1:8000/
+Expected   :
+  - URL changes to /accounts/login/
+  - Login form is displayed
+  - No landing page shown
+Priority   : P2
+Role       : N/A
+
+TC-ACC-005 | Logout Functionality
+Module     : Accounts
+Title      : User can logout and session is destroyed
+Precond    : User is logged in
+Steps      :
+  1. Click user dropdown in navbar
+  2. Click "Logout"
+Expected   :
+  - User is redirected to /accounts/login/
+  - Session cookies cleared
+  - Accessing /dashboard/ redirects to login
+  - Toast "You have been logged out" appears
+Priority   : P1
+Role       : Any
+
+TC-ACC-006 | Registration New User
+Module     : Accounts
+Title      : New user can register with valid data
+Precond    : User is not logged in; registration enabled
+Steps      :
+  1. Navigate to /accounts/register/
+  2. Fill username, email, password, confirm password
+  3. Select role from dropdown
+  4. Click "Register"
+Expected   :
+  - Account created successfully
+  - Redirected to login page with success message
+  - User exists in database with selected role
+Priority   : P2
+Role       : N/A
+
+TC-ACC-007 | Password Mismatch on Registration
+Module     : Accounts
+Title      : Registration fails if passwords don't match
+Precond    : On registration page
+Steps      :
+  1. Fill all fields
+  2. Enter different values in password and confirm password
+  3. Submit form
+Expected   :
+  - Form shows validation error
+  - "Passwords do not match" message
+  - Account is NOT created
+Priority   : P2
+Role       : N/A
+
+TC-ACC-008 | Change Own Password
+Module     : Accounts
+Title      : Logged-in user can change their password
+Precond    : User is logged in
+Steps      :
+  1. Navigate to /accounts/password/
+  2. Enter current password
+  3. Enter new password and confirm
+  4. Click "Change Password"
+Expected   :
+  - Success toast appears
+  - Password updated in database
+  - User can login with new password
+  - Old password no longer works
+Priority   : P2
+Role       : Any
+
+TC-ACC-009 | Admin Change Any User Password
+Module     : Accounts
+Title      : Admin can reset password without knowing current
+Precond    : Logged in as admin; other users exist
+Steps      :
+  1. Navigate to /accounts/users/
+  2. Click key icon next to a user
+  3. Enter new password and confirm
+  4. Click "Change Password"
+Expected   :
+  - Success message displayed
+  - Target user's password updated
+  - Admin NOT redirected to login
+  - Target user can login with new password
+Priority   : P2
+Role       : Admin
+
+TC-ACC-010 | Profile Picture Upload
+Module     : Accounts
+Title      : User can upload profile picture
+Precond    : Logged in
+Steps      :
+  1. Navigate to /accounts/profile/
+  2. Click "Choose File" for profile picture
+  3. Select valid image (JPG/PNG, <2MB)
+  4. Click "Save"
+Expected   :
+  - Image uploads to media/profiles/
+  - Profile picture displayed in navbar and sidebar
+  - Success toast appears
+Priority   : P3
+Role       : Any
+
+TC-ACC-011 | Profile Update — Phone and Address
+Module     : Accounts
+Title      : User can update phone and address fields
+Precond    : Logged in
+Steps      :
+  1. Navigate to /accounts/profile/
+  2. Update phone number
+  3. Update address text
+  4. Click "Save"
+Expected   :
+  - Data saved to CustomUser model
+  - Updated info persists after logout/login
+  - Success toast appears
+Priority   : P3
+Role       : Any
+
+TC-ACC-012 | User List — Admin Only Access
+Module     : Accounts
+Title      : Only admin can view all users list
+Precond    : Multiple users with different roles exist
+Steps      :
+  1. Login as admin -> navigate to /accounts/users/
+  2. Login as manager -> attempt /accounts/users/
+  3. Login as cashier -> attempt /accounts/users/
+Expected   :
+  - Admin: sees user list with all users, edit/delete buttons
+  - Manager: "Permission denied" error or 403 page
+  - Cashier: "Permission denied" error or 403 page
+Priority   : P1
+Role       : Admin (positive), Manager/Cashier (negative)
+
+TC-ACC-013 | Add User by Admin
+Module     : Accounts
+Title      : Admin can create new user from user list
+Precond    : Logged in as admin
+Steps      :
+  1. Navigate to /accounts/users/
+  2. Click "Add User"
+  3. Fill all required fields
+  4. Select role (e.g., cashier)
+  5. Click "Save"
+Expected   :
+  - New user created in database
+  - Redirected to user list
+  - New user appears in list
+  - New user can login with provided credentials
+Priority   : P2
+Role       : Admin
+
+TC-ACC-014 | Edit User by Admin
+Module     : Accounts
+Title      : Admin can edit existing user details
+Precond    : Logged in as admin; target user exists
+Steps      :
+  1. Navigate to /accounts/users/
+  2. Click edit on a user
+  3. Change role from "employee" to "manager"
+  4. Click "Save"
+Expected   :
+  - User role updated in database
+  - User list reflects change
+  - Target user gets new permissions immediately
+Priority   : P2
+Role       : Admin
+
+TC-ACC-015 | Session Timeout / Unauthorized Access
+Module     : Accounts
+Title      : Unauthenticated users cannot access protected pages
+Precond    : User is not logged in
+Steps      :
+  1. Without logging in, navigate directly to:
+     - /dashboard/
+     - /products/
+     - /sales/pos/
+     - /inventory/
+     - /employees/
+Expected   :
+  - All pages redirect to /accounts/login/
+  - No data is exposed
+  - ?next= parameter preserved for redirect after login
+Priority   : P1
+Role       : N/A
+
+================================================================================
+2. DASHBOARD & ANALYTICS (DASH)
+================================================================================
+
+TC-DASH-001 | Dashboard KPI Cards Load
+Module     : Dashboard
+Title      : All KPI cards display correct counts
+Precond    : Logged in; database has products, customers, sales data
+Steps      :
+  1. Navigate to /dashboard/
+  2. Wait for page to fully load (splash screen fades)
+Expected   :
+  - Total Products count matches database
+  - Total Categories count matches database
+  - Total Brands count matches database
+  - Total Customers count matches database
+  - Total Suppliers count matches database
+  - Total Employees count matches database
+  - Today's Sales Count & Revenue accurate
+  - Monthly Revenue, Sales Count & Profit accurate
+  - Low Stock / Out of Stock / In Stock counts accurate
+Priority   : P1
+Role       : Any
+
+TC-DASH-002 | Chart.js Charts Render
+Module     : Dashboard
+Title      : All 4 charts render without errors
+Precond    : Logged in; sufficient data exists
+Steps      :
+  1. Navigate to /dashboard/
+  2. Scroll to charts section
+Expected   :
+  - Monthly Revenue & Profit line chart visible (last 6 months)
+  - Category Distribution doughnut chart visible
+  - Best Selling Products bar chart visible (top 5, last 30 days)
+  - Inventory Status pie chart visible
+  - No console JavaScript errors
+  - Charts are responsive
+Priority   : P2
+Role       : Any
+
+TC-DASH-003 | Chart Data AJAX Endpoint
+Module     : Dashboard
+Title      : /dashboard/chart-data/ returns valid JSON
+Precond    : Logged in
+Steps      :
+  1. Navigate to /dashboard/chart-data/ directly
+  2. Or inspect Network tab while loading dashboard
+Expected   :
+  - Returns valid JSON
+  - Contains data arrays for all 4 charts
+  - No 500 errors
+  - Data types are correct (numbers, arrays)
+Priority   : P2
+Role       : Any
+
+TC-DASH-004 | Recent Activity Section
+Module     : Dashboard
+Title      : Recent activity shows latest stock movements and sales
+Precond    : Recent sales and stock movements exist
+Steps      :
+  1. Navigate to /dashboard/
+  2. Scroll to recent activity section
+Expected   :
+  - Lists recent stock movements with type, product, quantity
+  - Lists recent sales with invoice number and amount
+  - Ordered by most recent first
+  - Links to detail pages work
+Priority   : P3
+Role       : Any
+
+TC-DASH-005 | Splash Screen Display
+Module     : Dashboard
+Title      : Splash screen shows on page load
+Precond    : Any page that extends base.html
+Steps      :
+  1. Hard refresh any page (Ctrl+F5)
+Expected   :
+  - Splash screen appears with company logo/icon
+  - Company name and tagline displayed
+  - Loading spinner animates
+  - Auto-hides after ~800ms with smooth fade-out
+  - Main content visible after splash
+Priority   : P3
+Role       : Any
+
+TC-DASH-006 | Sidebar Company Logo
+Module     : Dashboard
+Title      : Company logo displayed in sidebar brand area
+Precond    : CompanySettings has logo uploaded
+Steps      :
+  1. Navigate to /dashboard/
+  2. Look at top-left sidebar
+Expected   :
+  - Company logo image displayed (48x48px)
+  - Glow/box-shadow effect on logo
+  - If no logo: fallback ⚡ icon shown
+  - Company name text next to logo
+Priority   : P3
+Role       : Any
+
+================================================================================
+3. PRODUCTS MODULE (PROD)
+================================================================================
+
+--- 3.1 CATEGORIES ---
+
+TC-PROD-CAT-001 | List All Categories
+Module     : Products
+Title      : Category list displays all categories
+Precond    : Categories exist in database
+Steps      :
+  1. Navigate to /products/categories/
+Expected   :
+  - All categories displayed in grid/list
+  - Each shows name, image (if any), description
+  - Active/inactive status visible
+  - Edit and delete buttons present
+Priority   : P2
+Role       : Any with product access
+
+TC-PROD-CAT-002 | Add New Category
+Module     : Products
+Title      : Admin/Manager can add category
+Precond    : Logged in as admin or manager
+Steps      :
+  1. Navigate to /products/categories/add/
+  2. Enter category name (e.g., "Gaming Laptops")
+  3. Upload category image (optional)
+  4. Enter description
+  5. Click "Save"
+Expected   :
+  - Category created with auto-generated slug
+  - Redirected to category list
+  - New category appears in list
+  - Image saved to media/categories/
+Priority   : P2
+Role       : Admin, Manager
+
+TC-PROD-CAT-003 | Category Name Uniqueness
+Module     : Products
+Title      : Cannot create duplicate category name
+Precond    : Category "Laptops" already exists
+Steps      :
+  1. Navigate to /products/categories/add/
+  2. Enter name "Laptops"
+  3. Submit form
+Expected   :
+  - Validation error: "Category with this name already exists"
+  - Form not submitted
+  - No duplicate created
+Priority   : P2
+Role       : Admin
+
+TC-PROD-CAT-004 | Edit Category
+Module     : Products
+Title      : Category details can be updated
+Precond    : Category exists
+Steps      :
+  1. Navigate to /products/categories/
+  2. Click edit on a category
+  3. Change name and description
+  4. Click "Save"
+Expected   :
+  - Category updated in database
+  - Slug updated if name changed
+  - Image replaced if new one uploaded
+  - Redirected to list with success message
+Priority   : P2
+Role       : Admin, Manager
+
+TC-PROD-CAT-005 | Delete Category
+Module     : Products
+Title      : Category can be deleted
+Precond    : Category exists with no products OR products exist
+Steps      :
+  1. Navigate to /products/categories/
+  2. Click delete on a category
+  3. Confirm deletion
+Expected   :
+  - If no products: category deleted, success message
+  - If products exist: SET_NULL behavior — products remain but category becomes null
+  - Category no longer appears in list
+Priority   : P2
+Role       : Admin
+
+--- 3.2 BRANDS ---
+
+TC-PROD-BRN-001 | List All Brands
+Module     : Products
+Title      : Brand list displays all brands
+Precond    : Brands exist
+Steps      :
+  1. Navigate to /products/brands/
+Expected   :
+  - All brands displayed with logo, name, description
+  - Website link clickable (if provided)
+  - Edit/delete buttons present
+Priority   : P2
+Role       : Any with product access
+
+TC-PROD-BRN-002 | Add New Brand
+Module     : Products
+Title      : Admin/Manager can add brand with logo
+Precond    : Logged in as admin/manager
+Steps      :
+  1. Navigate to /products/brands/add/
+  2. Enter brand name (e.g., "ASUS")
+  3. Upload logo image
+  4. Enter website URL
+  5. Click "Save"
+Expected   :
+  - Brand created
+  - Logo saved to media/brands/
+  - Appears in brand list
+  - Website link validates URL format
+Priority   : P2
+Role       : Admin, Manager
+
+TC-PROD-BRN-003 | Brand Name Uniqueness
+Module     : Products
+Title      : Brand names must be unique
+Precond    : Brand "Dell" exists
+Steps      :
+  1. Try to add brand "Dell"
+Expected   :
+  - Validation error displayed
+  - Duplicate not created
+Priority   : P2
+Role       : Admin
+
+--- 3.3 PRODUCTS ---
+
+TC-PROD-PRD-001 | List All Products
+Module     : Products
+Title      : Product list with search and filters
+Precond    : Products exist in database
+Steps      :
+  1. Navigate to /products/
+Expected   :
+  - Products displayed in grid/table
+  - Each shows name, code, category, brand, stock, price
+  - Low stock items highlighted
+  - Search bar functional
+  - Filters by category/brand/status work
+Priority   : P1
+Role       : Any
+
+TC-PROD-PRD-002 | Add New Product
+Module     : Products
+Title      : Create product with all fields
+Precond    : Logged in as admin/manager; categories and brands exist
+Steps      :
+  1. Navigate to /products/add/
+  2. Fill name: "Wireless Mouse Logitech MX"
+  3. Select category, brand, supplier
+  4. Enter purchase_price: 1500.00
+  5. Enter selling_price: 2499.00
+  6. Enter gst_percentage: 18
+  7. Enter stock_quantity: 50
+  8. Enter low_stock_threshold: 5
+  9. Enter warranty: "2 Years"
+  10. Upload product images (multiple)
+  11. Click "Save"
+Expected   :
+  - Product created with auto-generated code FIM-XXXXXXXX
+  - Barcode auto-generated (Code128 PNG) saved to media/barcodes/
+  - QR code auto-generated saved to media/qrcodes/
+  - Slug auto-generated from name
+  - Barcode_number defaults to product_code
+  - Images saved to media/products/
+  - Primary image marked correctly
+  - Redirected to product detail page
+Priority   : P1
+Role       : Admin, Manager
+
+TC-PROD-PRD-003 | Product Auto-Generated Code Format
+Module     : Products
+Title      : Product code follows FIM-XXXXXXXX format
+Precond    : Create new product
+Steps      :
+  1. Add new product
+  2. Check product_code field
+Expected   :
+  - Code starts with "FIM-"
+  - Followed by 8 alphanumeric characters
+  - Example: FIM-A1B2C3D4
+  - Code is unique
+Priority   : P2
+Role       : Admin
+
+TC-PROD-PRD-004 | View Product Detail
+Module     : Products
+Title      : Product detail page shows all info
+Precond    : Product exists
+Steps      :
+  1. Navigate to /products/<pk>/
+Expected   :
+  - All product details displayed
+  - Product images gallery visible
+  - Primary image highlighted
+  - Stock status shown (In Stock / Low Stock / Out of Stock)
+  - Profit margin calculated and displayed
+  - Barcode image visible
+  - QR code visible
+  - Related stock movements listed
+Priority   : P2
+Role       : Any
+
+TC-PROD-PRD-005 | Edit Product
+Module     : Products
+Title      : Product details can be updated
+Precond    : Product exists
+Steps      :
+  1. Navigate to /products/<pk>/edit/
+  2. Change selling_price from 2499 to 2799
+  3. Change stock_quantity from 50 to 75
+  4. Add new product image
+  5. Click "Save"
+Expected   :
+  - Product updated in database
+  - Price change reflected immediately
+  - Stock quantity updated (but no StockMovement record for direct edit)
+  - New image appears in gallery
+  - Success toast shown
+Priority   : P2
+Role       : Admin, Manager
+
+TC-PROD-PRD-006 | Delete Product
+Module     : Products
+Title      : Product can be deleted
+Precond    : Product exists; not referenced in active sales
+Steps      :
+  1. Navigate to /products/<pk>/delete/
+  2. Confirm deletion
+Expected   :
+  - Product deleted from database
+  - Related ProductImages deleted (CASCADE)
+  - Barcode and QR code images may remain or be deleted
+  - Redirected to product list
+  - Success message shown
+Priority   : P2
+Role       : Admin
+
+TC-PROD-PRD-007 | Barcode Generation & Display
+Module     : Products
+Title      : Barcode page shows scannable Code128 barcode
+Precond    : Product exists with barcode
+Steps      :
+  1. Navigate to /products/<pk>/barcode/
+Expected   :
+  - Code128 barcode image displayed
+  - Barcode number printed below
+  - Print-friendly layout
+  - Image is valid PNG
+Priority   : P3
+Role       : Any
+
+TC-PROD-PRD-008 | QR Code Generation & Display
+Module     : Products
+Title      : QR code page shows scannable QR code
+Precond    : Product exists with QR code
+Steps      :
+  1. Navigate to /products/<pk>/qrcode/
+Expected   :
+  - QR code image displayed
+  - Links to product or contains product info
+  - Print-friendly layout
+  - Image is valid PNG
+Priority   : P3
+Role       : Any
+
+TC-PROD-PRD-009 | Product Search AJAX (POS)
+Module     : Products
+Title      : AJAX product search returns results for POS
+Precond    : Products exist; logged in
+Steps      :
+  1. Navigate to /sales/pos/
+  2. Type product name in search box
+  3. Or scan barcode
+Expected   :
+  - AJAX request to /products/search/
+  - Returns matching products as JSON
+  - Results show name, code, price, stock
+  - Selecting product adds to POS cart
+Priority   : P1
+Role       : Cashier, Admin, Manager
+
+TC-PROD-PRD-010 | Low Stock Threshold Alert
+Module     : Products
+Title      : Products below threshold show low stock status
+Precond    : Product has stock_quantity < low_stock_threshold
+Steps      :
+  1. Set product stock to 3 (threshold = 5)
+  2. Navigate to /products/
+  3. Navigate to /inventory/low-stock/
+Expected   :
+  - Product marked as low stock in product list
+  - Appears in /inventory/low-stock/ page
+  - Dashboard low stock count includes this product
+  - Notification may be generated
+Priority   : P2
+Role       : Any
+
+TC-PROD-PRD-011 | Out of Stock Status
+Module     : Products
+Title      : Zero stock products show out of stock
+Precond    : Product has stock_quantity = 0
+Steps      :
+  1. Set product stock to 0
+  2. Navigate to /products/
+  3. Navigate to /inventory/out-of-stock/
+Expected   :
+  - Product marked as out of stock
+  - Appears in out-of-stock page
+  - Cannot be added to POS cart (or shows warning)
+  - Dashboard out-of-stock count updated
+Priority   : P2
+Role       : Any
+
+================================================================================
+4. INVENTORY MODULE (INV)
+================================================================================
+
+TC-INV-001 | Stock Overview Page
+Module     : Inventory
+Title      : Inventory list shows all products with stock levels
+Precond    : Products exist with various stock levels
+Steps      :
+  1. Navigate to /inventory/
+Expected   :
+  - All products listed with current stock
+  - Color coding: green (in stock), yellow (low), red (out)
+  - Quick links to stock in/out/adjust
+  - Search and filter functional
+Priority   : P1
+Role       : Any
+
+TC-INV-002 | Stock In — Add Stock Manually
+Module     : Inventory
+Title      : Admin/Manager can add stock to product
+Precond    : Logged in as admin/manager; product exists
+Steps      :
+  1. Navigate to /inventory/stock-in/
+  2. Select product from dropdown
+  3. Enter quantity: 20
+  4. Enter reason: "New shipment received"
+  5. Click "Add Stock"
+Expected   :
+  - Product stock_quantity increased by 20
+  - StockMovement record created with type "in"
+  - quantity_before and quantity_after captured
+  - created_by set to current user
+  - Success toast shown
+Priority   : P1
+Role       : Admin, Manager
+
+TC-INV-003 | Stock Out — Remove Stock Manually
+Module     : Inventory
+Title      : Admin/Manager can remove stock from product
+Precond    : Product has sufficient stock (e.g., 50)
+Steps      :
+  1. Navigate to /inventory/stock-out/
+  2. Select product
+  3. Enter quantity: 10
+  4. Enter reason: "Damaged items"
+  5. Click "Remove Stock"
+Expected   :
+  - Product stock_quantity decreased by 10
+  - StockMovement record created with type "out"
+  - quantity_before = 50, quantity_after = 40
+  - Cannot remove more than available stock
+Priority   : P1
+Role       : Admin, Manager
+
+TC-INV-004 | Stock Out — Insufficient Stock Prevention
+Module     : Inventory
+Title      : System prevents removing more stock than available
+Precond    : Product has stock = 5
+Steps      :
+  1. Navigate to /inventory/stock-out/
+  2. Select product with stock 5
+  3. Enter quantity: 10
+  4. Click "Remove Stock"
+Expected   :
+  - Validation error: "Insufficient stock"
+  - Stock remains at 5
+  - No StockMovement created
+Priority   : P1
+Role       : Admin, Manager
+
+TC-INV-005 | Stock Adjustment — Add
+Module     : Inventory
+Title      : StockAdjustment with type "add" increases stock
+Precond    : Product has stock = 30
+Steps      :
+  1. Navigate to /inventory/adjust/
+  2. Select product
+  3. Select adjustment_type: "add"
+  4. Enter quantity: 15
+  5. Enter reason: "Inventory correction"
+  6. Click "Adjust"
+Expected   :
+  - Product stock becomes 45
+  - StockAdjustment record created
+  - StockMovement record auto-created with type "adjust"
+  - Both records linked to current user
+Priority   : P1
+Role       : Admin, Manager
+
+TC-INV-006 | Stock Adjustment — Reduce
+Module     : Inventory
+Title      : StockAdjustment with type "reduce" decreases stock
+Precond    : Product has stock = 30
+Steps      :
+  1. Navigate to /inventory/adjust/
+  2. Select product
+  3. Select adjustment_type: "reduce"
+  4. Enter quantity: 5
+  5. Enter reason: "Physical count mismatch"
+  6. Click "Adjust"
+Expected   :
+  - Product stock becomes 25
+  - StockAdjustment record created
+  - StockMovement record auto-created with type "adjust"
+Priority   : P1
+Role       : Admin, Manager
+
+TC-INV-007 | Stock Movement History
+Module     : Inventory
+Title      : All stock movements logged with details
+Precond    : Multiple stock movements exist
+Steps      :
+  1. Navigate to /inventory/history/
+Expected   :
+  - All movements listed chronologically
+  - Shows product name, type (in/out/adjust/damaged/return), quantity
+  - Shows before/after quantities
+  - Shows reason and reference
+  - Shows who performed the action
+  - Pagination if many records
+Priority   : P2
+Role       : Any
+
+TC-INV-008 | Damaged Stock Log
+Module     : Inventory
+Title      : Damaged goods can be logged separately
+Precond    : Product exists with stock
+Steps      :
+  1. Navigate to /inventory/damaged/
+  2. Select product
+  3. Enter quantity damaged: 3
+  4. Enter reason
+  5. Click "Log Damaged"
+Expected   :
+  - StockMovement created with type "damaged"
+  - Product stock reduced by 3
+  - Appears in damaged stock log
+  - May trigger low stock alert if below threshold
+Priority   : P2
+Role       : Admin, Manager
+
+TC-INV-009 | Low Stock Page
+Module     : Inventory
+Title      : Low stock page lists all below-threshold products
+Precond    : Multiple products with varying stock levels
+Steps      :
+  1. Navigate to /inventory/low-stock/
+Expected   :
+  - Only products with stock < low_stock_threshold shown
+  - Sorted by stock level (lowest first)
+  - Shows current stock vs threshold
+  - Links to product detail and stock-in
+  - Count matches dashboard KPI
+Priority   : P2
+Role       : Any
+
+TC-INV-010 | Out of Stock Page
+Module     : Inventory
+Title      : Out of stock page lists zero-stock products
+Precond    : Products with stock = 0 exist
+Steps      :
+  1. Navigate to /inventory/out-of-stock/
+Expected   :
+  - Only products with stock_quantity = 0 shown
+  - Shows last movement date if available
+  - Links to stock-in page
+  - Count matches dashboard KPI
+Priority   : P2
+Role       : Any
+
+================================================================================
+5. SALES MODULE — POS & INVOICING (SALE)
+================================================================================
+
+TC-SALE-001 | POS Page Load
+Module     : Sales
+Title      : POS terminal loads with empty cart
+Precond    : Logged in as cashier/admin/manager; products exist
+Steps      :
+  1. Navigate to /sales/pos/
+Expected   :
+  - Product search bar visible and focused
+  - Empty cart displayed
+  - Payment method buttons: Cash, UPI, Card
+  - Subtotal, GST, Discount, Grand Total all show 0.00
+  - Alpine.js initializes without errors
+Priority   : P1
+Role       : Cashier, Admin, Manager
+
+TC-SALE-002 | Add Product to POS Cart via Search
+Module     : Sales
+Title      : Product search adds item to cart
+Precond    : On POS page; products exist
+Steps      :
+  1. Type product name in search box
+  2. Select product from dropdown
+Expected   :
+  - Product added to cart with default quantity 1
+  - Unit price populated from selling_price
+  - GST percentage shown
+  - Line total calculated
+  - Grand total updated
+  - Product stock decremented in real-time display
+Priority   : P1
+Role       : Cashier
+
+TC-SALE-003 | Add Product via Barcode Scan
+Module     : Sales
+Title      : Barcode scanner adds product to cart
+Precond    : Product has barcode; on POS page
+Steps      :
+  1. Scan product barcode with scanner
+  2. Barcode number entered in search field
+Expected   :
+  - Product automatically added to cart
+  - Same behavior as manual search
+  - Quantity increments if already in cart
+Priority   : P1
+Role       : Cashier
+
+TC-SALE-004 | Update Quantity in Cart
+Module     : Sales
+Title      : Cart item quantity can be changed
+Precond    : Product in cart
+Steps      :
+  1. Change quantity from 1 to 3
+Expected   :
+  - Line total recalculated (price x qty)
+  - Subtotal updated
+  - GST recalculated
+  - Grand total updated
+  - Stock availability checked
+Priority   : P1
+Role       : Cashier
+
+TC-SALE-005 | Remove Item from Cart
+Module     : Sales
+Title      : Items can be removed from cart
+Precond    : Multiple items in cart
+Steps      :
+  1. Click delete/remove icon on a cart item
+Expected   :
+  - Item removed from cart
+  - All totals recalculated
+  - Stock returned to product (if already reserved)
+Priority   : P1
+Role       : Cashier
+
+TC-SALE-006 | Apply Discount Percentage
+Module     : Sales
+Title      : Discount percentage reduces grand total
+Precond    : Items in cart; subtotal = 5000
+Steps      :
+  1. Enter discount_percentage: 10
+Expected   :
+  - discount_amount calculated as 500.00
+  - GST calculated on discounted amount (if applicable)
+  - Grand total = subtotal - discount + GST
+  - All values update in real-time
+Priority   : P1
+Role       : Cashier
+
+TC-SALE-007 | Cash Payment with Change Calculation
+Module     : Sales
+Title      : Cash payment calculates change correctly
+Precond    : Cart total = 2950.00
+Steps      :
+  1. Select payment method: Cash
+  2. Enter amount_paid: 3000
+Expected   :
+  - change_amount calculated as 50.00
+  - Change displayed clearly
+  - Sale can be completed
+Priority   : P1
+Role       : Cashier
+
+TC-SALE-008 | Complete Sale — Cash
+Module     : Sales
+Title      : Full cash sale transaction completes successfully
+Precond    : Products in cart; customer selected or walk-in
+Steps      :
+  1. Add 2 products to cart
+  2. Select customer (or leave walk-in)
+  3. Select payment: Cash
+  4. Enter amount paid
+  5. Click "Complete Sale" (or press F12)
+Expected   :
+  - Sale created with auto invoice_number INV-YYYYMM-XXXXXX
+  - SaleItem records created for each cart item
+  - Product stock_quantity reduced by sold quantities
+  - StockMovement records created with type "out"
+  - Redirected to invoice page /sales/<pk>/invoice/
+  - Success toast: "Sale completed successfully"
+Priority   : P1
+Role       : Cashier
+
+TC-SALE-009 | Complete Sale — UPI Payment
+Module     : Sales
+Title      : UPI payment sale completes
+Precond    : Products in cart
+Steps      :
+  1. Add products to cart
+  2. Select payment: UPI
+  3. Enter UPI transaction ID in notes (if field available)
+  4. Complete sale
+Expected   :
+  - Sale saved with payment_method = "upi"
+  - amount_paid = grand_total (no change)
+  - Invoice generated
+  - Stock deducted
+Priority   : P1
+Role       : Cashier
+
+TC-SALE-010 | Complete Sale — Card Payment
+Module     : Sales
+Title      : Card payment sale completes
+Precond    : Products in cart
+Steps      :
+  1. Add products to cart
+  2. Select payment: Card
+  3. Complete sale
+Expected   :
+  - Sale saved with payment_method = "card"
+  - Invoice generated
+  - Stock deducted
+Priority   : P1
+Role       : Cashier
+
+TC-SALE-011 | Sale with Existing Customer
+Module     : Sales
+Title      : Sale linked to customer updates their history
+Precond    : Customer exists in database
+Steps      :
+  1. In POS, select customer from dropdown
+  2. Add products and complete sale
+Expected   :
+  - Sale.customer set to selected customer
+  - Customer's total_purchases property updated
+  - Customer's total_orders incremented
+  - reward_points updated (if system configured)
+  - Customer detail page shows this sale in history
+Priority   : P2
+Role       : Cashier
+
+TC-SALE-012 | Sale with Walk-in Customer
+Module     : Sales
+Title      : Sale without customer works as walk-in
+Precond    : On POS page
+Steps      :
+  1. Do NOT select customer
+  2. Add products and complete sale
+Expected   :
+  - Sale created with customer = NULL
+  - Invoice generated normally
+  - No customer history updated
+Priority   : P2
+Role       : Cashier
+
+TC-SALE-013 | Invoice Number Format
+Module     : Sales
+Title      : Invoice number follows INV-YYYYMM-XXXXXX format
+Precond    : Complete a sale
+Steps      :
+  1. Complete any sale
+  2. Check invoice number
+Expected   :
+  - Format: INV-YYYYMM-XXXXXX
+  - Example: INV-202608-AB12CD
+  - Year and month are current
+  - Unique per sale
+Priority   : P2
+Role       : Cashier
+
+TC-SALE-014 | View Sale Detail
+Module     : Sales
+Title      : Sale detail page shows complete invoice info
+Precond    : Sale exists
+Steps      :
+  1. Navigate to /sales/<pk>/
+Expected   :
+  - Invoice number, date, customer info
+  - All line items with quantities, prices, totals
+  - Subtotal, discount, GST, grand total
+  - Payment method and amount paid
+  - Change amount (if cash)
+  - Status badge (completed/refunded/partial_refund)
+  - Print and PDF buttons
+Priority   : P2
+Role       : Any
+
+TC-SALE-015 | HTML Invoice Print View
+Module     : Sales
+Title      : Invoice page is print-friendly
+Precond    : Sale exists
+Steps      :
+  1. Navigate to /sales/<pk>/invoice/
+  2. Press Ctrl+P
+Expected   :
+  - Clean print layout
+  - Company name/logo from settings
+  - GST number displayed
+  - All items in table format
+  - Totals clearly visible
+  - No sidebar/navbar in print
+Priority   : P2
+Role       : Any
+
+TC-SALE-016 | PDF Invoice Download
+Module     : Sales
+Title      : PDF invoice generated using ReportLab
+Precond    : Sale exists
+Steps      :
+  1. Navigate to /sales/<pk>/invoice/pdf/
+Expected   :
+  - PDF file downloaded
+  - Filename contains invoice number
+  - Contains all sale details
+  - Company branding from settings
+  - Proper formatting and alignment
+Priority   : P2
+Role       : Any
+
+TC-SALE-017 | Sales List with Filters
+Module     : Sales
+Title      : Sales history filterable by date, payment, status
+Precond    : Multiple sales exist
+Steps      :
+  1. Navigate to /sales/
+  2. Apply date range filter
+  3. Apply payment method filter
+  4. Search by invoice number
+Expected   :
+  - Filters applied correctly
+  - Results match criteria
+  - Pagination works
+  - Total count displayed
+  - Export options available
+Priority   : P2
+Role       : Any
+
+TC-SALE-018 | Edit Completed Invoice — Add Item
+Module     : Sales
+Title      : Manager can add new item to completed sale
+Precond    : Logged in as manager/admin; completed sale exists
+Steps      :
+  1. Navigate to /sales/<pk>/edit/
+  2. Click "Add Item"
+  3. Select new product
+  4. Enter quantity: 2
+  5. Click "Save Changes"
+Expected   :
+  - New SaleItem created
+  - Product stock reduced by 2
+  - Totals recalculated
+  - StockMovement created for new items
+  - Success message shown
+Priority   : P1
+Role       : Admin, Manager
+
+TC-SALE-019 | Edit Completed Invoice — Remove Item
+Module     : Sales
+Title      : Manager can remove item from completed sale
+Precond    : Logged in as manager; sale has multiple items
+Steps      :
+  1. Navigate to /sales/<pk>/edit/
+  2. Click delete on one line item
+  3. Click "Save Changes"
+Expected   :
+  - SaleItem deleted
+  - Product stock restored by removed quantity
+  - StockMovement created with type "return" or "adjust"
+  - Totals recalculated
+  - Transaction wrapped — no partial updates
+Priority   : P1
+Role       : Admin, Manager
+
+TC-SALE-020 | Edit Invoice — Change Quantity
+Module     : Sales
+Title      : Manager can change item quantity on invoice
+Precond    : Logged in as manager; sale exists with qty=2
+Steps      :
+  1. Navigate to /sales/<pk>/edit/
+  2. Change quantity from 2 to 5
+  3. Click "Save Changes"
+Expected   :
+  - Stock restored by 2 (old qty)
+  - Stock reduced by 5 (new qty)
+  - Net change: -3 stock
+  - Totals recalculated
+  - All StockMovements logged
+Priority   : P1
+Role       : Admin, Manager
+
+TC-SALE-021 | Edit Invoice — Change Customer
+Module     : Sales
+Title      : Customer can be changed on existing invoice
+Precond    : Logged in as manager; sale exists; multiple customers
+Steps      :
+  1. Navigate to /sales/<pk>/edit/
+  2. Change customer dropdown
+  3. Save
+Expected   :
+  - Sale.customer updated
+  - Old customer's purchase totals recalculated
+  - New customer's purchase totals recalculated
+  - No stock changes
+Priority   : P2
+Role       : Admin, Manager
+
+TC-SALE-022 | Edit Invoice — Change Payment Method
+Module     : Sales
+Title      : Payment method can be updated
+Precond    : Logged in as manager; sale with cash payment
+Steps      :
+  1. Navigate to /sales/<pk>/edit/
+  2. Change payment from Cash to UPI
+  3. Save
+Expected   :
+  - payment_method updated
+  - amount_paid and change_amount recalculated if needed
+  - No stock changes
+Priority   : P2
+Role       : Admin, Manager
+
+TC-SALE-023 | Edit Invoice — Change Discount
+Module     : Sales
+Title      : Discount percentage can be modified
+Precond    : Logged in as manager; sale exists
+Steps      :
+  1. Navigate to /sales/<pk>/edit/
+  2. Change discount from 0% to 15%
+  3. Save
+Expected   :
+  - discount_amount recalculated
+  - grand_total updated
+  - No stock changes
+Priority   : P2
+Role       : Admin, Manager
+
+TC-SALE-024 | Edit Invoice — Cashier Denied
+Module     : Sales
+Title      : Cashier cannot edit completed invoices
+Precond    : Logged in as cashier
+Steps      :
+  1. Navigate to /sales/<pk>/edit/
+Expected   :
+  - "Permission denied" message
+  - Redirected to dashboard or sale list
+  - No edit form shown
+Priority   : P1
+Role       : Cashier (negative test)
+
+TC-SALE-025 | Delete Sale
+Module     : Sales
+Title      : Admin can delete sale and restore stock
+Precond    : Logged in as admin; sale exists
+Steps      :
+  1. Navigate to /sales/<pk>/delete/
+  2. Confirm deletion
+Expected   :
+  - Sale and all SaleItems deleted
+  - Product stock restored for all items
+  - StockMovement records created (type "return")
+  - Redirected to sales list
+  - Success message shown
+Priority   : P2
+Role       : Admin
+
+TC-SALE-026 | Sale with Insufficient Stock
+Module     : Sales
+Title      : POS prevents selling more than available stock
+Precond    : Product has stock = 3
+Steps      :
+  1. Add product to cart
+  2. Try to change quantity to 5
+Expected   :
+  - Validation error or warning
+  - Cannot complete sale with qty > stock
+  - Stock quantity respected
+Priority   : P1
+Role       : Cashier
+
+TC-SALE-027 | GST Calculation Accuracy
+Module     : Sales
+Title      : GST calculated correctly at 18%
+Precond    : Product with selling_price = 1000, gst = 18%
+Steps      :
+  1. Add product to cart
+  2. Quantity = 1
+Expected   :
+  - Subtotal = 1000.00
+  - GST amount = 180.00 (or as per system logic: inclusive/exclusive)
+  - Grand total = 1180.00 (or 1000.00 if inclusive)
+  - Verify calculation matches business rules
+Priority   : P1
+Role       : Cashier
+
+TC-SALE-028 | Keyboard Shortcuts in POS
+Module     : Sales
+Title      : POS keyboard shortcuts work
+Precond    : On POS page
+Steps      :
+  1. Press F12 -> should submit/complete sale
+  2. Press Alt+C -> should clear cart
+  3. Press 1/2/3 -> should select payment methods
+Expected   :
+  - All shortcuts trigger correct actions
+  - No JavaScript errors
+  - Actions confirmed with visual feedback
+Priority   : P3
+Role       : Cashier
+
+================================================================================
+6. PURCHASE MODULE (PUR)
+================================================================================
+
+TC-PUR-001 | Purchase Order List
+Module     : Purchase
+Title      : All purchase orders displayed with status
+Precond    : Purchase orders exist
+Steps      :
+  1. Navigate to /purchase/
+Expected   :
+  - All POs listed with order_number, supplier, date, status
+  - Status badges: pending, received, partial, cancelled
+  - Total amount and paid amount shown
+  - Balance amount calculated
+  - Filter by status and supplier
+Priority   : P2
+Role       : Admin, Manager
+
+TC-PUR-002 | Create Purchase Order — Direct Stock Addition
+Module     : Purchase
+Title      : New PO created with direct automatic stock addition
+Precond    : Logged in as admin/manager; suppliers and products exist
+Steps      :
+  1. Navigate to /purchase/add/
+  2. Select supplier
+  3. Enter bill_number (e.g. INV-9901)
+  4. Select expected_delivery date
+  5. Add first item: select product, qty=10, purchase_price=1200
+  6. Add second item: select product, qty=5, purchase_price=800
+  7. Enter notes
+  8. Click "Create Purchase Order"
+Expected   :
+  - PurchaseOrder created with auto order_number PO-XXXXXXXX
+  - PurchaseItem records created for each line
+  - total_amount calculated correctly
+  - paid_amount = 0
+  - status = "received" automatically set (stock received directly)
+  - Product stock_quantity increased immediately by +10 and +5 in inventory
+  - Product purchase_price updated to latest purchase price
+  - StockMovement records created with type "in", reference "PO: PO-XXXXXXXX"
+  - In-app notification created for purchase order
+  - No manual "receive stock" step required
+  - Redirected to PO detail page with success message
+Priority   : P1
+Role       : Admin, Manager
+
+TC-PUR-003 | PO Number Format
+Module     : Purchase
+Title      : PO number follows PO-XXXXXXXX format
+Precond    : Create new PO
+Steps      :
+  1. Create purchase order
+  2. Check order_number
+Expected   :
+  - Format: PO-XXXXXXXX
+  - Example: PO-1A2B3C4D
+  - 8 alphanumeric characters after PO-
+  - Unique
+Priority   : P2
+Role       : Admin
+
+TC-PUR-004 | View Purchase Order Detail
+Module     : Purchase
+Title      : PO detail shows all information
+Precond    : PO exists with items
+Steps      :
+  1. Navigate to /purchase/<pk>/
+Expected   :
+  - Order number, supplier details, dates
+  - All line items with product, qty, price, received qty
+  - Total amount, paid amount, balance
+  - Status badge: Received
+  - Payment history
+  - Actions: Edit, Add Payment, View Invoice, Delete
+Priority   : P2
+Role       : Admin, Manager
+
+TC-PUR-005 | Edit Purchase Order — Automatic Stock Adjustment
+Module     : Purchase
+Title      : PO edit dynamically adjusts product inventory stock difference
+Precond    : PO exists with items
+Steps      :
+  1. Navigate to /purchase/<pk>/edit/
+  2. Change quantity of first item from 10 to 15 (+5 diff)
+  3. Change quantity of second item from 5 to 3 (-2 diff)
+  4. Add new third item (qty=2)
+  5. Click "Save"
+Expected   :
+  - PO total_amount recalculated
+  - First product stock_quantity increases by 5
+  - Second product stock_quantity decreases by 2
+  - Third product stock_quantity increases by 2
+  - StockMovement records logged for adjustments
+  - Item received_quantity synchronized with quantity
+Priority   : P1
+Role       : Admin, Manager
+
+TC-PUR-006 | Direct Stock Addition Verification
+Module     : Purchase
+Title      : PO creation immediately reflects in inventory stock and movements
+Precond    : Note initial stock of product X (e.g. 20 units)
+Steps      :
+  1. Create PO with product X qty=10
+  2. Check product X stock in /products/ or /inventory/
+  3. Check /inventory/movements/
+Expected   :
+  - Product X stock becomes 30 (20 + 10) immediately
+  - StockMovement log has entry type "in", qty=10, reason "Stock received via PO: PO-XXXXXXXX"
+  - Dashboard inventory KPIs update accordingly
+Priority   : P1
+Role       : Admin, Manager
+
+TC-PUR-007 | Legacy Receive Stock Sync View
+Module     : Purchase
+Title      : Backward compatibility sync for legacy POs
+Precond    : Legacy PO exists where received_quantity < quantity
+Steps      :
+  1. Navigate to /purchase/<pk>/receive/
+Expected   :
+  - If all stock is up to date: redirects with info "All stock is already up to date"
+  - If pending: displays sync confirmation and syncs missing stock on submit
+Priority   : P3
+Role       : Admin, Manager
+
+TC-PUR-008 | Receive Stock — Over-receipt Prevention
+Module     : Purchase
+Title      : Cannot receive more than ordered
+Precond    : PO item with qty=10
+Steps      :
+  1. Navigate to /purchase/<pk>/receive/
+  2. Enter received_quantity = 15
+  3. Submit
+Expected   :
+  - Validation error
+  - Cannot receive more than ordered quantity
+  - Stock not updated
+Priority   : P2
+Role       : Admin, Manager
+
+TC-PUR-009 | Add Supplier Payment
+Module     : Purchase
+Title      : Payment recorded against PO
+Precond    : PO exists with balance > 0
+Steps      :
+  1. Navigate to /purchase/<pk>/payment/
+  2. Enter amount: 5000
+  3. Select payment_method: "bank"
+  4. Enter note: "First installment"
+  5. Click "Add Payment"
+Expected   :
+  - SupplierPayment record created
+  - PO.paid_amount increased by 5000
+  - PO.balance_amount reduced
+  - If paid_amount >= total_amount, status may update
+  - Payment listed in PO detail
+Priority   : P1
+Role       : Admin, Manager
+
+TC-PUR-010 | Payment Exceeds Total Prevention
+Module     : Purchase
+Title      : Cannot pay more than PO total
+Precond    : PO total = 10000, paid = 0
+Steps      :
+  1. Navigate to /purchase/<pk>/payment/
+  2. Enter amount: 15000
+  3. Submit
+Expected   :
+  - Validation error: "Payment exceeds balance"
+  - Payment not recorded
+  - PO amounts unchanged
+Priority   : P2
+Role       : Admin, Manager
+
+TC-PUR-011 | Purchase Order Invoice
+Module     : Purchase
+Title      : PO invoice page displays correctly
+Precond    : PO exists
+Steps      :
+  1. Navigate to /purchase/<pk>/invoice/
+Expected   :
+  - Company branding from settings
+  - Supplier details
+  - All items with quantities and prices
+  - Total, paid, balance
+  - Print-friendly layout
+Priority   : P3
+Role       : Admin, Manager
+
+TC-PUR-012 | Delete Purchase Order
+Module     : Purchase
+Title      : PO can be deleted
+Precond    : Logged in as admin; PO exists (not received)
+Steps      :
+  1. Navigate to /purchase/<pk>/delete/
+  2. Confirm deletion
+Expected   :
+  - PO and PurchaseItems deleted
+  - If stock was received: stock NOT affected (or adjusted back)
+  - Redirected to purchase list
+Priority   : P2
+Role       : Admin
+
+TC-PUR-013 | Cancel Purchase Order
+Module     : Purchase
+Title      : PO status can be changed to cancelled
+Precond    : PO exists with status "pending"
+Steps      :
+  1. Navigate to /purchase/<pk>/edit/
+  2. Change status to "cancelled"
+  3. Save
+Expected   :
+  - Status updated to "cancelled"
+  - No stock changes
+  - Cannot receive stock for cancelled PO
+Priority   : P2
+Role       : Admin, Manager
+
+================================================================================
+7. CUSTOMERS MODULE (CUST)
+================================================================================
+
+TC-CUST-001 | Customer List
+Module     : Customers
+Title      : All customers displayed with key info
+Precond    : Customers exist
+Steps      :
+  1. Navigate to /customers/
+Expected   :
+  - All customers listed with name, phone, email
+  - Total purchases and total orders shown
+  - Reward points displayed
+  - Active/inactive status
+  - Search functional
+Priority   : P2
+Role       : Any
+
+TC-CUST-002 | Add New Customer
+Module     : Customers
+Title      : Create customer with all fields
+Precond    : Logged in as admin/manager/cashier
+Steps      :
+  1. Navigate to /customers/add/
+  2. Enter name: "Rajesh Kumar"
+  3. Enter phone: "9876543210"
+  4. Enter email: "rajesh@email.com"
+  5. Enter address
+  6. Click "Save"
+Expected   :
+  - Customer created
+  - Phone number unique constraint enforced
+  - reward_points = 0
+  - is_active = True
+  - Redirected to customer list or detail
+Priority   : P2
+Role       : Admin, Manager, Cashier
+
+TC-CUST-003 | Customer Phone Uniqueness
+Module     : Customers
+Title      : Phone number must be unique
+Precond    : Customer with phone "9876543210" exists
+Steps      :
+  1. Try to add new customer with same phone
+Expected   :
+  - Validation error: "Customer with this phone already exists"
+  - Customer not created
+Priority   : P2
+Role       : Admin
+
+TC-CUST-004 | View Customer Detail
+Module     : Customers
+Title      : Customer profile with purchase history
+Precond    : Customer exists with past sales
+Steps      :
+  1. Navigate to /customers/<pk>/
+Expected   :
+  - All customer details displayed
+  - Total purchases calculated correctly
+  - Total orders count accurate
+  - List of all invoices linked to customer
+  - Reward points displayed
+  - Edit and delete buttons
+Priority   : P2
+Role       : Any
+
+TC-CUST-005 | Edit Customer
+Module     : Customers
+Title      : Customer details updated
+Precond    : Customer exists
+Steps      :
+  1. Navigate to /customers/<pk>/edit/
+  2. Change address
+  3. Update email
+  4. Click "Save"
+Expected   :
+  - Customer updated
+  - Changes persist
+  - Purchase history unaffected
+Priority   : P2
+Role       : Admin, Manager
+
+TC-CUST-006 | Delete Customer
+Module     : Customers
+Title      : Customer can be deleted
+Precond    : Logged in as admin; customer exists
+Steps      :
+  1. Navigate to /customers/<pk>/delete/
+  2. Confirm deletion
+Expected   :
+  - Customer deleted
+  - Related Sales: customer field set to NULL (SET_NULL)
+  - Sales remain in system
+  - Redirected to customer list
+Priority   : P2
+Role       : Admin
+
+TC-CUST-007 | Customer Purchase History Accuracy
+Module     : Customers
+Title      : Total purchases reflects sum of grand_totals
+Precond    : Customer has 3 sales: 5000, 3000, 7000
+Steps      :
+  1. Navigate to /customers/<pk>/
+Expected   :
+  - total_purchases = 15000.00
+  - total_orders = 3
+  - Each sale linked and visible
+Priority   : P2
+Role       : Any
+
+================================================================================
+8. SUPPLIERS MODULE (SUPP)
+================================================================================
+
+TC-SUPP-001 | Supplier List
+Module     : Suppliers
+Title      : All suppliers displayed
+Precond    : Suppliers exist
+Steps      :
+  1. Navigate to /suppliers/
+Expected   :
+  - All suppliers with company_name, contact_person, phone
+  - GST number displayed
+  - Total purchases shown
+  - Active/inactive status
+Priority   : P2
+Role       : Admin, Manager
+
+TC-SUPP-002 | Add New Supplier
+Module     : Suppliers
+Title      : Create supplier with GST number
+Precond    : Logged in as admin/manager
+Steps      :
+  1. Navigate to /suppliers/add/
+  2. Enter company_name: "Tech Distributors Pvt Ltd"
+  3. Enter contact_person: "Amit Shah"
+  4. Enter phone: "9876543211"
+  5. Enter email: "amit@techdist.com"
+  6. Enter address
+  7. Enter gst_number: "27AABCU9603R1ZX"
+  8. Click "Save"
+Expected   :
+  - Supplier created
+  - GST number saved
+  - is_active = True
+  - Redirected to supplier list
+Priority   : P2
+Role       : Admin, Manager
+
+TC-SUPP-003 | View Supplier Detail
+Module     : Suppliers
+Title      : Supplier profile with purchase history
+Precond    : Supplier has purchase orders
+Steps      :
+  1. Navigate to /suppliers/<pk>/
+Expected   :
+  - All supplier details
+  - Total purchases calculated (sum of all PO amounts)
+  - List of all purchase orders
+  - Contact info clearly displayed
+Priority   : P2
+Role       : Admin, Manager
+
+TC-SUPP-004 | Edit Supplier
+Module     : Suppliers
+Title      : Supplier details updated
+Precond    : Supplier exists
+Steps      :
+  1. Navigate to /suppliers/<pk>/edit/
+  2. Change contact_person
+  3. Update GST number
+  4. Save
+Expected   :
+  - Supplier updated
+  - Changes persist
+  - PO history unaffected
+Priority   : P2
+Role       : Admin, Manager
+
+TC-SUPP-005 | Delete Supplier
+Module     : Suppliers
+Title      : Supplier deletion handling
+Precond    : Logged in as admin; supplier has POs
+Steps      :
+  1. Navigate to /suppliers/<pk>/delete/
+  2. Confirm deletion
+Expected   :
+  - Supplier deleted
+  - Related PurchaseOrders: supplier field handled (CASCADE or SET_NULL per model)
+  - If CASCADE: all POs deleted too
+  - If SET_NULL: POs remain with null supplier
+Priority   : P2
+Role       : Admin
+
+================================================================================
+9. EMPLOYEES MODULE — HR (EMP)
+================================================================================
+
+--- 9.1 EMPLOYEES ---
+
+TC-EMP-001 | Employee List
+Module     : Employees
+Title      : All employees displayed
+Precond    : Employees exist
+Steps      :
+  1. Navigate to /employees/
+Expected   :
+  - All employees with ID, name, designation, department
+  - Status badge (active/inactive/on_leave/terminated)
+  - Salary displayed
+  - Join date shown
+  - Search and filter functional
+Priority   : P2
+Role       : Admin, Manager
+
+TC-EMP-002 | Add New Employee
+Module     : Employees
+Title      : Create employee with auto-generated ID
+Precond    : Logged in as admin/manager
+Steps      :
+  1. Navigate to /employees/add/
+  2. Enter first_name: "Priya"
+  3. Enter last_name: "Sharma"
+  4. Enter email: "priya@fenix.com"
+  5. Enter phone: "9876543222"
+  6. Enter designation: "Sales Executive"
+  7. Enter department: "Sales"
+  8. Enter salary: 25000.00
+  9. Select join_date
+  10. Upload profile picture
+  11. Optionally link to user account
+  12. Click "Save"
+Expected   :
+  - Employee created with auto ID EMP-XXXXXX
+  - Profile picture saved to media/employees/
+  - Status defaults to "active"
+  - Redirected to employee list or detail
+Priority   : P2
+Role       : Admin, Manager
+
+TC-EMP-003 | Employee ID Format
+Module     : Employees
+Title      : Employee ID follows EMP-XXXXXX format
+Precond    : Create new employee
+Steps      :
+  1. Add employee
+  2. Check employee_id
+Expected   :
+  - Format: EMP-XXXXXX
+  - Example: EMP-F3G7H1
+  - 6 alphanumeric characters
+  - Unique
+Priority   : P2
+Role       : Admin
+
+TC-EMP-004 | View Employee Detail
+Module     : Employees
+Title      : Employee profile with full info
+Precond    : Employee exists
+Steps      :
+  1. Navigate to /employees/<pk>/
+Expected   :
+  - All details displayed
+  - Profile picture shown
+  - Attendance summary
+  - Leave history
+  - Edit and delete buttons
+Priority   : P2
+Role       : Admin, Manager
+
+TC-EMP-005 | Edit Employee
+Module     : Employees
+Title      : Employee details updated
+Precond    : Employee exists
+Steps      :
+  1. Navigate to /employees/<pk>/edit/
+  2. Change salary to 30000
+  3. Change designation to "Senior Sales Executive"
+  4. Save
+Expected   :
+  - Employee updated
+  - Salary change reflected
+  - No impact on past attendance or leaves
+Priority   : P2
+Role       : Admin, Manager
+
+TC-EMP-006 | Delete Employee
+Module     : Employees
+Title      : Employee can be deleted
+Precond    : Logged in as admin
+Steps      :
+  1. Navigate to /employees/<pk>/delete/
+  2. Confirm deletion
+Expected   :
+  - Employee deleted
+  - Related Attendance and Leave records deleted (CASCADE)
+  - Profile picture file may remain or be deleted
+  - Redirected to employee list
+Priority   : P2
+Role       : Admin
+
+TC-EMP-007 | Link Employee to User Account
+Module     : Employees
+Title      : Employee can be linked to login account
+Precond    : Employee exists without user; CustomUser exists
+Steps      :
+  1. Edit employee
+  2. Select user account from dropdown
+  3. Save
+Expected   :
+  - OneToOne relationship established
+  - Employee can login using user credentials
+  - Profile picture syncs if configured
+Priority   : P3
+Role       : Admin
+
+--- 9.2 ATTENDANCE ---
+
+TC-EMP-ATT-001 | Attendance List
+Module     : Employees
+Title      : Attendance records displayed
+Precond    : Attendance records exist
+Steps      :
+  1. Navigate to /employees/attendance/
+Expected   :
+  - All records with employee name, date, status
+  - Check-in and check-out times
+  - Notes
+  - Filter by date and employee
+Priority   : P2
+Role       : Admin, Manager
+
+TC-EMP-ATT-002 | Mark Attendance
+Module     : Employees
+Title      : Daily attendance can be marked
+Precond    : Logged in as admin/manager; employees exist
+Steps      :
+  1. Navigate to /employees/attendance/save/
+  2. For each employee, select status: present/absent/late/half_day/leave
+  3. Enter check_in and check_out times (optional)
+  4. Add notes if needed
+  5. Click "Save Attendance"
+Expected   :
+  - Attendance records created for each employee
+  - Unique together (employee, date) enforced
+  - Cannot mark duplicate attendance for same employee+date
+  - Success message shown
+Priority   : P2
+Role       : Admin, Manager
+
+TC-EMP-ATT-003 | Duplicate Attendance Prevention
+Module     : Employees
+Title      : Same employee cannot have two attendance records for one date
+Precond    : Attendance exists for employee on today
+Steps      :
+  1. Try to mark attendance again for same employee and date
+Expected   :
+  - Validation error or update existing record
+  - No duplicate created
+Priority   : P2
+Role       : Admin
+
+--- 9.3 LEAVES ---
+
+TC-EMP-LEV-001 | Leave List
+Module     : Employees
+Title      : All leave requests displayed
+Precond    : Leave requests exist
+Steps      :
+  1. Navigate to /employees/leaves/
+Expected   :
+  - All leaves with employee, type, dates, status
+  - Status badges: pending, approved, rejected
+  - Approved_by shown for approved leaves
+  - Filter by status and employee
+Priority   : P2
+Role       : Admin, Manager
+
+TC-EMP-LEV-002 | Apply for Leave
+Module     : Employees
+Title      : Employee can apply for leave
+Precond    : Logged in; employee record exists
+Steps      :
+  1. Navigate to /employees/leaves/apply/
+  2. Select leave_type: "sick"
+  3. Enter start_date: tomorrow
+  4. Enter end_date: day after tomorrow
+  5. Enter reason: "Fever"
+  6. Click "Apply"
+Expected   :
+  - Leave created with status "pending"
+  - total_days calculated correctly (2 days)
+  - Redirected to leaves list
+  - Success message shown
+Priority   : P2
+Role       : Any (own leave)
+
+TC-EMP-LEV-003 | Approve Leave
+Module     : Employees
+Title      : Manager/Admin can approve leave
+Precond    : Logged in as manager; pending leave exists
+Steps      :
+  1. Navigate to /employees/leaves/
+  2. Click approve on a pending leave
+  3. Or navigate to /employees/leaves/<pk>/approve/
+Expected   :
+  - Leave status changed to "approved"
+  - approved_by set to current user
+  - Employee status may update to "on_leave"
+  - Success message shown
+Priority   : P2
+Role       : Admin, Manager
+
+TC-EMP-LEV-004 | Reject Leave
+Module     : Employees
+Title      : Manager/Admin can reject leave
+Precond    : Logged in as manager; pending leave exists
+Steps      :
+  1. Navigate to /employees/leaves/<pk>/approve/
+  2. Select reject action
+Expected   :
+  - Leave status changed to "rejected"
+  - approved_by set to current user
+  - Employee status remains unchanged
+Priority   : P2
+Role       : Admin, Manager
+
+TC-EMP-LEV-005 | Leave Total Days Calculation
+Module     : Employees
+Title      : total_days property calculates correctly
+Precond    : Leave from Aug 25 to Aug 27
+Steps      :
+  1. Create leave with start=2026-08-25, end=2026-08-27
+  2. View leave detail
+Expected   :
+  - total_days = 3 (inclusive counting)
+  - Or total_days = 2 (exclusive) — verify business logic
+Priority   : P3
+Role       : Any
+
+================================================================================
+10. REPORTS MODULE (RPT)
+================================================================================
+
+TC-RPT-001 | Reports Home Page
+Module     : Reports
+Title      : Reports hub loads with all report links
+Precond    : Logged in
+Steps      :
+  1. Navigate to /reports/
+Expected   :
+  - All report cards/links visible: Sales, Purchase, Profit, Inventory, Customers, Suppliers, Employees
+  - Each card shows description and icon
+  - Links navigate to correct report pages
+Priority   : P2
+Role       : Admin, Manager
+
+TC-RPT-002 | Sales Report
+Module     : Reports
+Title      : Sales report filterable by date range
+Precond    : Multiple sales exist
+Steps      :
+  1. Navigate to /reports/sales/
+  2. Select date range (e.g., last 30 days)
+  3. Click "Generate"
+Expected   :
+  - Sales within date range displayed
+  - Total revenue calculated
+  - Total sales count shown
+  - Payment method breakdown visible
+  - Data accurate against database
+Priority   : P2
+Role       : Admin, Manager
+
+TC-RPT-003 | Sales Report PDF Export
+Module     : Reports
+Title      : Sales report exports as PDF
+Precond    : Sales report generated
+Steps      :
+  1. Navigate to /reports/sales/pdf/
+  2. Or click "Export PDF" on sales report
+Expected   :
+  - PDF file downloaded
+  - Contains all report data
+  - Company branding from settings
+  - Proper table formatting
+Priority   : P2
+Role       : Admin, Manager
+
+TC-RPT-004 | Sales Report CSV Export
+Module     : Reports
+Title      : Sales report exports as CSV
+Precond    : Sales report generated
+Steps      :
+  1. Navigate to /reports/sales/csv/
+  2. Or click "Export CSV" on sales report
+Expected   :
+  - CSV file downloaded
+  - Contains comma-separated values
+  - Headers present
+  - All rows included
+  - Can open in Excel
+Priority   : P2
+Role       : Admin, Manager
+
+TC-RPT-005 | Purchase Report
+Module     : Reports
+Title      : Purchase report shows all POs
+Precond    : Multiple purchase orders exist
+Steps      :
+  1. Navigate to /reports/purchase/
+Expected   :
+  - All POs listed with supplier, amount, status
+  - Total purchase amount calculated
+  - Filter by date range works
+Priority   : P2
+Role       : Admin, Manager
+
+TC-RPT-006 | Purchase Report PDF
+Module     : Reports
+Title      : Purchase report PDF download
+Precond    : Purchase orders exist
+Steps      :
+  1. Navigate to /reports/purchase/pdf/
+Expected   :
+  - PDF downloaded with purchase data
+  - Proper formatting
+Priority   : P3
+Role       : Admin, Manager
+
+TC-RPT-007 | Profit & Loss Report
+Module     : Reports
+Title      : Profit report calculates correctly
+Precond    : Sales and purchases exist
+Steps      :
+  1. Navigate to /reports/profit/
+  2. Select date range
+Expected   :
+  - Total sales revenue shown
+  - Total purchase cost shown
+  - Gross profit = revenue - cost
+  - Profit margin percentage calculated
+  - Data matches actual transactions
+Priority   : P1
+Role       : Admin, Manager
+
+TC-RPT-008 | Inventory Valuation Report
+Module     : Reports
+Title      : Inventory report shows stock value
+Precond    : Products exist with stock and prices
+Steps      :
+  1. Navigate to /reports/inventory/
+Expected   :
+  - All products listed with current stock
+  - Purchase price and selling price shown
+  - Total valuation calculated (stock x price)
+  - Category-wise breakdown if available
+Priority   : P2
+Role       : Admin, Manager
+
+TC-RPT-009 | Inventory Report PDF
+Module     : Reports
+Title      : Inventory report PDF export
+Precond    : Products exist
+Steps      :
+  1. Navigate to /reports/inventory/pdf/
+Expected   :
+  - PDF downloaded
+  - Complete inventory data
+  - Company branding
+Priority   : P3
+Role       : Admin, Manager
+
+TC-RPT-010 | Customer Report
+Module     : Reports
+Title      : Customer analytics report
+Precond    : Customers with purchases exist
+Steps      :
+  1. Navigate to /reports/customers/
+Expected   :
+  - All customers listed
+  - Total purchases per customer
+  - Total orders per customer
+  - Top customers highlighted
+  - Accurate data
+Priority   : P2
+Role       : Admin, Manager
+
+TC-RPT-011 | Supplier Bill & Payment Report — KPI Summary & Ledger
+Module     : Reports
+Title      : Comprehensive supplier bill, given payment, and pending dues report
+Precond    : Multiple purchase orders with bills exist across suppliers
+Steps      :
+  1. Navigate to /reports/suppliers/
+  2. Observe the page header, 4 KPI cards, and bill details table
+Expected   :
+  - Header displays "Supplier Bill & Payment Report" with Export PDF and Export CSV buttons
+  - 4 Glassmorphic KPI summary cards:
+    * Total Bills / POs count
+    * Total Billed Amount (Rs.)
+    * Given Payment (Paid) (Rs., green accent)
+    * Pending Payment (Due) (Rs., red/amber accent)
+  - All supplier bills listed with:
+    * Bill/Invoice Number (e.g. AS-8859) & PO Number
+    * Date
+    * Supplier name and contact
+    * Items count badge (e.g. 2 items)
+    * Total Bill Amount (Rs.)
+    * Given Payment (Rs., green)
+    * Pending Payment (Rs., red if balance > 0)
+    * Payment Status badge (Fully Paid, Partial, Unpaid)
+    * Action buttons: Pay shortcut, Details toggle, Print invoice
+  - Supplier Balances & Ledger Summary table at bottom when viewing all suppliers
+Priority   : P1
+Role       : Admin, Manager
+
+TC-RPT-012 | Employee Report
+Module     : Reports
+Title      : Employee summary report
+Precond    : Employees exist
+Steps      :
+  1. Navigate to /reports/employees/
+Expected   :
+  - All employees listed
+  - Designation, department, salary
+  - Join date, status
+  - Attendance summary if available
+Priority   : P3
+Role       : Admin, Manager
+
+TC-RPT-013 | Supplier Report — Interactive Filters & Search
+Module     : Reports
+Title      : Filter supplier bills by supplier, date range, payment status, and keyword
+Precond    : Purchase orders with varying payment states exist
+Steps      :
+  1. Navigate to /reports/suppliers/
+  2. Filter by Supplier dropdown -> select specific supplier
+  3. Filter by Payment Status -> select "Unpaid / Pending"
+  4. Enter search query 'q' -> enter invoice number or keyword
+  5. Click "Filter"
+Expected   :
+  - Table filters dynamically to matching bills only
+  - KPI cards update to reflect the filtered subset
+  - Selected supplier banner appears with contact, phone, email, and GSTIN
+  - "Reset" button clears all active filters
+Priority   : P1
+Role       : Admin, Manager
+
+TC-RPT-014 | Supplier Report — Expandable Bill Details Drawer
+Module     : Reports
+Title      : Expanding a bill row displays purchased products and payment history
+Precond    : PO exists with line items and payments
+Steps      :
+  1. Navigate to /reports/suppliers/
+  2. Click on any bill row or click "▼ Details"
+Expected   :
+  - Collapsible drawer opens smoothly beneath the row
+  - "Products in Bill" table shows item name, product code, quantity, rate, and item total
+  - "Given Payments" table shows date, payment method, note, and amount
+  - If pending balance exists: "+ Add Payment" button is visible
+  - If no payments exist: shows "No payments recorded yet" with "Record First Payment" button
+  - Clicking "▲ Hide" or the row collapses the drawer
+Priority   : P1
+Role       : Admin, Manager
+
+TC-RPT-015 | Supplier Report — PDF Export
+Module     : Reports
+Title      : Export supplier bill and payment report as formatted PDF
+Precond    : Purchase orders exist
+Steps      :
+  1. Navigate to /reports/suppliers/
+  2. Apply filters (or leave all)
+  3. Click "📄 Export PDF" (or visit /reports/suppliers/pdf/)
+Expected   :
+  - Downloads valid PDF file (application/pdf)
+  - Contains ReportLab landscape layout
+  - Header includes title, selected supplier/period, and total summary KPIs
+  - Table lists Bill No, PO No, Date, Supplier, Items summary, Total, Paid, Pending, and Status
+  - No 500 server errors
+Priority   : P2
+Role       : Admin, Manager
+
+TC-RPT-016 | Supplier Report — CSV Export
+Module     : Reports
+Title      : Export supplier report data as spreadsheet CSV
+Precond    : Purchase orders exist
+Steps      :
+  1. Navigate to /reports/suppliers/
+  2. Click "📥 Export CSV" (or visit /reports/suppliers/csv/)
+Expected   :
+  - Downloads valid CSV file (text/csv)
+  - Headers: Bill Number, PO Number, Date, Supplier Company, Contact Person, Phone, GST Number, Items Details, Total Amount, Given Payment (Paid), Pending Payment (Balance), Payment Status, Order Status
+  - Opens cleanly in Excel / Google Sheets
+Priority   : P2
+Role       : Admin, Manager
+
+TC-RPT-017 | Supplier Profile — Direct Report Link
+Module     : Reports
+Title      : Quick navigation to supplier report from supplier detail profile
+Precond    : Supplier exists
+Steps      :
+  1. Navigate to /suppliers/<pk>/
+  2. Locate action buttons in left card
+  3. Click "📊 Report"
+Expected   :
+  - Navigates to /reports/suppliers/?supplier=<pk>
+  - Pre-filters directly to that supplier's bills, given payments, and pending dues
+Priority   : P3
+Role       : Admin, Manager
+
+================================================================================
+11. NOTIFICATIONS MODULE (NOTIF)
+================================================================================
+
+TC-NOTIF-001 | Notification List
+Module     : Notifications
+Title      : All notifications displayed
+Precond    : Notifications exist (low stock, sales, etc.)
+Steps      :
+  1. Navigate to /notifications/
+Expected   :
+  - All notifications listed with title, message, type
+  - Type badges: low_stock, sale, purchase, employee, system
+  - Read/unread status visible
+  - Timestamp shown
+Priority   : P2
+Role       : Any
+
+TC-NOTIF-002 | Unread Notification Count in Navbar
+Module     : Notifications
+Title      : Navbar shows unread notification count
+Precond    : Unread notifications exist
+Steps      :
+  1. Look at navbar notification bell icon
+Expected   :
+  - Badge with unread count displayed
+  - Count matches actual unread notifications
+  - Clicking bell opens dropdown with recent notifications
+Priority   : P2
+Role       : Any
+
+TC-NOTIF-003 | Mark Notification as Read
+Module     : Notifications
+Title      : Clicking notification marks it read
+Precond    : Unread notifications exist
+Steps      :
+  1. Click on a notification
+Expected   :
+  - Notification marked as read (is_read = True)
+  - Unread count decreases by 1
+  - Redirected to linked page if link exists
+Priority   : P2
+Role       : Any
+
+TC-NOTIF-004 | Low Stock Auto-Notification
+Module     : Notifications
+Title      : Low stock creates automatic notification
+Precond    : Product stock drops below threshold
+Steps      :
+  1. Create/adjust product to stock = 2 (threshold = 5)
+Expected   :
+  - Notification created with type "low_stock"
+  - Title: "Low Stock Alert" or similar
+  - Message includes product name and current stock
+  - Appears in notification list
+  - Unread count incremented
+Priority   : P2
+Role       : System auto-generated
+
+TC-NOTIF-005 | Sale Notification
+Module     : Notifications
+Title      : New sale creates notification
+Precond    : Sale completed
+Steps      :
+  1. Complete a sale via POS
+Expected   :
+  - Notification created with type "sale"
+  - Contains invoice number and amount
+  - Visible in notification list
+Priority   : P3
+Role       : System auto-generated
+
+TC-NOTIF-006 | Toast Auto-Dismiss
+Module     : Notifications
+Title      : Toast messages auto-dismiss after 3.5 seconds
+Precond    : Any action that triggers toast
+Steps      :
+  1. Perform action (e.g., save product)
+  2. Observe toast message
+Expected   :
+  - Toast appears with success/error message
+  - Toast auto-dismisses after ~3.5 seconds
+  - Smooth fade-out animation
+  - Multiple toasts stack with staggered animation
+Priority   : P3
+Role       : Any
+
+================================================================================
+12. SETTINGS MODULE (SET)
+================================================================================
+
+TC-SET-001 | View Company Settings
+Module     : Settings
+Title      : Settings page displays current configuration
+Precond    : Logged in as admin
+Steps      :
+  1. Navigate to /settings/
+Expected   :
+  - All settings fields populated
+  - Company name, tagline, phone, email, address
+  - GST number, invoice prefix
+  - Currency symbol and code (default INR)
+  - Low stock threshold (default 5)
+  - Theme selection (dark/light)
+  - Logo displayed if uploaded
+Priority   : P2
+Role       : Admin
+
+TC-SET-002 | Update Company Settings
+Module     : Settings
+Title      : Admin can update all company settings
+Precond    : Logged in as admin
+Steps      :
+  1. Navigate to /settings/
+  2. Change company_name to "Fenix IT Solutions"
+  3. Change tagline to "Your Tech Partner"
+  4. Upload new company logo
+  5. Change currency_symbol to "$"
+  6. Change currency_code to "USD"
+  7. Change low_stock_threshold to 10
+  8. Select theme: "dark"
+  9. Click "Save"
+Expected   :
+  - Settings saved (singleton, pk=1)
+  - Company name updated in sidebar and login page
+  - New logo appears in sidebar and login
+  - Currency symbol updates across site
+  - Low stock threshold now 10
+  - Theme switches to dark mode
+  - Success toast shown
+Priority   : P1
+Role       : Admin
+
+TC-SET-003 | Theme Toggle — Dark Mode
+Module     : Settings
+Title      : Dark mode applies globally
+Precond    : Logged in
+Steps      :
+  1. Click theme toggle in navbar
+  2. Select "Dark"
+Expected   :
+  - Page background changes to dark
+  - Text colors invert to light
+  - Sidebar darkens
+  - Charts adapt colors
+  - Preference saved in localStorage
+  - Persists after page refresh
+Priority   : P3
+Role       : Any
+
+TC-SET-004 | Theme Toggle — Light Mode
+Module     : Settings
+Title      : Light mode applies globally
+Precond    : Currently in dark mode
+Steps      :
+  1. Click theme toggle in navbar
+  2. Select "Light"
+Expected   :
+  - Page returns to light theme
+  - All elements properly visible
+  - Preference saved in localStorage
+Priority   : P3
+Role       : Any
+
+TC-SET-005 | Settings Singleton Enforcement
+Module     : Settings
+Title      : Only one settings record exists (pk=1)
+Precond    : Settings already exist
+Steps      :
+  1. Try to create second settings record (via admin or direct)
+Expected   :
+  - System prevents duplicate settings
+  - Only pk=1 record used everywhere
+  - get_settings() always returns same record
+Priority   : P2
+Role       : Admin
+
+TC-SET-006 | Manager Denied Settings Access
+Module     : Settings
+Title      : Manager cannot access company settings
+Precond    : Logged in as manager
+Steps      :
+  1. Navigate to /settings/
+Expected   :
+  - "Permission denied" message
+  - Redirected to dashboard
+  - No settings form shown
+Priority   : P1
+Role       : Manager (negative test)
+
+================================================================================
+13. UI/UX & RESPONSIVE TESTING (UI)
+================================================================================
+
+TC-UI-001 | Sidebar Navigation
+Module     : UI
+Title      : Sidebar links navigate correctly
+Precond    : Logged in
+Steps      :
+  1. Click each sidebar link:
+     - Dashboard, Products, Inventory, Sales, Purchase
+     - Customers, Suppliers, Employees, Reports, Settings
+Expected   :
+  - Each link navigates to correct page
+  - Active link highlighted
+  - URL matches expected route
+  - Page content loads correctly
+Priority   : P1
+Role       : Any
+
+TC-UI-002 | Sidebar Collapse/Expand
+Module     : UI
+Title      : Sidebar can be collapsed and expanded
+Precond    : Logged in
+Steps      :
+  1. Click hamburger menu icon
+  2. Observe sidebar
+  3. Click again
+Expected   :
+  - Sidebar collapses to icon-only mode
+  - Main content area expands
+  - Clicking again expands sidebar
+  - State persists or resets per session
+Priority   : P3
+Role       : Any
+
+TC-UI-003 | Mobile Responsive — Dashboard
+Module     : UI
+Title      : Dashboard usable on mobile viewport
+Precond    : Logged in
+Steps      :
+  1. Open browser dev tools
+  2. Set viewport to 375x667 (iPhone)
+  3. Navigate to /dashboard/
+Expected   :
+  - Layout adjusts to single column
+  - KPI cards stack vertically
+  - Charts resize properly
+  - Sidebar becomes hamburger menu
+  - Navbar collapses appropriately
+  - No horizontal scrolling
+Priority   : P2
+Role       : Any
+
+TC-UI-004 | Mobile Responsive — POS
+Module     : UI
+Title      : POS works on tablet viewport
+Precond    : Logged in as cashier
+Steps      :
+  1. Set viewport to 768x1024 (iPad)
+  2. Navigate to /sales/pos/
+Expected   :
+  - Product search accessible
+  - Cart visible and scrollable
+  - Payment buttons large enough to tap
+  - Totals clearly visible
+  - Complete sale button accessible
+Priority   : P2
+Role       : Cashier
+
+TC-UI-005 | Mobile Responsive — Tables
+Module     : UI
+Title      : Data tables are responsive
+Precond    : Logged in
+Steps      :
+  1. Navigate to /products/ on mobile viewport
+  2. Navigate to /sales/ on mobile viewport
+Expected   :
+  - Tables become horizontal scrollable cards
+  - Or stack into card layout
+  - All data visible without truncation
+  - Action buttons accessible
+Priority   : P2
+Role       : Any
+
+TC-UI-006 | Form Validation Styling
+Module     : UI
+Title      : Invalid forms show clear error states
+Precond    : On any form page
+Steps      :
+  1. Submit form with empty required fields
+Expected   :
+  - Invalid fields highlighted in red
+  - Error messages below fields
+  - Form does not submit
+  - Focus on first invalid field
+Priority   : P2
+Role       : Any
+
+TC-UI-007 | Modal Dialogs
+Module     : UI
+Title      : Modals open and close correctly
+Precond    : On page with modals
+Steps      :
+  1. Click action that opens modal (e.g., delete confirmation)
+  2. Click "Cancel" or X button
+  3. Click outside modal
+Expected   :
+  - Modal opens with backdrop
+  - Content centered and visible
+  - Cancel/X closes modal
+  - Clicking backdrop may close modal
+  - Body scroll locked when modal open
+Priority   : P3
+Role       : Any
+
+TC-UI-008 | Breadcrumb Navigation
+Module     : UI
+Title      : Breadcrumbs show correct path
+Precond    : Navigate to nested page
+Steps      :
+  1. Navigate to /products/categories/add/
+Expected   :
+  - Breadcrumb: Home > Products > Categories > Add
+  - Each segment clickable
+  - Links navigate to correct parent pages
+Priority   : P3
+Role       : Any
+
+TC-UI-009 | Loading Spinner
+Module     : UI
+Title      : Loader shows during slow operations
+Precond    : Slow network or heavy operation
+Steps      :
+  1. Trigger heavy report generation
+Expected   :
+  - Loading spinner appears
+  - Spinner animates
+  - Disappears when operation completes
+  - No interaction possible while loading
+Priority   : P3
+Role       : Any
+
+TC-UI-010 | Print Stylesheet
+Module     : UI
+Title      : Print view hides unnecessary elements
+Precond    : On any page
+Steps      :
+  1. Press Ctrl+P on /sales/<pk>/invoice/
+Expected   :
+  - Sidebar hidden
+  - Navbar hidden
+  - Only invoice content visible
+  - Proper page breaks
+  - Company header visible
+Priority   : P3
+Role       : Any
+
+TC-UI-011 | Glassmorphic Button Design System
+Module     : UI
+Title      : All standard buttons utilize glassmorphism styling
+Precond    : Any page with buttons (e.g. /dashboard/, /purchase/, /reports/)
+Steps      :
+  1. Inspect buttons: .btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-secondary, .btn-info, .btn-outline
+  2. Observe background, borders, blur, and hover interactions
+Expected   :
+  - Background is translucent/tinted (rgba with 0.12 - 0.20 opacity)
+  - Distinct colored high-contrast border matching semantic intent (cyan, green, red, amber, purple, blue)
+  - CSS backdrop-filter: blur(10px) applied
+  - Box-shadow provides subtle color-matched ambient glow
+  - Hover state elevates button (-2px translateY) with enhanced glow
+  - No solid opaque fill that clashes with dark/light themes
+Priority   : P2
+Role       : Any
+
+TC-UI-012 | POS Pay Dominant Button Glass Styling
+Module     : UI
+Title      : POS checkout pay button uses dominant emerald glass styling
+Precond    : On /sales/pos/
+Steps      :
+  1. Add products to POS cart
+  2. Observe the dominant Pay button (.btn-pay-dominant)
+Expected   :
+  - Styled as emerald green glass (rgba(16,185,129,0.18)) with crisp colored border
+  - Backdrop blur of 12px
+  - Prominent hover state with elevated green glow
+  - Disabled state gracefully dims without visual glitch
+Priority   : P2
+Role       : Cashier, Admin
+
+TC-UI-013 | Theme Contrast & Glass Readability
+Module     : UI
+Title      : Glassmorphism elements maintain legibility across dark and light themes
+Precond    : Logged in
+Steps      :
+  1. View UI in dark theme (default)
+  2. Toggle theme switch to light theme
+  3. Observe buttons, KPI cards, table drawers, and modals
+Expected   :
+  - Dark theme: cards have subtle white borders, glowing accents, sharp white text
+  - Light theme: cards adapt with dark text, subtle translucent white-glass backgrounds, crisp colored borders
+  - All text remains readable with high WCAG contrast
+  - No text-on-background inversion clashes
+Priority   : P2
+Role       : Any
+
+
+================================================================================
+14. SECURITY & ROLE-BASED ACCESS CONTROL (SEC)
+================================================================================
+
+TC-SEC-001 | Admin Full Access
+Module     : Security
+Title      : Admin can access all features
+Precond    : Logged in as admin
+Steps      :
+  1. Attempt to access every URL in system
+Expected   :
+  - All pages accessible
+  - All CRUD operations permitted
+  - User management accessible
+  - Settings accessible
+  - Reports accessible
+  - No permission denied messages
+Priority   : P1
+Role       : Admin
+
+TC-SEC-002 | Manager Restricted Access
+Module     : Security
+Title      : Manager cannot access admin-only features
+Precond    : Logged in as manager
+Steps      :
+  1. Navigate to /accounts/users/ -> should deny
+  2. Navigate to /settings/ -> should deny
+  3. Navigate to /sales/<pk>/edit/ -> should allow
+  4. Navigate to /employees/add/ -> should allow
+Expected   :
+  - User list: denied
+  - Settings: denied
+  - Invoice edit: allowed
+  - Employee add: allowed
+  - All other manager-level features work
+Priority   : P1
+Role       : Manager
+
+TC-SEC-003 | Cashier Limited Access
+Module     : Security
+Title      : Cashier can only access POS and view pages
+Precond    : Logged in as cashier
+Steps      :
+  1. Navigate to /sales/pos/ -> should allow
+  2. Navigate to /products/ -> should allow (view only)
+  3. Navigate to /inventory/ -> should allow (view only)
+  4. Navigate to /sales/<pk>/edit/ -> should deny
+  5. Navigate to /purchase/add/ -> should deny
+  6. Navigate to /employees/ -> should deny
+Expected   :
+  - POS: allowed
+  - Product view: allowed
+  - Inventory view: allowed
+  - Invoice edit: denied
+  - PO create: denied
+  - Employees: denied
+Priority   : P1
+Role       : Cashier
+
+TC-SEC-004 | Employee Minimal Access
+Module     : Security
+Title      : Employee role has minimal view access
+Precond    : Logged in as employee
+Steps      :
+  1. Navigate to /dashboard/ -> should allow
+  2. Navigate to /products/ -> should allow (view)
+  3. Navigate to /sales/ -> should allow (view)
+  4. Navigate to /sales/pos/ -> should deny
+  5. Navigate to /inventory/stock-in/ -> should deny
+Expected   :
+  - Dashboard: allowed
+  - Product list: allowed
+  - Sales list: allowed
+  - POS: denied
+  - Stock operations: denied
+Priority   : P1
+Role       : Employee
+
+TC-SEC-005 | CSRF Protection on Forms
+Module     : Security
+Title      : All POST forms have CSRF token
+Precond    : Logged in
+Steps      :
+  1. Inspect source of any form page
+  2. Check for {% csrf_token %}
+Expected   :
+  - CSRF token present in all forms
+  - Form submission fails without token
+Priority   : P1
+Role       : N/A
+
+TC-SEC-006 | SQL Injection Prevention
+Module     : Security
+Title      : Search fields are SQL injection safe
+Precond    : On any search page
+Steps      :
+  1. Enter SQL injection string: "' OR '1'='1"
+  2. Submit search
+Expected   :
+  - No database error
+  - No unauthorized data exposed
+  - Search treats input as literal string
+Priority   : P1
+Role       : N/A
+
+TC-SEC-007 | XSS Prevention
+Module     : Security
+Title      : Script tags are escaped in display
+Precond    : Logged in
+Steps      :
+  1. Create product with name: "<script>alert('xss')</script>"
+  2. View product list and detail
+Expected   :
+  - Script tag displayed as text, not executed
+  - No alert popup
+  - HTML properly escaped
+Priority   : P1
+Role       : Admin
+
+TC-SEC-008 | URL Direct Access Prevention
+Module     : Security
+Title      : Direct URL access respects permissions
+Precond    : Logged in as cashier
+Steps      :
+  1. Directly access /accounts/users/add/
+  2. Directly access /products/add/
+  3. Directly access /employees/<pk>/delete/
+Expected   :
+  - All denied with "Permission denied" or 403
+  - No form shown
+  - Redirected to safe page
+Priority   : P1
+Role       : Cashier
+
+================================================================================
+15. EDGE CASES & NEGATIVE TESTING (EDGE)
+================================================================================
+
+TC-EDGE-001 | Empty Database Dashboard
+Module     : Edge Cases
+Title      : Dashboard handles empty database gracefully
+Precond    : Fresh install, no data
+Steps      :
+  1. Login as admin on fresh database
+  2. Navigate to /dashboard/
+Expected   :
+  - No 500 errors
+  - KPIs show 0
+  - Charts show empty state or placeholder
+  - "No data" messages where appropriate
+  - Page fully functional
+Priority   : P2
+Role       : Admin
+
+TC-EDGE-002 | Zero Quantity in POS
+Module     : Edge Cases
+Title      : POS rejects zero or negative quantity
+Precond    : On POS page
+Steps      :
+  1. Add product to cart
+  2. Change quantity to 0
+  3. Try to complete sale
+Expected   :
+  - Validation error
+  - Cannot complete sale with zero qty
+  - Negative quantity rejected
+Priority   : P2
+Role       : Cashier
+
+TC-EDGE-003 | Negative Price Prevention
+Module     : Edge Cases
+Title      : Product prices cannot be negative
+Precond    : On product add/edit form
+Steps      :
+  1. Enter purchase_price: -100
+  2. Enter selling_price: -200
+  3. Submit
+Expected   :
+  - Validation error
+  - Negative prices rejected
+Priority   : P2
+Role       : Admin
+
+TC-EDGE-004 | Future Date Prevention
+Module     : Edge Cases
+Title      : Dates cannot be set in future where inappropriate
+Precond    : On attendance or leave form
+Steps      :
+  1. Try to mark attendance for tomorrow
+  2. Or set sale_date to future
+Expected   :
+  - Validation warning or rejection
+  - Business rules enforced
+Priority   : P3
+Role       : Admin
+
+TC-EDGE-005 | Very Large Numbers
+Module     : Edge Cases
+Title      : System handles large monetary values
+Precond    : On product or sale form
+Steps      :
+  1. Enter price: 999999999.99
+  2. Complete sale
+Expected   :
+  - No overflow errors
+  - Value stored correctly
+  - Calculations accurate
+  - Display formatted properly
+Priority   : P3
+Role       : Admin
+
+TC-EDGE-006 | Special Characters in Names
+Module     : Edge Cases
+Title      : Special characters handled in text fields
+Precond    : Logged in
+Steps      :
+  1. Create customer with name: "O'Connor & Sons (Pty) Ltd"
+  2. Create product with name: "Monitor 24" Full HD"
+Expected   :
+  - Names saved correctly
+  - No database errors
+  - Displayed properly in lists and details
+  - Slug generated safely
+Priority   : P3
+Role       : Admin
+
+TC-EDGE-007 | Concurrent Stock Operations
+Module     : Edge Cases
+Title      : Stock operations are transaction-safe
+Precond    : Two users try to sell same product simultaneously
+Steps      :
+  1. Product stock = 5
+  2. User A adds 3 to cart
+  3. User B adds 4 to cart
+  4. Both try to complete sale simultaneously
+Expected   :
+  - Only one sale completes if total exceeds stock
+  - Or both complete if within stock
+  - No negative stock in database
+  - StockMovement records accurate
+Priority   : P1
+Role       : Cashier
+
+TC-EDGE-008 | Delete Product with Sales History
+Module     : Edge Cases
+Title      : Product with sales cannot be deleted safely
+Precond    : Product exists in completed sales
+Steps      :
+  1. Try to delete product that has SaleItems
+Expected   :
+  - Either: deletion prevented with warning
+  - Or: product marked inactive instead
+  - Or: CASCADE deletes SaleItems (verify business rule)
+  - No orphaned records
+Priority   : P2
+Role       : Admin
+
+TC-EDGE-009 | Empty Cart Checkout Prevention
+Module     : Edge Cases
+Title      : Cannot complete sale with empty cart
+Precond    : On POS page
+Steps      :
+  1. Ensure cart is empty
+  2. Click "Complete Sale"
+Expected   :
+  - Error: "Cart is empty"
+  - Sale not created
+  - No invoice generated
+Priority   : P1
+Role       : Cashier
+
+TC-EDGE-010 | Duplicate Invoice Number Prevention
+Module     : Edge Cases
+Title      : No two sales have same invoice number
+Precond    : High volume sales
+Steps      :
+  1. Complete multiple sales rapidly
+Expected   :
+  - Each sale gets unique invoice number
+  - No collision errors
+  - Numbers sequential or random but unique
+Priority   : P1
+Role       : System
+
+================================================================================
+16. DATA INTEGRITY & AUTO-ID GENERATION (DATA)
+================================================================================
+
+TC-DATA-001 | Product Code Uniqueness
+Module     : Data Integrity
+Title      : All product codes are unique
+Precond    : Multiple products exist
+Steps      :
+  1. Check product_code for all products
+Expected   :
+  - No duplicate codes
+  - All follow FIM-XXXXXXXX format
+  - 8 chars after FIM- are alphanumeric
+Priority   : P1
+Role       : System
+
+TC-DATA-002 | Invoice Number Uniqueness
+Module     : Data Integrity
+Title      : All invoice numbers are unique
+Precond    : Multiple sales exist
+Steps      :
+  1. Check invoice_number for all sales
+Expected   :
+  - No duplicates
+  - Format: INV-YYYYMM-XXXXXX
+  - Year and month match sale date
+Priority   : P1
+Role       : System
+
+TC-DATA-003 | Purchase Order Number Uniqueness
+Module     : Data Integrity
+Title      : All PO numbers are unique
+Precond    : Multiple POs exist
+Steps      :
+  1. Check order_number for all POs
+Expected   :
+  - No duplicates
+  - Format: PO-XXXXXXXX
+Priority   : P1
+Role       : System
+
+TC-DATA-004 | Employee ID Uniqueness
+Module     : Data Integrity
+Title      : All employee IDs are unique
+Precond    : Multiple employees exist
+Steps      :
+  1. Check employee_id for all employees
+Expected   :
+  - No duplicates
+  - Format: EMP-XXXXXX
+Priority   : P1
+Role       : System
+
+TC-DATA-005 | Stock Quantity Never Negative
+Module     : Data Integrity
+Title      : Product stock never goes below zero
+Precond    : After many sales, stock outs, adjustments
+Steps      :
+  1. Query all products
+Expected   :
+  - No product has stock_quantity < 0
+  - Minimum value is 0
+Priority   : P1
+Role       : System
+
+TC-DATA-006 | Sale Total Calculation Accuracy
+Module     : Data Integrity
+Title      : Sale totals match sum of line items
+Precond    : Sale with multiple items exists
+Steps      :
+  1. Get sale with items
+  2. Calculate: sum of (SaleItem.total_price)
+  3. Compare with Sale.grand_total
+Expected   :
+  - Sum of line items matches grand_total
+  - GST amount matches sum of item GSTs
+  - Discount applied correctly
+Priority   : P1
+Role       : System
+
+TC-DATA-007 | Purchase Order Balance Calculation
+Module     : Data Integrity
+Title      : Balance = total - paid
+Precond    : PO with payments exists
+Steps      :
+  1. Get PO
+  2. Verify: balance_amount = total_amount - paid_amount
+Expected   :
+  - Calculation always correct
+  - Balance never negative
+  - After full payment, balance = 0
+Priority   : P1
+Role       : System
+
+TC-DATA-008 | Customer Phone Uniqueness in DB
+Module     : Data Integrity
+Title      : No two customers share phone number
+Precond    : Multiple customers exist
+Steps      :
+  1. Query customer phones
+Expected   :
+  - All phone numbers unique
+  - Database constraint enforced
+Priority   : P2
+Role       : System
+
+TC-DATA-009 | Category/Brand Name Uniqueness in DB
+Module     : Data Integrity
+Title      : No duplicate category or brand names
+Precond    : Categories and brands exist
+Steps      :
+  1. Query names
+Expected   :
+  - All category names unique
+  - All brand names unique
+  - Case sensitivity handled consistently
+Priority   : P2
+Role       : System
+
+TC-DATA-010 | Foreign Key Integrity
+Module     : Data Integrity
+Title      : Related records handle deletions properly
+Precond    : Products with categories, sales with customers
+Steps      :
+  1. Delete category that has products
+  2. Delete customer that has sales
+  3. Delete supplier that has POs
+Expected   :
+  - Category: products.category set to NULL (SET_NULL)
+  - Customer: sales.customer set to NULL (SET_NULL)
+  - Supplier: POs deleted or set to NULL per model
+  - No orphaned required relationships
+Priority   : P1
+Role       : System
+
+================================================================================
+17. END-TO-END WORKFLOWS (E2E)
+================================================================================
+
+TC-E2E-001 | Complete Purchase to Sale Workflow
+Module     : E2E
+Title      : Buy stock, receive it, sell it, verify inventory
+Precond    : Supplier and product exist
+Steps      :
+  1. Create PO for 50 units of Product A
+  2. Receive all 50 units
+  3. Verify stock = 50
+  4. Sell 20 units via POS
+  5. Verify stock = 30
+  6. Check StockMovement history
+Expected   :
+  - Stock accurate at each step
+  - All movements logged
+  - Invoice generated for sale
+  - PO marked received
+  - No data inconsistencies
+Priority   : P1
+Role       : Admin, Manager, Cashier
+
+TC-E2E-002 | New Product Full Lifecycle
+Module     : E2E
+Title      : Create product, manage stock, sell, report
+Precond    : Category and brand exist
+Steps      :
+  1. Add new product with stock 100
+  2. Verify barcode and QR generated
+  3. Adjust stock to 95 (damaged 5)
+  4. Sell 10 units
+  5. Check product detail — stock should be 85
+  6. Check inventory report
+  7. Check sales report
+  8. Delete product
+Expected   :
+  - All steps complete without errors
+  - Reports reflect accurate data
+  - Cleanup successful
+Priority   : P1
+Role       : Admin
+
+TC-E2E-003 | Customer Full Lifecycle
+Module     : E2E
+Title      : Add customer, make sales, view history, delete
+Precond    : Products exist
+Steps      :
+  1. Add customer "Test Customer"
+  2. Make 3 sales to this customer
+  3. View customer detail — total purchases correct
+  4. Edit customer phone
+  5. Delete customer
+  6. Verify sales still exist with null customer
+Expected   :
+  - Customer history accurate
+  - Sales preserved after deletion
+  - No data loss
+Priority   : P2
+Role       : Admin
+
+TC-E2E-004 | Employee HR Workflow
+Module     : E2E
+Title      : Hire employee, mark attendance, apply leave, approve
+Precond    : Logged in as admin
+Steps      :
+  1. Add new employee
+  2. Mark attendance present for 5 days
+  3. Employee applies for 2-day sick leave
+  4. Manager approves leave
+  5. Check attendance list
+  6. Check leave list
+  7. Generate employee report
+Expected   :
+  - All records accurate
+  - Attendance shows 5 present, 2 leave
+  - Leave status approved
+  - Report reflects data
+Priority   : P2
+Role       : Admin, Manager
+
+TC-E2E-005 | Day-End Closing Workflow
+Module     : E2E
+Title      : Cashier closes day with sales summary
+Precond    : Multiple sales completed today
+Steps      :
+  1. Complete 10 sales via POS (mix of cash, UPI, card)
+  2. Navigate to /sales/
+  3. Filter by today
+  4. Note total sales and revenue
+  5. Navigate to /reports/sales/
+  6. Generate today's report
+  7. Export PDF
+Expected   :
+  - Sales list count = 10
+  - Total revenue matches sum of invoices
+  - Report data matches sales list
+  - PDF exports successfully
+Priority   : P1
+Role       : Cashier, Manager
+
+TC-E2E-006 | Month-End Inventory Audit
+Module     : E2E
+Title      : Manager audits inventory and generates report
+Precond    : Month of transactions completed
+Steps      :
+  1. Navigate to /inventory/
+  2. Check low stock items
+  3. Navigate to /inventory/history/
+  4. Filter by this month
+  5. Navigate to /reports/inventory/
+  6. Generate inventory valuation report
+  7. Export PDF
+  8. Cross-check with physical count
+Expected   :
+  - All data accurate and consistent
+  - Report reflects current stock levels
+  - Low stock alerts correct
+  - PDF export successful
+Priority   : P2
+Role       : Manager
+
+TC-E2E-007 | Company Rebranding Workflow
+Module     : E2E
+Title      : Update settings and verify across site
+Precond    : Logged in as admin
+Steps      :
+  1. Navigate to /settings/
+  2. Upload new logo
+  3. Change company name to "New Name"
+  4. Change currency to USD
+  5. Change theme to dark
+  6. Save
+  7. Check login page — new logo and name
+  8. Check sidebar — new logo and name
+  9. Check invoice — new branding
+  10. Check reports — new branding
+Expected   :
+  - New branding visible everywhere
+  - Currency symbol updated site-wide
+  - Theme applied globally
+  - No cached old branding
+Priority   : P2
+Role       : Admin
+
+================================================================================
+                        TEST EXECUTION GUIDELINES FOR KIRO AI
+================================================================================
+
+SETUP INSTRUCTIONS:
+1. Ensure Django server running at http://127.0.0.1:8000/
+2. Database migrated and superuser created
+3. Load fixtures if available: python manage.py loaddata fixtures/
+4. Create test users for each role:
+   - admin / admin123 (role=admin)
+   - manager / manager123 (role=manager)
+   - cashier / cashier123 (role=cashier)
+   - employee / employee123 (role=employee)
+
+TEST DATA REQUIREMENTS:
+- At least 5 categories
+- At least 5 brands
+- At least 20 products with varying stock levels
+- At least 10 customers
+- At least 5 suppliers
+- At least 5 employees
+- At least 10 sales (mix of payment methods)
+- At least 5 purchase orders (various statuses)
+- At least 10 stock movements
+- At least 5 attendance records
+- At least 3 leave requests
+
+EXECUTION ORDER:
+1. Run ACC tests first (authentication foundation)
+2. Run SET tests (configure company settings)
+3. Run PROD tests (create test data)
+4. Run CUST, SUPP, EMP tests (create relationships)
+5. Run INV, PUR, SALE tests (transactions)
+6. Run RPT tests (verify reports)
+7. Run NOTIF tests (verify alerts)
+8. Run DASH tests (verify analytics)
+9. Run SEC tests (verify permissions)
+10. Run EDGE tests (stress test)
+11. Run DATA tests (integrity verification)
+12. Run E2E tests (full workflows)
+13. Run UI tests (responsive verification)
+
+BUG REPORTING FORMAT:
+- TC-ID: [Test Case ID]
+- Severity: Critical/Major/Minor
+- Steps to Reproduce: [numbered steps]
+- Expected Result: [from test case]
+- Actual Result: [what happened]
+- Screenshots: [attach if possible]
+- Environment: [browser, OS, screen size]
+
+================================================================================
+                              END OF TEST CASE DOCUMENT
+================================================================================
+Total Test Cases: 150+
+Coverage: Authentication, Dashboard, Products, Inventory, Sales/POS,
+          Purchase, Customers, Suppliers, Employees, Reports, Notifications,
+          Settings, UI/UX, Security, Edge Cases, Data Integrity, E2E Workflows
+================================================================================

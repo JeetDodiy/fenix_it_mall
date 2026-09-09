@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Recent Activity{% endblock %}
+{% block page_title %}Recent Activity{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header-title">⚡ Recent Business Activity</div>
+    <div class="page-header-sub">Real-time audit log of stock movements, latest sales, and frequent products</div>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'dashboard:index' %}" class="btn btn-outline btn-sm">← Back to Dashboard</a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:20px;margin-bottom:24px;">
+  <!-- Recent Sales -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🧾 Latest Sales (Last 5)</div>
+      <a href="{% url 'sales:list' %}" class="btn btn-primary btn-sm" style="font-size:11px;padding:3px 9px;">View All</a>
+    </div>
+    <div class="table-wrapper" style="border:none;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Invoice</th>
+            <th>Customer</th>
+            <th>Total</th>
+            <th>Method</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in recent_sales %}
+          <tr>
+            <td><a href="{% url 'sales:detail' s.pk %}" class="td-bold">{{ s.invoice_number }}</a></td>
+            <td>{{ s.customer.name|default:"Walk-in Customer" }}</td>
+            <td style="font-weight:700;color:var(--accent-green);">₹{{ s.grand_total|floatformat:2 }}</td>
+            <td><span class="badge badge-purple" style="font-size:10px;text-transform:uppercase;">{{ s.payment_method }}</span></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No sales recorded yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Frequently Purchased Items -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🔥 Top Selling Products</div>
+    </div>
+    <div class="table-wrapper" style="border:none;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Product Name</th>
+            <th style="text-align:center;">Times Ordered</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in frequent_items %}
+          <tr>
+            <td style="font-weight:600;color:var(--text-primary);">{{ item.product__name }}</td>
+            <td style="text-align:center;"><span class="badge badge-info">{{ item.count }}</span></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="2" style="text-align:center;color:var(--text-muted);padding:20px;">No order item data yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Stock Movements -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">📦 Recent Stock Movements</div>
+    <a href="{% url 'inventory:history' %}" class="btn btn-info btn-sm" style="font-size:11px;padding:3px 9px;">All History</a>
+  </div>
+  <div class="table-wrapper" style="border:none;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Product</th>
+          <th>Type</th>
+          <th>Qty</th>
+          <th>Before → After</th>
+          <th>Reference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in movements %}
+        <tr>
+          <td style="font-size:12px;color:var(--text-muted);">{{ m.created_at|date:"d M H:i" }}</td>
+          <td style="font-weight:600;">{{ m.product.name }}</td>
+          <td>
+            {% if m.movement_type == 'in' %}
+              <span class="badge badge-success">IN</span>
+            {% elif m.movement_type == 'out' %}
+              <span class="badge badge-danger">OUT</span>
+            {% else %}
+              <span class="badge badge-warning">{{ m.get_movement_type_display }}</span>
+            {% endif %}
+          </td>
+          <td style="font-weight:700;">{{ m.quantity }}</td>
+          <td style="font-size:12px;color:var(--text-secondary);">{{ m.quantity_before }} → {{ m.quantity_after }}</td>
+          <td style="font-size:11px;color:var(--text-muted);">{{ m.reference|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No stock movements recorded yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

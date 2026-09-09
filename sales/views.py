@@ -92,7 +92,8 @@ def pos(request):
             return redirect('sales:pos')
 
     products = Product.objects.filter(
-        is_active=True, stock_quantity__gt=0).select_related('category')
+        is_active=True, stock_quantity__gt=0
+    ).select_related('category', 'brand').prefetch_related('images')
     categories = Category.objects.filter(is_active=True)
     customers = Customer.objects.filter(is_active=True).order_by('name')
     return render(request, 'sales/pos.html', {

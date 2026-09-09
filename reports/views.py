@@ -1,4 +1,4 @@
-﻿"""
+"""
 Reports App - Views (PDF uses Rs. instead of rupee symbol to avoid font issues)
 """
 import csv
@@ -406,14 +406,288 @@ def supplier_report(request):
         messages.error(request, 'Permission denied.')
         return redirect('dashboard:index')
 
+    from decimal import Decimal
     from suppliers.models import Supplier
-    suppliers = Supplier.objects.annotate(
-        total_ordered=Sum('purchase_orders__total_amount'),
-        total_paid=Sum('purchase_orders__paid_amount'),
-        order_count=Count('purchase_orders'),
-    ).order_by('-total_ordered')
+    from purchase.models import PurchaseOrder
 
-    return render(request, 'reports/suppliers.html', {'suppliers': suppliers})
+    supplier_id = request.GET.get('supplier', '')
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+    payment_status = request.GET.get('payment_status', '')
+    q = request.GET.get('q', '').strip()
+
+    orders = PurchaseOrder.objects.all().select_related('supplier', 'created_by').prefetch_related('items__product', 'payments__created_by').order_by('-order_date', '-id')
+
+    selected_supplier = None
+    if supplier_id:
+        try:
+            selected_supplier = Supplier.objects.get(pk=supplier_id)
+            orders = orders.filter(supplier=selected_supplier)
+        except (Supplier.DoesNotExist, ValueError):
+            supplier_id = ''
+
+    if date_from:
+        orders = orders.filter(order_date__gte=date_from)
+    if date_to:
+        orders = orders.filter(order_date__lte=date_to)
+
+    if q:
+        orders = orders.filter(
+            Q(bill_number__icontains=q) |
+            Q(order_number__icontains=q) |
+            Q(supplier__company_name__icontains=q) |
+            Q(supplier__contact_person__icontains=q) |
+            Q(notes__icontains=q)
+        )
+
+    if payment_status == 'paid':
+        orders = orders.filter(paid_amount__gte=F('total_amount'))
+    elif payment_status == 'partial':
+        orders = orders.filter(paid_amount__gt=0, paid_amount__lt=F('total_amount'))
+    elif payment_status == 'unpaid':
+        orders = orders.filter(paid_amount=0)
+
+    # Calculate overall summary metrics
+    totals = orders.aggregate(
+        total_billed=Sum('total_amount'),
+        total_given=Sum('paid_amount'),
+        bill_count=Count('id'),
+    )
+    total_billed = totals['total_billed'] or Decimal('0')
+    total_given = totals['total_given'] or Decimal('0')
+    total_pending = total_billed - total_given
+    bill_count = totals['bill_count'] or 0
+
+    all_suppliers = Supplier.objects.all().order_by('company_name')
+
+    # Supplier ledger breakdown
+    supplier_ledgers = []
+    for s in all_suppliers:
+        s_orders = s.purchase_orders.all()
+        if date_from:
+            s_orders = s_orders.filter(order_date__gte=date_from)
+        if date_to:
+            s_orders = s_orders.filter(order_date__lte=date_to)
+        agg = s_orders.aggregate(
+            billed=Sum('total_amount'),
+            paid=Sum('paid_amount'),
+            count=Count('id'),
+        )
+        s_billed = agg['billed'] or Decimal('0')
+        s_paid = agg['paid'] or Decimal('0')
+        s_pending = s_billed - s_paid
+        supplier_ledgers.append({
+            'supplier': s,
+            'bill_count': agg['count'] or 0,
+            'total_billed': s_billed,
+            'total_paid': s_paid,
+            'pending_balance': s_pending,
+            'status': 'Settled' if s_pending <= 0 else 'Pending Due',
+        })
+
+    return render(request, 'reports/suppliers.html', {
+        'orders': orders,
+        'suppliers': all_suppliers,
+        'selected_supplier': selected_supplier,
+        'selected_supplier_id': int(supplier_id) if supplier_id and supplier_id.isdigit() else '',
+        'date_from': date_from,
+        'date_to': date_to,
+        'payment_status': payment_status,
+        'q': q,
+        'total_billed': total_billed,
+        'total_given': total_given,
+        'total_pending': total_pending,
+        'bill_count': bill_count,
+        'supplier_ledgers': supplier_ledgers,
+    })
+
+
+@login_required
+def supplier_report_pdf(request):
+    if not request.user.is_manager:
+        return HttpResponse('Unauthorized', status=401)
+
+    from decimal import Decimal
+    from suppliers.models import Supplier
+    from purchase.models import PurchaseOrder
+    from reportlab.lib.styles import getSampleStyleSheet
+
+    supplier_id = request.GET.get('supplier', '')
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+    payment_status = request.GET.get('payment_status', '')
+    q = request.GET.get('q', '').strip()
+
+    orders = PurchaseOrder.objects.all().select_related('supplier').prefetch_related('items__product').order_by('-order_date', '-id')
+
+    selected_supplier_name = "All Suppliers"
+    if supplier_id:
+        try:
+            supplier_obj = Supplier.objects.get(pk=supplier_id)
+            orders = orders.filter(supplier=supplier_obj)
+            selected_supplier_name = supplier_obj.company_name
+        except (Supplier.DoesNotExist, ValueError):
+            pass
+
+    if date_from:
+        orders = orders.filter(order_date__gte=date_from)
+    if date_to:
+        orders = orders.filter(order_date__lte=date_to)
+
+    if q:
+        orders = orders.filter(
+            Q(bill_number__icontains=q) |
+            Q(order_number__icontains=q) |
+            Q(supplier__company_name__icontains=q) |
+            Q(notes__icontains=q)
+        )
+
+    if payment_status == 'paid':
+        orders = orders.filter(paid_amount__gte=F('total_amount'))
+    elif payment_status == 'partial':
+        orders = orders.filter(paid_amount__gt=0, paid_amount__lt=F('total_amount'))
+    elif payment_status == 'unpaid':
+        orders = orders.filter(paid_amount=0)
+
+    totals = orders.aggregate(
+        total_billed=Sum('total_amount'),
+        total_given=Sum('paid_amount'),
+        bill_count=Count('id'),
+    )
+    total_billed = totals['total_billed'] or Decimal('0')
+    total_given = totals['total_given'] or Decimal('0')
+    total_pending = total_billed - total_given
+
+    try:
+        buffer = io.BytesIO()
+        styles = getSampleStyleSheet()
+        story = []
+        subtitle = f'Supplier: {selected_supplier_name}'
+        if date_from or date_to:
+            subtitle += f' | Period: {date_from or "Start"} to {date_to or "Present"}'
+        subtitle += f' | Total Bills: {totals["bill_count"] or 0}'
+        subtitle += f' | Billed: Rs.{total_billed:.2f} | Given: Rs.{total_given:.2f} | Pending: Rs.{total_pending:.2f}'
+
+        _pdf_header(story, styles, 'Supplier Bill & Payment Report', subtitle)
+
+        data = [['Bill No.', 'PO No.', 'Date', 'Supplier', 'Items', 'Total (Rs.)', 'Given (Rs.)', 'Pending (Rs.)', 'Status']]
+        for o in orders:
+            items_summary = ", ".join([f"{it.product.name} ({it.quantity})" for it in o.items.all()[:2]])
+            if o.items.count() > 2:
+                items_summary += f" +{o.items.count() - 2} more"
+            if not items_summary:
+                items_summary = "-"
+
+            if o.paid_amount >= o.total_amount:
+                pay_status = 'Paid'
+            elif o.paid_amount > 0:
+                pay_status = 'Partial'
+            else:
+                pay_status = 'Unpaid'
+
+            data.append([
+                o.bill_number or '-',
+                o.order_number,
+                str(o.order_date),
+                o.supplier.company_name[:20],
+                items_summary[:30],
+                f'{o.total_amount:.2f}',
+                f'{o.paid_amount:.2f}',
+                f'{o.balance_amount:.2f}',
+                pay_status,
+            ])
+
+        story.append(_make_pdf_table(data))
+        _build_pdf(story, buffer, landscape_mode=True)
+        filename = f'supplier_report_{timezone.now().strftime("%Y%m%d_%H%M")}.pdf'
+        return _pdf_response(buffer, filename)
+
+    except ImportError:
+        messages.error(request, 'ReportLab not installed.')
+        return redirect('reports:suppliers')
+
+
+@login_required
+def supplier_report_csv(request):
+    if not request.user.is_manager:
+        return HttpResponse('Unauthorized', status=401)
+
+    from suppliers.models import Supplier
+    from purchase.models import PurchaseOrder
+
+    supplier_id = request.GET.get('supplier', '')
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+    payment_status = request.GET.get('payment_status', '')
+    q = request.GET.get('q', '').strip()
+
+    orders = PurchaseOrder.objects.all().select_related('supplier').prefetch_related('items__product').order_by('-order_date', '-id')
+
+    if supplier_id:
+        try:
+            supplier_obj = Supplier.objects.get(pk=supplier_id)
+            orders = orders.filter(supplier=supplier_obj)
+        except (Supplier.DoesNotExist, ValueError):
+            pass
+
+    if date_from:
+        orders = orders.filter(order_date__gte=date_from)
+    if date_to:
+        orders = orders.filter(order_date__lte=date_to)
+
+    if q:
+        orders = orders.filter(
+            Q(bill_number__icontains=q) |
+            Q(order_number__icontains=q) |
+            Q(supplier__company_name__icontains=q) |
+            Q(notes__icontains=q)
+        )
+
+    if payment_status == 'paid':
+        orders = orders.filter(paid_amount__gte=F('total_amount'))
+    elif payment_status == 'partial':
+        orders = orders.filter(paid_amount__gt=0, paid_amount__lt=F('total_amount'))
+    elif payment_status == 'unpaid':
+        orders = orders.filter(paid_amount=0)
+
+    response = HttpResponse(content_type='text/csv')
+    filename = f'supplier_report_{timezone.now().strftime("%Y%m%d_%H%M")}.csv'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+    writer.writerow([
+        'Bill / Invoice Number', 'Purchase Order Number', 'Date',
+        'Supplier Company', 'Contact Person', 'Phone', 'GST Number',
+        'Items Details', 'Total Amount', 'Given Payment (Paid)',
+        'Pending Payment (Balance)', 'Payment Status', 'Order Status'
+    ])
+
+    for o in orders:
+        items_detail = "; ".join([f"{it.product.name} (Qty: {it.quantity}, Rate: {it.purchase_price})" for it in o.items.all()])
+        if o.paid_amount >= o.total_amount:
+            pay_status = 'Paid'
+        elif o.paid_amount > 0:
+            pay_status = 'Partially Paid'
+        else:
+            pay_status = 'Unpaid'
+
+        writer.writerow([
+            o.bill_number or '',
+            o.order_number,
+            o.order_date.isoformat() if o.order_date else '',
+            o.supplier.company_name,
+            o.supplier.contact_person,
+            o.supplier.phone,
+            o.supplier.gst_number or '',
+            items_detail,
+            float(o.total_amount),
+            float(o.paid_amount),
+            float(o.balance_amount),
+            pay_status,
+            o.get_status_display(),
+        ])
+
+    return response
 
 
 @login_required

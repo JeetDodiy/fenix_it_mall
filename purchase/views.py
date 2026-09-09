@@ -6,8 +6,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db import transaction
-from django.db.models import Q
+from django.db import transaction, models
+from django.db.models import Q, F
 from .models import PurchaseOrder, PurchaseItem, SupplierPayment
 from .forms import PurchaseOrderForm, PurchaseOrderItemFormSet, SupplierPaymentForm
 
@@ -51,24 +51,62 @@ def purchase_add(request):
     if request.method == 'POST' and form.is_valid() and formset.is_valid():
         try:
             with transaction.atomic():
+                from inventory.models import StockMovement
+                from notifications.models import Notification
+
+                # ── Save PO header ──
                 order = form.save(commit=False)
                 order.created_by = request.user
+                order.status = 'received'   # Auto-receive immediately
                 order.save()
+
                 formset.instance = order
                 items = formset.save(commit=False)
                 total = Decimal('0')
+
                 for item in items:
-                    item.purchase_order = order
+                    item.purchase_order   = order
+                    item.received_quantity = item.quantity  # Mark all received
                     item.save()
                     total += Decimal(str(item.quantity)) * item.purchase_price
+
+                    # ── Update product stock immediately ──
+                    product = item.product
+                    qty_before = product.stock_quantity
+                    product.stock_quantity  += item.quantity
+                    product.purchase_price   = item.purchase_price
+                    product.save()
+
+                    # ── Log stock movement ──
+                    StockMovement.objects.create(
+                        product=product,
+                        movement_type='in',
+                        quantity=item.quantity,
+                        quantity_before=qty_before,
+                        quantity_after=product.stock_quantity,
+                        reference=f'PO: {order.order_number}',
+                        reason=f'Purchase from {order.supplier.company_name}',
+                        created_by=request.user,
+                    )
+
                 for obj in formset.deleted_objects:
                     obj.delete()
+
                 order.total_amount = total
                 order.save()
-                messages.success(request, f'Purchase Order {order.order_number} created.')
+
+                # ── Notification ──
+                Notification.objects.create(
+                    title='Purchase Order Created',
+                    message=f'PO {order.order_number} created. Stock added for {order.items.count()} product(s).',
+                    notification_type='purchase',
+                    link=f'/purchase/{order.pk}/',
+                )
+
+                messages.success(request, f'✅ Purchase Order {order.order_number} created. Stock added automatically!')
                 return redirect('purchase:detail', pk=order.pk)
         except Exception as e:
-            messages.error(request, f'Error: {e}')
+            messages.error(request, f'Error creating purchase order: {e}')
 
     return render(request, 'purchase/form.html', {
         'form': form, 'formset': formset, 'title': 'Create Purchase Order',
@@ -82,32 +120,79 @@ def purchase_edit(request, pk):
         return redirect('purchase:list')
 
     order = get_object_or_404(PurchaseOrder, pk=pk)
-    
-    # Allow editing of all orders except cancelled
+
     if order.status == 'cancelled':
         messages.error(request, 'Cannot edit a cancelled order.')
         return redirect('purchase:detail', pk=pk)
 
-    form = PurchaseOrderForm(request.POST or None, instance=order)
+    form    = PurchaseOrderForm(request.POST or None, instance=order)
     formset = PurchaseOrderItemFormSet(request.POST or None, instance=order)
 
     if request.method == 'POST' and form.is_valid() and formset.is_valid():
         try:
             with transaction.atomic():
+                from inventory.models import StockMovement
+
+                # Snapshot old quantities before saving
+                old_quantities = {
+                    item.pk: item.quantity
+                    for item in order.items.all()
+                }
+
                 order = form.save()
                 items = formset.save(commit=False)
                 total = Decimal('0')
+
                 for item in items:
+                    old_qty = old_quantities.get(item.pk, 0)
+                    item.received_quantity = item.quantity  # Keep in sync
                     item.save()
                     total += Decimal(str(item.quantity)) * item.purchase_price
+
+                    # Adjust stock for quantity difference
+                    diff = item.quantity - old_qty
+                    if diff != 0:
+                        product = item.product
+                        qty_before = product.stock_quantity
+                        product.stock_quantity += diff
+                        product.purchase_price  = item.purchase_price
+                        product.save()
+
+                        StockMovement.objects.create(
+                            product=product,
+                            movement_type='in' if diff > 0 else 'adjust',
+                            quantity=abs(diff),
+                            quantity_before=qty_before,
+                            quantity_after=product.stock_quantity,
+                            reference=f'PO Edit: {order.order_number}',
+                            reason=f'Quantity adjusted on PO edit (was {old_qty}, now {item.quantity})',
+                            created_by=request.user,
+                        )
+
+                # Handle deleted items — reverse their stock
                 for obj in formset.deleted_objects:
+                    product = obj.product
+                    qty_before = product.stock_quantity
+                    product.stock_quantity = max(0, product.stock_quantity - obj.quantity)
+                    product.save()
+                    StockMovement.objects.create(
+                        product=product,
+                        movement_type='adjust',
+                        quantity=obj.quantity,
+                        quantity_before=qty_before,
+                        quantity_after=product.stock_quantity,
+                        reference=f'PO Item Deleted: {order.order_number}',
+                        reason='Item removed from purchase order',
+                        created_by=request.user,
+                    )
                     obj.delete()
+
                 order.total_amount = total
                 order.save()
-                messages.success(request, f'Purchase Order {order.order_number} updated.')
+                messages.success(request, f'✅ Purchase Order {order.order_number} updated. Stock adjusted.')
                 return redirect('purchase:detail', pk=order.pk)
         except Exception as e:
-            messages.error(request, f'Error: {e}')
+            messages.error(request, f'Error updating purchase order: {e}')
 
     return render(request, 'purchase/form.html', {
         'form': form, 'formset': formset,
@@ -117,66 +202,64 @@ def purchase_edit(request, pk):
 
 @login_required
 def receive_stock(request, pk):
+    """Deprecated: Stock is now added automatically on PO creation.
+    This view remains for backward compatibility with old POs."""
     if not request.user.is_manager:
         messages.error(request, 'Permission denied.')
         return redirect('purchase:list')
 
     order = get_object_or_404(PurchaseOrder, pk=pk)
-    if order.status == 'received':
-        messages.warning(request, 'This order is already fully received.')
+
+    # Check if any items still need stock to be added
+    items_pending = [i for i in order.items.all() if i.received_quantity < i.quantity]
+
+    if not items_pending:
+        messages.info(request, '✅ All stock is already up to date for this order.')
         return redirect('purchase:detail', pk=pk)
 
     if request.method == 'POST':
         try:
             with transaction.atomic():
                 from inventory.models import StockMovement
-                
+
                 total_received = 0
-                total_ordered = 0
-                
+                total_ordered  = 0
+
                 for item in order.items.select_related('product').all():
-                    # Get quantity to receive from POST data
-                    receive_qty_key = f'receive_qty_{item.pk}'
-                    receive_qty = int(request.POST.get(receive_qty_key, 0))
-                    
-                    if receive_qty > 0:
-                        # Update stock
+                    pending = item.quantity - item.received_quantity
+                    if pending > 0:
                         qty_before = item.product.stock_quantity
-                        item.product.stock_quantity += receive_qty
-                        item.product.purchase_price = item.purchase_price
+                        item.product.stock_quantity += pending
+                        item.product.purchase_price  = item.purchase_price
                         item.product.save()
-                        
-                        # Update received quantity
-                        item.received_quantity += receive_qty
+                        item.received_quantity = item.quantity
                         item.save()
-                        
-                        # Create stock movement
                         StockMovement.objects.create(
                             product=item.product,
                             movement_type='in',
-                            quantity=receive_qty,
+                            quantity=pending,
                             quantity_before=qty_before,
                             quantity_after=item.product.stock_quantity,
-                            reference=f'PO: {order.order_number}',
+                            reference=f'PO Fix: {order.order_number}',
+                            reason='Stock sync for old purchase order',
                             created_by=request.user,
                         )
-                    
                     total_received += item.received_quantity
-                    total_ordered += item.quantity
-                
-                # Update order status
+                    total_ordered  += item.quantity
+
                 if total_received >= total_ordered:
                     order.status = 'received'
-                elif total_received > 0:
-                    order.status = 'partial'
-                
                 order.save()
-                messages.success(request, f'Stock received for PO {order.order_number}.')
+                messages.success(request, f'✅ Stock synced for PO {order.order_number}.')
                 return redirect('purchase:detail', pk=pk)
         except Exception as e:
             messages.error(request, f'Error: {e}')
 
-    return render(request, 'purchase/receive_confirm.html', {'order': order})
+    return render(request, 'purchase/receive_confirm.html', {
+        'order': order,
+        'stock_missing': True,
+    })
+
 
 
 @login_required

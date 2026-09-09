@@ -24,8 +24,7 @@
     <a href="{% url 'purchase:invoice' order.pk %}" class="btn btn-outline" target="_blank">🖨️ Print</a>
     {% if request.user.is_manager %}
       {% if order.status != 'cancelled' %}
-      <a href="{% url 'purchase:receive_stock' order.pk %}" class="btn btn-success">📦 Receive Stock</a>
-      <a href="{% url 'purchase:edit' order.pk %}" class="btn btn-outline">✏️ Edit</a>
+      <a href="{% url 'purchase:edit' order.pk %}" class="btn btn-warning">✏️ Edit</a>
       {% endif %}
       {% if order.balance_amount > 0 %}
       <a href="{% url 'purchase:add_payment' order.pk %}" class="btn btn-primary">💳 Add Payment</a>

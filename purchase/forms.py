@@ -9,17 +9,20 @@ from products.models import Product
 
 
 class PurchaseOrderForm(forms.ModelForm):
+    """
+    NOTE: 'status' is intentionally excluded.
+    Status changes ONLY via the Receive Stock view to ensure stock is updated.
+    """
     class Meta:
         model = PurchaseOrder
-        fields = ['supplier', 'bill_number', 'expected_delivery', 'status', 'notes']
+        fields = ['supplier', 'bill_number', 'expected_delivery', 'notes']
         widgets = {
             'supplier': forms.Select(attrs={'class': 'form-select'}),
             'bill_number': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'e.g., INV-2026-001'}),
             'expected_delivery': forms.DateInput(attrs={'class': 'form-input', 'type': 'date'}),
-            'status': forms.Select(attrs={'class': 'form-select'}),
             'notes': forms.Textarea(attrs={'class': 'form-textarea', 'rows': 3}),
         }
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['supplier'].queryset = Supplier.objects.filter(is_active=True)
