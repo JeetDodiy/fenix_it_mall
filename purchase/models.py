@@ -29,7 +29,19 @@ class PurchaseOrder(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.order_number:
-            self.order_number = f'PO-{str(uuid.uuid4())[:8].upper()}'
+            from django.utils import timezone
+            year = timezone.now().strftime("%y")
+            prefix = f'PO-{year}-'
+            existing = PurchaseOrder.objects.filter(order_number__startswith=prefix).values_list('order_number', flat=True)
+            max_num = 0
+            for po_num in existing:
+                try:
+                    num = int(po_num.split('-')[-1])
+                    if num > max_num:
+                        max_num = num
+                except (ValueError, IndexError):
+                    pass
+            self.order_number = f'{prefix}{max_num + 1:02d}'
         super().save(*args, **kwargs)
 
     @property

@@ -53,8 +53,18 @@ class Sale(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.invoice_number:
-            prefix = 'INV'
-            self.invoice_number = f'{prefix}-{timezone.now().strftime("%Y%m")}-{str(uuid.uuid4())[:6].upper()}'
+            year = timezone.now().strftime("%y")
+            prefix = f'INV-{year}-'
+            existing = Sale.objects.filter(invoice_number__startswith=prefix).values_list('invoice_number', flat=True)
+            max_num = 0
+            for inv in existing:
+                try:
+                    num = int(inv.split('-')[-1])
+                    if num > max_num:
+                        max_num = num
+                except (ValueError, IndexError):
+                    pass
+            self.invoice_number = f'{prefix}{max_num + 1:02d}'
         super().save(*args, **kwargs)
 
     def __str__(self):
