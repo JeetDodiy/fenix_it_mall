@@ -136,7 +136,7 @@
   background: var(--bg-glass);
   border: 1.5px solid var(--border-glass);
   border-radius: 9px;
-  padding: 10px 42px 10px 38px;
+  padding: 10px 115px 10px 38px;
   color: var(--text-primary);
   font-size: 14px;
   outline: none;
@@ -149,9 +149,46 @@
   background: rgba(255, 255, 255, 0.04);
 }
 .pos-search-input::placeholder { color: var(--text-muted); }
+.pos-search-badges {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+  z-index: 2;
+}
+.pos-badge-scan {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: var(--accent-green);
+}
+.pos-badge-kbd {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-family: monospace;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  color: var(--text-muted);
+}
 .pos-search-clear {
   position: absolute;
   right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   color: var(--text-muted);
@@ -159,20 +196,10 @@
   padding: 4px;
   display: flex;
   align-items: center;
+  z-index: 3;
 }
 .pos-search-clear:hover { color: var(--accent-red); }
-.pos-f2-badge {
-  position: absolute;
-  right: 32px;
-  font-size: 10px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-glass);
-  padding: 1px 5px;
-  border-radius: 4px;
-  color: var(--text-muted);
-  pointer-events: none;
-  font-family: monospace;
-}
+
 
 /* Product Grid */
 .pos-grid {
@@ -730,17 +757,19 @@ html.light-theme .pm-tab.active { background: rgba(2, 132, 199, 0.1); border-col
           class="pos-search-input"
           x-model="searchQuery"
           @input="filterProducts()"
-          placeholder="🔍 Scan barcode or search product name, SKU... (Press Enter to add)"
+          placeholder="Scan barcode, SKU, or search product..."
           autocomplete="off"
           autofocus
         />
-        <span class="pos-f2-badge" style="right:32px;background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.35);color:var(--accent-green);font-weight:700;">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;margin-right:2px;"><rect x="1" y="4" width="6" height="16"/><rect x="9" y="4" width="2" height="16"/><rect x="13" y="4" width="4" height="16"/><rect x="19" y="4" width="4" height="16"/></svg>
-          SCAN
-        </span>
-        <span class="pos-f2-badge">F2</span>
+        <div class="pos-search-badges" x-show="!searchQuery">
+          <span class="pos-badge-scan">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;"><rect x="1" y="4" width="6" height="16"/><rect x="9" y="4" width="2" height="16"/><rect x="13" y="4" width="4" height="16"/><rect x="19" y="4" width="4" height="16"/></svg>
+            SCAN
+          </span>
+          <span class="pos-badge-kbd">F2</span>
+        </div>
         <template x-if="searchQuery">
-          <button class="pos-search-clear" @click="searchQuery = ''; filterProducts(); document.getElementById('pos-search-input').focus()">
+          <button class="pos-search-clear" @click="searchQuery = ''; filterProducts(); document.getElementById('pos-search-input').focus()" title="Clear search">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </template>
