@@ -1,4 +1,7 @@
-# FENIX IT MALL — ENTERPRISE POINT OF SALE & INVENTORY MANAGEMENT ERP SYSTEM
+import os
+
+def generate_markdown_report():
+    md_content = """# FENIX IT MALL — ENTERPRISE POINT OF SALE & INVENTORY MANAGEMENT ERP SYSTEM
 ## Semester 5 Academic Project Report & Viva Voce Master Documentation
 
 ---
@@ -481,3 +484,15 @@ Fenix IT Mall successfully demonstrates the design, development, and cloud deplo
 4. ReportLab Inc. (2024). *ReportLab PDF Generation Library*. Retrieved from https://www.reportlab.com/docs/
 5. Render Cloud Services. (2024). *Deploying Django Applications on Render*. Retrieved from https://render.com/docs/
 6. WhiteNoise Documentation. (2024). *Radically simplified static file serving for Python web apps*. Retrieved from http://whitenoise.evans.io/
+"""
+    with open("Fenix_IT_Mall_Sem5_Project_Report.md", "w", encoding="utf-8") as f:
+        f.write(md_content)
+    print("Successfully generated Fenix_IT_Mall_Sem5_Project_Report.md")
+    
+    # Also update Finaly_doc_project.md so both files are fully synchronized!
+    with open("Finaly_doc_project.md", "w", encoding="utf-8") as f:
+        f.write(md_content)
+    print("Successfully synchronized Finaly_doc_project.md")
+
+if __name__ == '__main__':
+    generate_markdown_report()
