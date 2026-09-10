@@ -10,3 +10,4 @@ python manage.py migrate
 
 python manage.py init_admin
 python manage.py loaddata initial_catalog.json || true
+python manage.py seed_store_catalog || true

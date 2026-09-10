@@ -36,6 +36,102 @@
   }
 },
 {
+  "model": "products.category",
+  "pk": 6,
+  "fields": {
+    "name": "Laptops",
+    "slug": "laptops",
+    "image": "",
+    "description": "Gaming & Business High-Performance Laptops",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:56.034Z"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 7,
+  "fields": {
+    "name": "Processors",
+    "slug": "processors",
+    "image": "",
+    "description": "Intel & AMD Desktop CPUs",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:56.206Z"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 8,
+  "fields": {
+    "name": "Graphics Cards",
+    "slug": "graphics-cards",
+    "image": "",
+    "description": "NVIDIA GeForce & AMD Radeon GPUs",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:56.292Z"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 9,
+  "fields": {
+    "name": "Monitors",
+    "slug": "monitors",
+    "image": "",
+    "description": "Ultra-Wide, IPS, and High-Refresh Gaming Displays",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:56.375Z"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 10,
+  "fields": {
+    "name": "Storage & RAM",
+    "slug": "storage-ram",
+    "image": "",
+    "description": "High-speed NVMe PCIe 4.0 SSDs & DDR5 Memory",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:56.459Z"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 11,
+  "fields": {
+    "name": "Peripherals",
+    "slug": "peripherals",
+    "image": "",
+    "description": "Mechanical Keyboards, Precision Mice & Audio",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:56.546Z"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 12,
+  "fields": {
+    "name": "Cabinets & PSUs",
+    "slug": "cabinets-psus",
+    "image": "",
+    "description": "ATX Gaming Cases, Liquid Coolers & Modular Power Supplies",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:56.629Z"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 13,
+  "fields": {
+    "name": "Networking",
+    "slug": "networking",
+    "image": "",
+    "description": "Gigabit Routers, Switches, and Mesh Wi-Fi 6 Systems",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:56.714Z"
+  }
+},
+{
   "model": "products.brand",
   "pk": 1,
   "fields": {
@@ -96,6 +192,700 @@
   }
 },
 {
+  "model": "products.brand",
+  "pk": 8,
+  "fields": {
+    "name": "Dell",
+    "logo": "",
+    "description": "Dell XPS, Latitude & Alienware computing systems",
+    "website": "https://dell.com",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:56.801Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 9,
+  "fields": {
+    "name": "Intel",
+    "logo": "",
+    "description": "Core i9, i7, i5 hybrid desktop processors",
+    "website": "https://intel.com",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:56.887Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 10,
+  "fields": {
+    "name": "AMD",
+    "logo": "",
+    "description": "Ryzen CPUs and Radeon graphics",
+    "website": "https://amd.com",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:56.969Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 11,
+  "fields": {
+    "name": "NVIDIA",
+    "logo": "",
+    "description": "GeForce RTX graphics solutions",
+    "website": "https://nvidia.com",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:57.055Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 12,
+  "fields": {
+    "name": "Samsung",
+    "logo": "",
+    "description": "PRO Series NVMe Solid State Drives",
+    "website": "https://samsung.com",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:57.140Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 13,
+  "fields": {
+    "name": "Kingston",
+    "logo": "",
+    "description": "Fury Beast high-frequency DDR5 memory",
+    "website": "https://kingston.com",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:57.225Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 14,
+  "fields": {
+    "name": "Logitech",
+    "logo": "",
+    "description": "Logitech G and MX series premium peripherals",
+    "website": "https://logitech.com",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:57.311Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 15,
+  "fields": {
+    "name": "Corsair",
+    "logo": "",
+    "description": "Gaming mechanical keyboards and liquid cooling",
+    "website": "https://corsair.com",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:57.396Z"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 16,
+  "fields": {
+    "name": "Ant Esports",
+    "logo": "",
+    "description": "Gaming cabinets and RGB cooling accessories",
+    "website": "https://antesports.com",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:57.481Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 1,
+  "fields": {
+    "name": "ASUS Gaming V16 (2025)",
+    "product_code": "FIM-2D724BA0",
+    "barcode_number": "8923336030706",
+    "barcode_image": "barcodes/barcode_8923336030706_1.png",
+    "qr_code": "qrcodes/qr_8923336030706_1.png",
+    "slug": "asus-gaming-v16-2025-fim-2d724ba0",
+    "category": 1,
+    "brand": 1,
+    "supplier": 1,
+    "purchase_price": "55000.00",
+    "selling_price": "65000.00",
+    "gst_percentage": "18.00",
+    "description": "ASUS Gaming V16 (2025),Intel Core 7 240H (i7-14th Gen),RTX 5050-8GB,16GB RAM,512GB SSD,FHD+,16\",144Hz,Backlit Keyboard,Windows 11,M365*,Office 2024,Matte Black,1.95 Kg V3607VH-RP038WS,Gaming Laptop",
+    "warranty": "2 year",
+    "status": "active",
+    "stock_quantity": 10,
+    "low_stock_threshold": 3,
+    "created_at": "2026-09-08T11:32:04.337Z",
+    "updated_at": "2026-09-08T12:48:29.315Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 2,
+  "fields": {
+    "name": "Audit High-Performance Laptop",
+    "product_code": "AUDIT-PROD-01",
+    "barcode_number": "AUDIT-PROD-01",
+    "barcode_image": "barcodes/barcode_AUDIT-PROD-01_2.png",
+    "qr_code": "qrcodes/qr_AUDIT-PROD-01_2.png",
+    "slug": "audit-high-performance-laptop-audit-prod-01",
+    "category": 2,
+    "brand": 2,
+    "supplier": null,
+    "purchase_price": "60000.00",
+    "selling_price": "75000.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 19,
+    "low_stock_threshold": 5,
+    "created_at": "2026-09-08T13:17:11.149Z",
+    "updated_at": "2026-09-09T10:59:58.946Z",
+    "is_active": false
+  }
+},
+{
+  "model": "products.product",
+  "pk": 4,
+  "fields": {
+    "name": "E2E Enterprise Server Pro",
+    "product_code": "E2E-PROD-99",
+    "barcode_number": "E2E-PROD-99",
+    "barcode_image": "barcodes/barcode_E2E-PROD-99_4.png",
+    "qr_code": "qrcodes/qr_E2E-PROD-99_4.png",
+    "slug": "e2e-enterprise-server-pro-e2e-prod-99",
+    "category": 2,
+    "brand": 1,
+    "supplier": null,
+    "purchase_price": "100000.00",
+    "selling_price": "135000.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 3,
+    "low_stock_threshold": 2,
+    "created_at": "2026-09-08T13:20:22.986Z",
+    "updated_at": "2026-09-08T13:20:24.080Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 7,
+  "fields": {
+    "name": "Ant Esports Crystal X7 ATX Computer Case/Gaming Cabinet",
+    "product_code": "FIM-8C09A01F",
+    "barcode_number": "8982463949961",
+    "barcode_image": "barcodes/barcode_8982463949961_7.png",
+    "qr_code": "qrcodes/qr_8982463949961_7.png",
+    "slug": "ant-esports-crystal-x7-atx-computer-casegaming-cabinet-fim-8c09a01f",
+    "category": 4,
+    "brand": 4,
+    "supplier": 1,
+    "purchase_price": "2500.00",
+    "selling_price": "5000.00",
+    "gst_percentage": "18.00",
+    "description": "Ant Esports Crystal X7 ATX Computer Case/Gaming Cabinet with Type-C - Black | Support ATX, Micro-ATX, Mini-ITX | Pre-Installed 3 M/B Plate Fans, 2 PSU Shroud Fans, 1 Bottom & 1 Rear Fan",
+    "warranty": "1 year",
+    "status": "active",
+    "stock_quantity": 5,
+    "low_stock_threshold": 1,
+    "created_at": "2026-09-09T07:21:18.043Z",
+    "updated_at": "2026-09-09T07:22:31.682Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 8,
+  "fields": {
+    "name": "MSI Stealth 14 AI Studio",
+    "product_code": "FIM-A151632F",
+    "barcode_number": "8982610005731",
+    "barcode_image": "barcodes/barcode_8982610005731_8.png",
+    "qr_code": "qrcodes/qr_8982610005731_8.png",
+    "slug": "msi-stealth-14-ai-studio-fim-a151632f",
+    "category": 1,
+    "brand": 5,
+    "supplier": 1,
+    "purchase_price": "165000.00",
+    "selling_price": "180000.00",
+    "gst_percentage": "18.00",
+    "description": "MSI Stealth 14 AI Studio, Intel 1st Gen. Ultra 7 155H,Built-in AI, 36CM FHD+ 165Hz Gaming Laptop(16GB/1TB NVMe SSD/Windows 11 Home/NVIDIA GeForce RTX 4060, GDDR6 6GB/Star Blue/1.7Kg), A1VFG-053IN",
+    "warranty": "3 year",
+    "status": "active",
+    "stock_quantity": 5,
+    "low_stock_threshold": 1,
+    "created_at": "2026-09-09T07:32:04.016Z",
+    "updated_at": "2026-09-09T08:57:35.241Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 9,
+  "fields": {
+    "name": "HP Victus, AMD Ryzen 7 7445HS, 6GB RTX 4050,",
+    "product_code": "FIM-449A672B",
+    "barcode_number": "8977659353011",
+    "barcode_image": "barcodes/barcode_8977659353011_9.png",
+    "qr_code": "qrcodes/qr_8977659353011_9.png",
+    "slug": "hp-victus-amd-ryzen-7-7445hs-6gb-rtx-4050-fim-449a672b",
+    "category": 1,
+    "brand": 6,
+    "supplier": 1,
+    "purchase_price": "920000.00",
+    "selling_price": "0.00",
+    "gst_percentage": "18.00",
+    "description": "HP Victus, AMD Ryzen 7 7445HS, 6GB RTX 4050, 16GB DDR5(Upgradeable) 512GB SSD, 144Hz, IPS, 300 nits, 15.6''/39.6cm, Win11, Office24, Blue, 2.29kg, fb3130AX, DTS Audio, Xbox Gamepass*, Gaming Laptop",
+    "warranty": "2 year",
+    "status": "active",
+    "stock_quantity": 6,
+    "low_stock_threshold": 2,
+    "created_at": "2026-09-09T09:02:31.483Z",
+    "updated_at": "2026-09-09T09:04:13.428Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 19,
+  "fields": {
+    "name": "ASUS ROG Strix G16 (2025) Core i9-14900HX, RTX 4070",
+    "product_code": "FIM-ROG16",
+    "barcode_number": "8901234001011",
+    "barcode_image": "barcodes/barcode_8901234001011_19.png",
+    "qr_code": "qrcodes/qr_8901234001011_19.png",
+    "slug": "asus-rog-strix-g16-2025-core-i9-14900hx-rtx-4070-fim-rog16",
+    "category": 6,
+    "brand": 1,
+    "supplier": 1,
+    "purchase_price": "125000.00",
+    "selling_price": "145000.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 8,
+    "low_stock_threshold": 2,
+    "created_at": "2026-09-10T11:29:58.167Z",
+    "updated_at": "2026-09-10T11:29:58.167Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 20,
+  "fields": {
+    "name": "MSI Stealth 14 AI Studio Core Ultra 9, 32GB, 1TB SSD",
+    "product_code": "FIM-MSI14AI",
+    "barcode_number": "8901234001028",
+    "barcode_image": "barcodes/barcode_8901234001028_20.png",
+    "qr_code": "qrcodes/qr_8901234001028_20.png",
+    "slug": "msi-stealth-14-ai-studio-core-ultra-9-32gb-1tb-ssd-fim-msi14ai",
+    "category": 6,
+    "brand": 5,
+    "supplier": 7,
+    "purchase_price": "155000.00",
+    "selling_price": "180000.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 6,
+    "low_stock_threshold": 2,
+    "created_at": "2026-09-10T11:29:58.602Z",
+    "updated_at": "2026-09-10T11:29:58.602Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 21,
+  "fields": {
+    "name": "HP Victus Gaming Laptop, AMD Ryzen 7 7840HS, 6GB RTX 4050",
+    "product_code": "FIM-VICTUS7",
+    "barcode_number": "8901234001035",
+    "barcode_image": "barcodes/barcode_8901234001035_21.png",
+    "qr_code": "qrcodes/qr_8901234001035_21.png",
+    "slug": "hp-victus-gaming-laptop-amd-ryzen-7-7840hs-6gb-rtx-4050-fim-victus7",
+    "category": 6,
+    "brand": 6,
+    "supplier": 6,
+    "purchase_price": "68000.00",
+    "selling_price": "78500.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 12,
+    "low_stock_threshold": 3,
+    "created_at": "2026-09-10T11:29:58.910Z",
+    "updated_at": "2026-09-10T11:29:58.910Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 22,
+  "fields": {
+    "name": "Dell Latitude 5440 Core i7-1365U, 16GB RAM, 512GB NVMe",
+    "product_code": "FIM-DELL5440",
+    "barcode_number": "8901234001042",
+    "barcode_image": "barcodes/barcode_8901234001042_22.png",
+    "qr_code": "qrcodes/qr_8901234001042_22.png",
+    "slug": "dell-latitude-5440-core-i7-1365u-16gb-ram-512gb-nvme-fim-dell5440",
+    "category": 6,
+    "brand": 8,
+    "supplier": 8,
+    "purchase_price": "56000.00",
+    "selling_price": "65000.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 10,
+    "low_stock_threshold": 2,
+    "created_at": "2026-09-10T11:29:59.198Z",
+    "updated_at": "2026-09-10T11:29:59.198Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 23,
+  "fields": {
+    "name": "Intel Core i7-14700K 20-Core Unlocked Desktop Processor",
+    "product_code": "FIM-I714700K",
+    "barcode_number": "8901234001059",
+    "barcode_image": "barcodes/barcode_8901234001059_23.png",
+    "qr_code": "qrcodes/qr_8901234001059_23.png",
+    "slug": "intel-core-i7-14700k-20-core-unlocked-desktop-processor-fim-i714700k",
+    "category": 7,
+    "brand": 9,
+    "supplier": 1,
+    "purchase_price": "32000.00",
+    "selling_price": "38500.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 15,
+    "low_stock_threshold": 4,
+    "created_at": "2026-09-10T11:29:59.499Z",
+    "updated_at": "2026-09-10T11:29:59.499Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 24,
+  "fields": {
+    "name": "AMD Ryzen 7 7800X3D 8-Core 16-Thread Gaming Processor",
+    "product_code": "FIM-RYZEN7800X",
+    "barcode_number": "8901234001066",
+    "barcode_image": "barcodes/barcode_8901234001066_24.png",
+    "qr_code": "qrcodes/qr_8901234001066_24.png",
+    "slug": "amd-ryzen-7-7800x3d-8-core-16-thread-gaming-processor-fim-ryzen7800x",
+    "category": 7,
+    "brand": 10,
+    "supplier": 6,
+    "purchase_price": "31000.00",
+    "selling_price": "36000.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 14,
+    "low_stock_threshold": 3,
+    "created_at": "2026-09-10T11:29:59.788Z",
+    "updated_at": "2026-09-10T11:29:59.788Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 25,
+  "fields": {
+    "name": "ASUS TUF Gaming GeForce RTX 4070 Ti Super 16GB OC Edition",
+    "product_code": "FIM-RTX4070TIS",
+    "barcode_number": "8901234001073",
+    "barcode_image": "barcodes/barcode_8901234001073_25.png",
+    "qr_code": "qrcodes/qr_8901234001073_25.png",
+    "slug": "asus-tuf-gaming-geforce-rtx-4070-ti-super-16gb-oc-edition-fim-rtx4070tis",
+    "category": 8,
+    "brand": 1,
+    "supplier": 1,
+    "purchase_price": "72000.00",
+    "selling_price": "82500.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 5,
+    "low_stock_threshold": 2,
+    "created_at": "2026-09-10T11:30:00.079Z",
+    "updated_at": "2026-09-10T11:30:00.079Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 26,
+  "fields": {
+    "name": "MSI GeForce RTX 4060 Ventus 2X Black 8GB GDDR6",
+    "product_code": "FIM-RTX4060MSI",
+    "barcode_number": "8901234001080",
+    "barcode_image": "barcodes/barcode_8901234001080_26.png",
+    "qr_code": "qrcodes/qr_8901234001080_26.png",
+    "slug": "msi-geforce-rtx-4060-ventus-2x-black-8gb-gddr6-fim-rtx4060msi",
+    "category": 8,
+    "brand": 5,
+    "supplier": 7,
+    "purchase_price": "24500.00",
+    "selling_price": "28500.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 16,
+    "low_stock_threshold": 4,
+    "created_at": "2026-09-10T11:30:00.352Z",
+    "updated_at": "2026-09-10T11:30:00.352Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 27,
+  "fields": {
+    "name": "Samsung 990 PRO 1TB PCIe Gen4 NVMe M.2 SSD (7450 MB/s)",
+    "product_code": "FIM-SAM990P1T",
+    "barcode_number": "8901234001097",
+    "barcode_image": "barcodes/barcode_8901234001097_27.png",
+    "qr_code": "qrcodes/qr_8901234001097_27.png",
+    "slug": "samsung-990-pro-1tb-pcie-gen4-nvme-m2-ssd-7450-mbs-fim-sam990p1t",
+    "category": 10,
+    "brand": 12,
+    "supplier": 6,
+    "purchase_price": "7800.00",
+    "selling_price": "9500.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 25,
+    "low_stock_threshold": 5,
+    "created_at": "2026-09-10T11:30:00.632Z",
+    "updated_at": "2026-09-10T11:30:00.632Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 28,
+  "fields": {
+    "name": "Kingston Fury Beast 16GB (1x16GB) 5600MHz DDR5 Desktop RAM",
+    "product_code": "FIM-KFURY16D5",
+    "barcode_number": "8901234001103",
+    "barcode_image": "barcodes/barcode_8901234001103_28.png",
+    "qr_code": "qrcodes/qr_8901234001103_28.png",
+    "slug": "kingston-fury-beast-16gb-1x16gb-5600mhz-ddr5-desktop-ram-fim-kfury16d5",
+    "category": 10,
+    "brand": 13,
+    "supplier": 8,
+    "purchase_price": "3800.00",
+    "selling_price": "4800.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 30,
+    "low_stock_threshold": 6,
+    "created_at": "2026-09-10T11:30:00.919Z",
+    "updated_at": "2026-09-10T11:30:00.919Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 29,
+  "fields": {
+    "name": "Corsair Vengeance RGB 32GB (2x16GB) DDR5 6000MHz CL36",
+    "product_code": "FIM-CORS32D5",
+    "barcode_number": "8901234001110",
+    "barcode_image": "barcodes/barcode_8901234001110_29.png",
+    "qr_code": "qrcodes/qr_8901234001110_29.png",
+    "slug": "corsair-vengeance-rgb-32gb-2x16gb-ddr5-6000mhz-cl36-fim-cors32d5",
+    "category": 10,
+    "brand": 15,
+    "supplier": 6,
+    "purchase_price": "7500.00",
+    "selling_price": "9200.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 18,
+    "low_stock_threshold": 4,
+    "created_at": "2026-09-10T11:30:01.194Z",
+    "updated_at": "2026-09-10T11:30:01.194Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 30,
+  "fields": {
+    "name": "Dell UltraSharp U2723QE 27-inch 4K UHD IPS USB-C Monitor",
+    "product_code": "FIM-DELL27U4K",
+    "barcode_number": "8901234001127",
+    "barcode_image": "barcodes/barcode_8901234001127_30.png",
+    "qr_code": "qrcodes/qr_8901234001127_30.png",
+    "slug": "dell-ultrasharp-u2723qe-27-inch-4k-uhd-ips-usb-c-monitor-fim-dell27u4k",
+    "category": 9,
+    "brand": 8,
+    "supplier": 1,
+    "purchase_price": "28000.00",
+    "selling_price": "34000.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 7,
+    "low_stock_threshold": 2,
+    "created_at": "2026-09-10T11:30:01.490Z",
+    "updated_at": "2026-09-10T11:30:01.490Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 31,
+  "fields": {
+    "name": "ASUS TUF Gaming VG249Q1A 24-inch FHD 165Hz IPS Gaming Monitor",
+    "product_code": "FIM-ASUS24165",
+    "barcode_number": "8901234001134",
+    "barcode_image": "barcodes/barcode_8901234001134_31.png",
+    "qr_code": "qrcodes/qr_8901234001134_31.png",
+    "slug": "asus-tuf-gaming-vg249q1a-24-inch-fhd-165hz-ips-gaming-monitor-fim-asus24165",
+    "category": 9,
+    "brand": 1,
+    "supplier": 8,
+    "purchase_price": "11500.00",
+    "selling_price": "14500.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 15,
+    "low_stock_threshold": 3,
+    "created_at": "2026-09-10T11:30:01.814Z",
+    "updated_at": "2026-09-10T11:30:01.814Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 32,
+  "fields": {
+    "name": "Logitech MX Master 3S Wireless Performance Mouse",
+    "product_code": "FIM-LOGIMX3S",
+    "barcode_number": "8901234001141",
+    "barcode_image": "barcodes/barcode_8901234001141_32.png",
+    "qr_code": "qrcodes/qr_8901234001141_32.png",
+    "slug": "logitech-mx-master-3s-wireless-performance-mouse-fim-logimx3s",
+    "category": 11,
+    "brand": 14,
+    "supplier": 1,
+    "purchase_price": "7200.00",
+    "selling_price": "8995.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 20,
+    "low_stock_threshold": 4,
+    "created_at": "2026-09-10T11:30:02.109Z",
+    "updated_at": "2026-09-10T11:30:02.109Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 33,
+  "fields": {
+    "name": "Corsair K70 RGB PRO Mechanical Gaming Keyboard (Cherry MX)",
+    "product_code": "FIM-CORSK70",
+    "barcode_number": "8901234001158",
+    "barcode_image": "barcodes/barcode_8901234001158_33.png",
+    "qr_code": "qrcodes/qr_8901234001158_33.png",
+    "slug": "corsair-k70-rgb-pro-mechanical-gaming-keyboard-cherry-mx-fim-corsk70",
+    "category": 11,
+    "brand": 15,
+    "supplier": 6,
+    "purchase_price": "9200.00",
+    "selling_price": "11500.00",
+    "gst_percentage": "18.00",
+    "description": null,
+    "warranty": null,
+    "status": "active",
+    "stock_quantity": 12,
+    "low_stock_threshold": 3,
+    "created_at": "2026-09-10T11:30:02.395Z",
+    "updated_at": "2026-09-10T11:30:02.395Z",
+    "is_active": true
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 1,
+  "fields": {
+    "product": 1,
+    "image": "products/images.jpg",
+    "is_primary": false,
+    "created_at": "2026-09-08T11:32:05.228Z"
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 2,
+  "fields": {
+    "product": 7,
+    "image": "products/download_2.jpg",
+    "is_primary": false,
+    "created_at": "2026-09-09T07:21:19.266Z"
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 3,
+  "fields": {
+    "product": 8,
+    "image": "products/shopping.webp",
+    "is_primary": false,
+    "created_at": "2026-09-09T07:32:04.783Z"
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 4,
+  "fields": {
+    "product": 9,
+    "image": "products/shopping_1.webp",
+    "is_primary": false,
+    "created_at": "2026-09-09T09:02:32.288Z"
+  }
+},
+{
   "model": "suppliers.supplier",
   "pk": 1,
   "fields": {
@@ -141,6 +931,51 @@
   }
 },
 {
+  "model": "suppliers.supplier",
+  "pk": 6,
+  "fields": {
+    "company_name": "Supertron Infotech Ltd",
+    "contact_person": "Rakesh Mehta",
+    "phone": "9822011223",
+    "email": "sales@supertron.in",
+    "address": "B-12, Electronics Complex, Ahmedabad, Gujarat",
+    "gst_number": "24AABCS1234F1Z1",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:57.566Z",
+    "updated_at": "2026-09-10T11:29:57.566Z"
+  }
+},
+{
+  "model": "suppliers.supplier",
+  "pk": 7,
+  "fields": {
+    "company_name": "MSI Enterprise Direct",
+    "contact_person": "Kunal Sharma",
+    "phone": "9811445566",
+    "email": "enterprise@msi.com",
+    "address": "Logistics Park, Mumbai, Maharashtra",
+    "gst_number": "27AAECM5566G1Z2",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:57.652Z",
+    "updated_at": "2026-09-10T11:29:57.652Z"
+  }
+},
+{
+  "model": "suppliers.supplier",
+  "pk": 8,
+  "fields": {
+    "company_name": "TechZone Hardware Distributors",
+    "contact_person": "Amit Verma",
+    "phone": "9977881122",
+    "email": "orders@techzone.com",
+    "address": "Ring Road, Surat, Gujarat",
+    "gst_number": "24AABCT9988H1Z3",
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:57.739Z",
+    "updated_at": "2026-09-10T11:29:57.739Z"
+  }
+},
+{
   "model": "customers.customer",
   "pk": 1,
   "fields": {
@@ -166,6 +1001,48 @@
     "is_active": true,
     "created_at": "2026-09-08T13:17:12.139Z",
     "updated_at": "2026-09-08T13:17:12.139Z"
+  }
+},
+{
+  "model": "customers.customer",
+  "pk": 5,
+  "fields": {
+    "name": "Walk-in Retail Customer",
+    "phone": "9999999999",
+    "email": "walkin@fenix.local",
+    "address": "In-Store Checkout",
+    "reward_points": 50,
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:57.823Z",
+    "updated_at": "2026-09-10T11:29:57.823Z"
+  }
+},
+{
+  "model": "customers.customer",
+  "pk": 6,
+  "fields": {
+    "name": "Rahul Sharma",
+    "phone": "9822334455",
+    "email": "rahul.sharma@gmail.com",
+    "address": "Ahmedabad",
+    "reward_points": 120,
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:57.906Z",
+    "updated_at": "2026-09-10T11:29:57.906Z"
+  }
+},
+{
+  "model": "customers.customer",
+  "pk": 7,
+  "fields": {
+    "name": "Priya Patel",
+    "phone": "9811223344",
+    "email": "priya.patel@outlook.com",
+    "address": "Surat",
+    "reward_points": 200,
+    "is_active": true,
+    "created_at": "2026-09-10T11:29:58.073Z",
+    "updated_at": "2026-09-10T11:29:58.073Z"
   }
 },
 {

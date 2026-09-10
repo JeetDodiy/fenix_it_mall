@@ -243,11 +243,29 @@ Q3: Can I add my own custom domain?
 A: Yes! Under "Settings" -> "Custom Domains" in Render, you can connect your
    own domain (e.g., www.fenixitmall.com) for free with automatic SSL certificates.
 
-Q4: What if I forget the admin password on the live site?
-A: In your Render Dashboard, go to the "Shell" tab on the left menu, click
-   "Connect", and run:
-   python manage.py createsuperuser
-   Follow the prompts to create a new admin account directly on the live server.
+Q5: Why did the shop start blank / empty previously, and how is it fixed?
+A: 1. Render's free tier uses an 'Ephemeral Filesystem' (temporary disk). When no
+      one visits for 15 minutes, Render puts the server to sleep. When someone
+      visits again, Render starts a fresh container from scratch.
+   2. In the previous build, the initial catalog fixture had 0 products, so
+      every time Render restarted, the store was empty.
+   3. HOW WE FIXED THIS:
+      - We added 21 rich IT hardware products into `initial_catalog.json`.
+      - We created an automated auto-seeder `python manage.py seed_store_catalog`
+        that runs in `build.sh`.
+      - Now, whenever Render starts or wakes up, the store is NEVER EMPTY! It
+        always has all 21 products, categories, brands, stock, and demo sales!
+   4. OPTIONAL: Want newly typed sales and products saved permanently forever?
+      - Render offers a free PostgreSQL Database!
+      - In Render Dashboard -> Click "New +" -> "PostgreSQL". Give it any name.
+      - Copy the "Internal Database URL" (or External Database URL).
+      - In your "fenix-it-mall" Web Service -> "Environment" tab:
+        Add Environment Variable:
+        Key:   DATABASE_URL
+        Value: postgres://... (paste your copied URL)
+      - Click "Save Changes".
+      - Our settings.py is already configured to automatically use PostgreSQL
+        when DATABASE_URL is present!
 
 ================================================================================
                              END OF DEPLOYMENT GUIDE
