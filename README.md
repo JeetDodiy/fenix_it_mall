@@ -1,5 +1,6 @@
 # 🖥️ Fenix IT Mall — Enterprise POS & Inventory Management System
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-brightgreen.svg)](https://fenix-it-mall.onrender.com)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/Django-5.0.6-green.svg)](https://www.djangoproject.com/)
 [![Tests](https://img.shields.io/badge/Tests-195%2F195%20Passed%20(100%25)-brightgreen.svg)]()
@@ -8,7 +9,9 @@
 
 > A modern, full-featured **Point of Sale (POS)**, **Inventory Control**, and **Enterprise Resource Planning (ERP)** web application built specifically for computer hardware and electronics retail stores.
 
-Developed by **[Jeet Dodiya](https://github.com/JeetDodiy)** for **Semester 5 Project Submission**.
+- **Developer / Student**: **[Jeet Dodiya](https://github.com/JeetDodiy)**
+- **Academic Milestone**: **Semester 5 College Project Submission**
+- **Live Cloud Website**: **[https://fenix-it-mall.onrender.com](https://fenix-it-mall.onrender.com)**
 
 ---
 
@@ -16,6 +19,7 @@ Developed by **[Jeet Dodiya](https://github.com/JeetDodiy)** for **Semester 5 Pr
 
 ### 🛒 1. Advanced POS Terminal (Point of Sale)
 - **High-Speed Checkout**: Keyboard-first shortcuts (`F2` search, `F8` hold, `F9` pay, `Esc` clear).
+- **Streamlined Search Bar**: Clean flexbox badges (`SCAN` and `F2`) with generous padding to prevent text collision across all screen sizes.
 - **Barcode Gun Scanner**: Automatic barcode listening with instant add-to-cart.
 - **Glassmorphic Product Cards**: Unclipped cards displaying brand, title, SKU, stock count (`● X in stock`), price in ₹, and `+` add-to-cart button.
 - **Category Rail**: Category filtering with custom uploaded thumbnails (`Cabinet`, `Laptop`) and contextual hardware SVG icons.
@@ -24,6 +28,7 @@ Developed by **[Jeet Dodiya](https://github.com/JeetDodiy)** for **Semester 5 Pr
 - **Thermal & A4 Invoices**: Instant printable bill/receipt generation.
 
 ### 📦 2. Inventory & Stock Engine
+- **Duplicate Product Name Restriction**: Enforces unique product names at the database level (`unique=True`) and form level (`name__iexact`) to prevent duplicate items.
 - **Direct Stock Procurement**: Purchase orders automatically credit stock to inventory without redundant receiving steps.
 - **Live Stock Movements**: Every transaction (sales, purchases, returns) logs previous and updated quantities with timestamped references.
 - **Low Stock Alerts**: Real-time automated notifications when stock drops below threshold.
@@ -31,28 +36,34 @@ Developed by **[Jeet Dodiya](https://github.com/JeetDodiy)** for **Semester 5 Pr
 
 ### 🏢 3. Supplier Bill & Payment Report
 - **Supplier Ledger**: Comprehensive tracking of total bills, payments given, and outstanding dues.
-- **Bill Number Tracking**: Records supplier invoice numbers (e.g. `INV-8859`) alongside internal PO numbers.
+- **Sequential PO Numbering**: Year-based sequential series (`PO-26-01`, `PO-26-02`, etc.) with automatic year rollover.
+- **Bill Number Tracking**: Records supplier invoice numbers (e.g. `AS-8859`) alongside internal PO numbers.
 - **Interactive Multi-Filter**: Filter by Supplier, Payment Status (`Fully Paid`, `Partial`, `Unpaid`), Date Range, and Search Query.
 - **Expandable Drawers**: View itemized bill breakdowns (Qty, Unit Rate, Subtotal) and installment payment histories.
 - **1-Click Export**: Download reports in styled landscape **PDF** or spreadsheet **CSV**.
 
-### 👥 4. Customer CRM & Loyalty Points
+### 🧾 4. Sequential Sales Invoicing
+- **Year-Based Invoice Series**: Clean, sequential invoice numbering (`INV-26-01`, `INV-26-02`, ..., `INV-26-15`) that rolls over automatically to `INV-27-01` in 2027.
+- **Historical Audit Logs**: Complete invoice audit trail tracking customer name, line items, and payment methods.
+
+### 👥 5. Customer CRM & Loyalty Points
 - Complete profile management with purchase history and spending analytics.
 - Automatic loyalty reward points accrued per rupee spent and redeemable at POS checkout.
 
-### 👔 5. Employees & HR Management
+### 👔 6. Employees & HR Management
 - Unique auto-generated Employee ID (`EMP-XXXXXX`), designation, department, and salary.
 - Daily attendance tracking (Present, Absent, Half-Day, Leave) with duplicate prevention per date.
 - Leave application and manager approval workflows.
 
-### 📊 6. Executive Financial Reports
+### 📊 7. Executive Financial Reports
 - **Sales Reports**: Daily, monthly, and custom range sales metrics.
 - **Profit & Loss**: Gross revenue, COGS (Cost of Goods Sold), and net margins.
 - **Inventory Valuation**: Current asset value by cost price and retail price.
 
-### 🎨 7. Design Aesthetics & Theme Switcher
-- Curated dark-mode default with vibrant neon accents (cyan, purple, emerald).
-- 1-click **Light Theme** toggle with persistent local storage state.
+### 🎨 8. Design Aesthetics & Adaptive Splash Screen
+- **Dark & Light Mode**: Curated dark-mode default with vibrant neon accents, plus 1-click **Light Theme** toggle.
+- **Adaptive Splash Screen**: Automatically renders pure white in light mode and deep black/navy in dark mode.
+- **Dynamic Company Logo**: Custom logo upload with live preview and persistent cloud media serving.
 
 ---
 
@@ -61,6 +72,7 @@ Developed by **[Jeet Dodiya](https://github.com/JeetDodiy)** for **Semester 5 Pr
 | Layer | Technology |
 | :--- | :--- |
 | **Backend Framework** | Python 3.10+ / Django 5.0.6 (MVT Architecture) |
+| **Production Server** | Gunicorn WSGI + WhiteNoise static compression |
 | **Database** | SQLite3 (Persistent, zero-configuration) |
 | **Frontend Styling** | Vanilla CSS3 (Custom Glassmorphism System, No Tailwind) |
 | **Reactive Client** | Alpine.js 3.x (Lightweight reactive state) |
@@ -94,17 +106,14 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Apply Database Migrations
+### 4. Apply Database Migrations & Seed Data
 ```bash
 python manage.py migrate
+python manage.py init_admin
+python manage.py loaddata initial_catalog.json
 ```
 
-### 5. Collect Static Files (Optional for production)
-```bash
-python manage.py collectstatic --noinput
-```
-
-### 6. Run the Development Server
+### 5. Run the Development Server
 ```bash
 python manage.py runserver
 ```
@@ -144,29 +153,13 @@ Failed                     : 0
 
 ---
 
-## 🌐 Free Hosting / Deployment Guide
+## 🌐 Cloud Deployment (Render.com)
 
-### Option 1: PythonAnywhere (Recommended for College Viva)
-1. Sign up at [pythonanywhere.com](https://www.pythonanywhere.com).
-2. Open a **Bash console** and clone your repo:
-   ```bash
-   git clone https://github.com/JeetDodiy/fenix_it_mall.git
-   cd fenix_it_mall
-   python3.10 -m venv venv && source venv/bin/activate
-   pip install -r requirements.txt
-   python manage.py collectstatic --noinput && python manage.py migrate
-   ```
-3. Configure the **Web Tab**:
-   - Python 3.10 manual configuration
-   - Virtualenv: `/home/<username>/fenix_it_mall/venv`
-   - Static mapping: `/static/` → `/home/<username>/fenix_it_mall/static`
-   - Media mapping: `/media/` → `/home/<username>/fenix_it_mall/media`
-4. Update WSGI file and reload!
-
-### Option 2: Render.com
-1. Connect your GitHub repo to [render.com](https://render.com).
-2. Build Command: `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate`
-3. Start Command: `gunicorn fenix_it_mall.wsgi:application`
+The project is deployed live on Render with automated GitHub CI/CD:
+- **Live URL**: **`https://fenix-it-mall.onrender.com`**
+- **Build Command**: `./build.sh`
+- **Start Command**: `gunicorn fenix_it_mall.wsgi:application`
+- **Full Guide**: See [upoald_project.txt](upoald_project.txt) for step-by-step instructions.
 
 ---
 
@@ -189,7 +182,11 @@ fenix_it_mall/
 ├── static/            # Glassmorphism CSS design system & JavaScript
 ├── templates/         # Semantic HTML5 / DTL templates
 ├── media/             # Uploaded product & category images
-├── Finaly_doc_project.md # Full academic project report
+├── Procfile           # Production WSGI process declaration
+├── build.sh           # Cloud build, migration & seed script
+├── render.yaml        # Render 1-click blueprint configuration
+├── upoald_project.txt # Complete deployment guide for Render
+├── Finaly_doc_project.md # Full academic project report (Semester 5)
 ├── requirements.txt   # Python package dependencies
 ├── manage.py          # Django management script
 └── test_all_195_cases.py # 195/195 automated test suite

@@ -8,7 +8,8 @@
 
 - **Developer / Student**: Jeet Dodiya
 - **Academic Milestone**: Semester 5 College Project
-- **GitHub Repository**: [https://github.com/JeetDodiy](https://github.com/JeetDodiy)
+- **Live Cloud URL**: [https://fenix-it-mall.onrender.com](https://fenix-it-mall.onrender.com)
+- **GitHub Repository**: [https://github.com/JeetDodiy/fenix_it_mall](https://github.com/JeetDodiy/fenix_it_mall)
 - **Test Coverage**: 195 / 195 Automated Test Cases Passed (100.0%)
 
 ---
@@ -18,14 +19,16 @@
 ### 1.1 Backend Core
 - **Framework**: Python 3.10+ with Django 5.0.6
 - **Architecture**: Model-View-Template (MVT) with modular Django apps
-- **Database**: SQLite3 (persistent local and production hosting compatible)
+- **Production Server**: Gunicorn WSGI HTTP Server with WhiteNoise static compression
+- **Database**: SQLite3 (persistent local and production cloud compatible)
 - **Security**: Django CSRF Protection, parameterized ORM against SQL Injection, XSS auto-escaping, password hashing with PBKDF2/SHA256, and Role-Based Access Control (RBAC).
 
 ### 1.2 Frontend & UI/UX
 - **Markup & Templates**: Semantic HTML5 with Django Template Language (DTL)
-- **Styling**: Vanilla CSS3 design system featuring custom Dark & Light themes, backdrop blurs, dynamic glow borders, micro-animations, and full responsive grid layouts.
+- **Styling**: Vanilla CSS3 design system featuring custom Dark & Light themes, backdrop blurs, dynamic glow borders, micro-animations, and full responsive grid layouts (no TailwindCSS dependencies).
 - **Reactive UI**: Alpine.js for real-time POS interactions, search filtering, and held-cart state management without heavy frontend frameworks.
 - **Documents & Export**: ReportLab for formatted PDF generation; Python `csv` module for tabular exports; `python-barcode` & `qrcode` for automated product code generation.
+- **Theme-Synchronized Splash Screen**: Automatically adapts to active theme (crisp white background in light mode, deep black/navy in dark mode).
 
 ---
 
@@ -41,12 +44,14 @@
 
 ### 2.2 Product Catalog & Inventory
 - **Hierarchy**: Products linked to Categories and Brands.
-- **Image Support**: Multi-image uploads for products, dedicated thumbnail logos for categories and brands.
+- **Duplicate Name Restriction**: Enforces unique product names at the database level (`unique=True`) and form level with case-insensitive validation (`name__iexact`). Prevents duplicate inventory entries while allowing seamless self-editing.
+- **Image Support**: Multi-image uploads for products, dedicated thumbnail logos for categories and brands, and persistent production media serving.
 - **Codes & Automation**: Auto-generated SKU codes (`FIM-XXXXXXXX`) and automated EAN-13 barcode numbers. Direct generation of printable Code128 barcodes and 2D QR codes.
 - **Inventory Engine**: Real-time stock counts, minimum threshold notifications, and atomic stock movements (`movement_type: in, out, adjustment`).
 
 ### 2.3 POS Terminal (Point of Sale)
 - **Live Search & Barcode Scan**: Real-time keyboard-driven search (`F2` search, barcode scanner gun listener with automatic Enter submission).
+- **Streamlined Search Bar**: Clean flexbox badges (`SCAN` and `F2`) with generous padding to prevent text collision or mixed fonts across all screen sizes.
 - **Responsive Product Cards**: Clean 290px cards displaying image, brand, title, SKU, stock dot, price (`₹`), and quick `+` Add to Cart button with zero clipping.
 - **Category Rail**: Quick category switching with custom thumbnail images and contextual hardware icons.
 - **Cart Engine**: Real-time quantity adjustments, custom item discounts, overall GST (18%) calculation, and split payment modes (Cash, UPI, Card).
@@ -56,28 +61,33 @@
 ### 2.4 Purchases & Direct Stock Procurement
 - **Purchase Orders**: Create POs linked to registered suppliers with itemized cost prices and tax rates.
 - **Direct Stock Addition**: Eliminates redundant multi-step receiving; stock is immediately credited to available inventory upon PO creation.
-- **Bill Number Tracking**: Records supplier bill/invoice numbers (e.g. `INV-9821`) alongside system PO codes.
+- **Sequential PO Numbering**: Year-based sequential series (`PO-26-01`, `PO-26-02`, etc.) that automatically rolls over to `PO-27-01` in 2027.
+- **Bill Number Tracking**: Records supplier bill/invoice numbers (e.g. `AS-8859`) alongside internal PO numbers.
 - **Payment Reconciliation**: Multi-installment payments (Cash, Bank Transfer, UPI, Cheque), partial payment tracking, and dynamic pending balance updates.
 
-### 2.5 Supplier Bill & Payment Report
+### 2.5 Sales Invoicing & Sequential Series
+- **Sequential Invoice Numbering**: Replaces random hashes with a clean year-based sequential series (`INV-26-01`, `INV-26-02`, ..., `INV-26-15`), automatically resetting to `INV-27-01` upon calendar year rollover.
+- **Comprehensive Invoice Audit**: Complete historical logs recording customer info, payment methods, line items, and audit trails.
+
+### 2.6 Supplier Bill & Payment Report
 - **Dedicated Ledger**: Complete visibility into supplier purchases, payments given, and pending balances.
 - **Interactive Multi-Filter**: Filter by Supplier, Payment Status (`Fully Paid`, `Partially Paid`, `Unpaid`), Date Range, and Search Query.
 - **Expandable Drawers**: Click any bill row to inspect purchased items (quantity, unit rate, subtotal) and given payment history with dates and transaction methods.
 - **Export Actions**: 1-click export to styled landscape PDF or complete spreadsheet CSV.
 
-### 2.6 Customer CRM
+### 2.7 Customer CRM
 - **Customer Profiles**: Name, unique phone number, email, address, and purchase logs.
 - **Loyalty Program**: Automatic reward points accrual per rupee spent, redeemable at checkout.
 
-### 2.7 Employees & HR Suite
+### 2.8 Employees & HR Suite
 - **Employee Records**: Unique auto-generated Employee ID (`EMP-XXXXXX`), designation, department, and salary.
 - **Daily Attendance**: Mark Present, Absent, Half-Day, or Leave with duplicate entry prevention per calendar day.
 - **Leave Management**: Leave requests with workflow for Manager/Admin approvals and balance deduction.
 
-### 2.8 Business Reports & Analytics
-- **Sales Analytics**: Daily, monthly, and custom date range sales metrics with PDF/CSV exports.
-- **Profit & Loss**: Gross revenue, COGS (Cost of Goods Sold), operating expenses, and net profit margins.
-- **Inventory Valuation**: Total inventory units and asset valuation by cost and retail value.
+### 2.9 Company Settings & Branding
+- **Custom Company Logo**: Dynamic logo upload supporting high-resolution branding across splash screen, sidebar brand header, and login page.
+- **Live Logo Previews**: Dedicated thumbnail preview within the settings form and current settings summary card.
+- **Production Media Serving**: Reliable cloud media file serving via `django.views.static.serve` ensuring images and logos load with HTTP 200 OK.
 
 ---
 
@@ -89,13 +99,13 @@ CustomUser (AbstractUser)
   └── phone, profile_picture
 
 Category
-  ├── name, slug, image, description, is_active
+  ├── name (unique), slug, image, description, is_active
 
 Brand
-  ├── name, logo, website, description, is_active
+  ├── name (unique), logo, website, description, is_active
 
 Product
-  ├── name, product_code (unique), barcode_number (unique)
+  ├── name (unique), product_code (unique), barcode_number
   ├── category (FK), brand (FK), supplier (FK)
   ├── purchase_price, selling_price, gst_percentage
   ├── stock_quantity, low_stock_threshold
@@ -105,7 +115,7 @@ ProductImage
   └── product (FK), image, is_primary
 
 PurchaseOrder
-  ├── order_number (unique), bill_number, supplier (FK)
+  ├── order_number (unique, PO-YY-NN), bill_number, supplier (FK)
   ├── order_date, total_amount, paid_amount, status
   └── created_by (FK)
 
@@ -116,7 +126,7 @@ SupplierPayment
   └── purchase_order (FK), amount, payment_date, payment_method, note
 
 Sale
-  ├── invoice_number (unique), customer (FK), created_by (FK)
+  ├── invoice_number (unique, INV-YY-NN), customer (FK), created_by (FK)
   ├── subtotal, discount_amount, gst_amount, grand_total
   ├── amount_paid, change_amount, payment_method, status
   └── created_at
@@ -130,8 +140,8 @@ StockMovement
   └── created_at
 
 Employee
-  ├── employee_id (unique), user (FK), full_name, email, phone
-  └── designation, department, salary, joining_date
+  ├── employee_id (unique, EMP-XXXXXX), user (FK), first_name, last_name, email, phone
+  └── designation, department, salary, join_date
 
 Attendance
   └── employee (FK), date, status (present/absent/half_day/leave)
@@ -141,7 +151,7 @@ Leave
 
 CompanySettings (Singleton)
   ├── company_name, email, phone, address, gst_number
-  └── logo, currency_symbol, default_tax_rate, theme_mode
+  └── company_logo, currency_symbol, default_tax_rate, theme
 ```
 
 ---
@@ -181,32 +191,17 @@ A full enterprise test suite (`test_all_195_cases.py`) was executed against all 
 
 ---
 
-## 5. Deployment & Free Hosting Guide
+## 5. Cloud Deployment on Render.com
 
-### Option A: PythonAnywhere (Recommended for College Submission)
-1. **Create Free Account**: Register at [pythonanywhere.com](https://www.pythonanywhere.com).
-2. **Open Bash Console**: Clone or upload project:
-   ```bash
-   git clone https://github.com/JeetDodiy/fenix_it_mall.git
-   cd fenix_it_mall
-   python3.10 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   python manage.py collectstatic --noinput
-   python manage.py migrate
-   ```
-3. **Configure Web Tab**:
-   - Environment: Python 3.10
-   - Source directory: `/home/<username>/fenix_it_mall`
-   - Virtualenv: `/home/<username>/fenix_it_mall/venv`
-   - Static mapping: `/static/` → `/home/<username>/fenix_it_mall/static`
-   - Media mapping: `/media/` → `/home/<username>/fenix_it_mall/media`
-4. **Reload**: Live at `https://<username>.pythonanywhere.com`.
+The application is deployed live with automated Continuous Integration & Deployment (CI/CD) directly from GitHub:
 
-### Option B: Render.com (GitHub CI/CD Deploy)
-1. Create Web Service on [render.com](https://render.com) linked to your GitHub repo.
-2. Build Command: `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate`
-3. Start Command: `gunicorn fenix_it_mall.wsgi:application`
+- **Live URL**: [https://fenix-it-mall.onrender.com](https://fenix-it-mall.onrender.com)
+- **Hosting Tier**: Render Free Web Service (0.1 CPU, 512 MB RAM, Singapore Region)
+- **Deployment Pipeline**:
+  - `build.sh`: Automatically runs `pip install -r requirements.txt`, `collectstatic`, auto-deduplication, test data purge, `migrate`, `init_admin`, and fixture catalog seeding.
+  - `Procfile`: Starts production WSGI web worker via `gunicorn fenix_it_mall.wsgi:application`.
+  - `WhiteNoise`: Serves pre-compressed static assets with zero latency.
+  - Automatic updates on every `git push origin main`.
 
 ---
 
@@ -214,7 +209,7 @@ A full enterprise test suite (`test_all_195_cases.py`) was executed against all 
 
 | Role | Username | Password | Notes |
 | :--- | :--- | :--- | :--- |
-| **Super Admin** | `admin` | `admin123` | Full access across all modules |
+| **Super Admin** | `admin` | `admin123` | Full access across all modules & settings |
 | **Manager** | `manager` | `manager123` | Inventory, purchases, supplier payments, reports |
 | **Cashier** | `cashier` | `cashier123` | POS terminal checkout only |
 | **Employee** | `emp_rahul` | `emp123` | Attendance and personal salary log |
