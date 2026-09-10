@@ -47,6 +47,26 @@
     .splash-bar-fill { height: 100%; background: linear-gradient(90deg,#06b6d4,#a855f7); border-radius: 2px; animation: loadBar 1.2s ease forwards; }
     @keyframes splashPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
     @keyframes loadBar { from{width:0} to{width:100%} }
+
+    /* Light Theme Splash Screen */
+    html.light-theme #splash-screen {
+      background: #ffffff;
+    }
+    html.light-theme .splash-name {
+      color: #0f172a;
+    }
+    html.light-theme .splash-tagline {
+      color: #64748b;
+    }
+    html.light-theme .splash-bar {
+      background: rgba(0, 0, 0, 0.08);
+    }
+    html.light-theme .splash-logo-wrap {
+      background: #ffffff;
+      box-shadow: 0 10px 40px rgba(6, 182, 212, 0.25);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
   </style>
 </head>
 <body id="app-body">

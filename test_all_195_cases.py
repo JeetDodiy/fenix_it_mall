@@ -559,6 +559,13 @@ class FullTestSuiteRunner:
 
         print("Full verification matrix saved to FULL_195_TEST_CASES_REPORT.md")
 
+        # Automatically clean up test records so database remains production-clean
+        try:
+            from django.core.management import call_command
+            call_command('clean_test_data')
+        except Exception:
+            pass
+
 
 if __name__ == '__main__':
     runner = FullTestSuiteRunner()
