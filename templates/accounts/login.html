@@ -203,8 +203,13 @@
     <div class="login-brand-grid"></div>
 
     <div class="brand-logo-box">
-      <img src="/media/settings/images.png" alt="{{ company_settings.company_name|default:'Fenix IT Mall' }}"
-           onerror="this.parentElement.innerHTML='🖥️';this.parentElement.style.fontSize='32px';" />
+      {% if company_settings.company_logo %}
+        <img src="{{ company_settings.company_logo.url }}" alt="{{ company_settings.company_name|default:'Fenix IT Mall' }}" />
+      {% elif company_settings.logo %}
+        <img src="{{ company_settings.logo.url }}" alt="{{ company_settings.company_name|default:'Fenix IT Mall' }}" />
+      {% else %}
+        <div style="font-size:32px;display:flex;align-items:center;justify-content:center;height:100%;">🖥️</div>
+      {% endif %}
     </div>
     <div class="brand-name">{{ company_settings.company_name|default:"Fenix IT Mall" }}</div>
     <div class="brand-tagline">{{ company_settings.tagline|default:"Smart Retail. Faster Business." }}</div>
@@ -243,10 +248,17 @@
       <!-- Mobile logo -->
       <div class="mobile-logo">
         <div class="mobile-logo-img">
-          <img src="/media/settings/images.png" alt="logo" onerror="this.parentElement.innerHTML='🖥️';" />
+          {% if company_settings.company_logo %}
+            <img src="{{ company_settings.company_logo.url }}" alt="logo" />
+          {% elif company_settings.logo %}
+            <img src="{{ company_settings.logo.url }}" alt="logo" />
+          {% else %}
+            <div style="font-size:24px;display:flex;align-items:center;justify-content:center;height:100%;">🖥️</div>
+          {% endif %}
         </div>
         <div style="font-size:16px;font-weight:700;color:var(--text-primary);">{{ company_settings.company_name|default:"Fenix IT Mall" }}</div>
       </div>
+
 
       <div class="login-heading">Welcome back 👋</div>
       <div class="login-sub">Sign in to your account to continue</div>

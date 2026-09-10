@@ -16,7 +16,14 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         {% for field in form %}
         <div class="form-group {% if field.name == 'address' or field.name == 'company_name' %}col-span-2{% endif %}">
-          <label class="form-label">{{ field.label }}</label>{{ field }}
+          <label class="form-label">{{ field.label }}</label>
+          {% if field.name == 'company_logo' and company_settings.company_logo %}
+            <div style="margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+              <img src="{{ company_settings.company_logo.url }}" alt="Current Logo" style="height:48px;max-width:120px;object-fit:contain;border-radius:6px;background:rgba(255,255,255,0.06);padding:4px;border:1px solid var(--border-glass);" />
+              <span style="font-size:12px;color:var(--text-muted);">Current Logo</span>
+            </div>
+          {% endif %}
+          {{ field }}
           {% if field.errors %}<div class="form-error">{{ field.errors.0 }}</div>{% endif %}
         </div>
         {% endfor %}
@@ -30,6 +37,16 @@
     <div class="card" style="margin-bottom:16px;">
       <div class="card-header"><h4 class="card-title">Current Settings</h4></div>
       {% if company_settings %}
+      <div style="text-align:center;margin-bottom:14px;padding:10px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid var(--border-glass);">
+        {% if company_settings.company_logo %}
+          <img src="{{ company_settings.company_logo.url }}" alt="Logo" style="max-height:60px;max-width:160px;object-fit:contain;" />
+        {% elif company_settings.logo %}
+          <img src="{{ company_settings.logo.url }}" alt="Logo" style="max-height:60px;max-width:160px;object-fit:contain;" />
+        {% else %}
+          <div style="font-size:32px;">🖥️</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">No custom logo uploaded</div>
+        {% endif %}
+      </div>
       <div style="font-size:13px;display:flex;flex-direction:column;gap:8px;color:var(--text-secondary);">
         <div>🏢 <strong>{{ company_settings.company_name }}</strong></div>
         <div>💱 {{ company_settings.currency_symbol }} ({{ company_settings.currency_code }})</div>

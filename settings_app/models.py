@@ -25,8 +25,13 @@ class CompanySettings(models.Model):
         verbose_name = 'Company Settings'
         verbose_name_plural = 'Company Settings'
 
+    @property
+    def logo(self):
+        return self.company_logo
+
     def __str__(self):
         return self.company_name
+
 
     @classmethod
     def get_settings(cls):

@@ -54,10 +54,12 @@
 <!-- ══ SPLASH SCREEN ══ -->
 <div id="splash-screen">
   <div class="splash-logo-wrap">
-    {% if company_settings.logo %}
+    {% if company_settings.company_logo %}
+      <img src="{{ company_settings.company_logo.url }}" alt="{{ company_settings.company_name|default:'Fenix IT Mall' }}" />
+    {% elif company_settings.logo %}
       <img src="{{ company_settings.logo.url }}" alt="{{ company_settings.company_name|default:'Fenix IT Mall' }}" />
     {% else %}
-      <img src="/media/settings/images.png" alt="Fenix IT Mall" onerror="this.style.display='none';this.parentElement.innerHTML='🖥️'" />
+      <div style="font-size:36px;display:flex;align-items:center;justify-content:center;height:100%;">🖥️</div>
     {% endif %}
   </div>
   <div class="splash-name">{{ company_settings.company_name|default:"Fenix IT Mall" }}</div>
@@ -72,10 +74,12 @@
 
     <div class="sidebar-brand">
       <div class="brand-logo-wrap">
-        {% if company_settings.logo %}
+        {% if company_settings.company_logo %}
+          <img src="{{ company_settings.company_logo.url }}" alt="logo" />
+        {% elif company_settings.logo %}
           <img src="{{ company_settings.logo.url }}" alt="logo" />
         {% else %}
-          <img src="/media/settings/images.png" alt="logo" onerror="this.parentElement.className='brand-fallback';this.parentElement.innerHTML='🖥️'" />
+          <div class="brand-fallback" style="font-size:24px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;">🖥️</div>
         {% endif %}
       </div>
       <div>
