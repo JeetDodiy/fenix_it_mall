@@ -56,7 +56,7 @@ class Product(models.Model):
     ]
 
     # Core fields
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, unique=True)
     product_code = models.CharField(max_length=50, unique=True, blank=True)
     barcode_number = models.CharField(max_length=50, blank=True, null=True)
     barcode_image = models.ImageField(upload_to='barcodes/', blank=True, null=True)
@@ -87,7 +87,24 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        super().clean()
+        if self.name:
+            self.name = self.name.strip()
+            qs = Product.objects.filter(name__iexact=self.name)
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                existing = qs.first()
+                raise ValidationError({
+                    'name': f'A product named "{existing.name}" already exists (SKU: {existing.product_code}). Duplicate product names are restricted.'
+                })
+
     def save(self, *args, **kwargs):
+        if self.name:
+            self.name = self.name.strip()
+        self.full_clean()
         # Track if barcode changed
         barcode_changed = False
         if self.pk:
@@ -101,6 +118,7 @@ class Product(models.Model):
             self.slug = slugify(f'{self.name}-{self.product_code}')
         if not self.barcode_number:
             self.barcode_number = self.product_code
+
         
         # If barcode changed, clear old images to regenerate
         if barcode_changed:

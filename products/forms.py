@@ -58,6 +58,38 @@ class ProductForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-input'}),
         }
 
+    def clean_name(self):
+        name = (self.cleaned_data.get('name') or '').strip()
+        if not name:
+            raise forms.ValidationError('Product name is required.')
+
+        # Case-insensitive duplicate check
+        qs = Product.objects.filter(name__iexact=name)
+        if self.instance and self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+
+        if qs.exists():
+            existing = qs.first()
+            raise forms.ValidationError(
+                f'A product with the name "{existing.name}" already exists in the inventory (SKU: {existing.product_code}). Duplicate product names are restricted.'
+            )
+        return name
+
+    def clean_barcode_number(self):
+        barcode = (self.cleaned_data.get('barcode_number') or '').strip()
+        if barcode:
+            qs = Product.objects.filter(barcode_number__iexact=barcode)
+            if self.instance and self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                existing = qs.first()
+                raise forms.ValidationError(
+                    f'Barcode "{barcode}" is already assigned to product "{existing.name}".'
+                )
+        return barcode
+
+
+
 
 class MultipleFileInput(forms.FileInput):
     allow_multiple_selected = True
