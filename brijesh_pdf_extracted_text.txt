@@ -1,0 +1,788 @@
+=== PAGE 1 ===
+StocksAI 
+ 
+ 
+ 
+A PROJECT REPORT ON 
+StocksAI 
+SUBMITTED TO: 
+Geetanjali College of Computer Science and Commerce (BBA) Saurashtra 
+University Rajkot 
+FRONT END : 
+React JS 
+BACK END : 
+Express JS   
+ AFFILIATED BY :  
+Saurashtra University 
+ACADEMIC YEAR : 
+2025-2026 
+PROJECT GUIDE: 
+    Prof. Harsh Joshi 
+PREPARED BY: 
+Tankariya Brijesh Jayeshbhai 
+ 
+
+=== PAGE 2 ===
+StocksAI 
+ 
+ 
+ 
+Acknowledgement 
+ 
+ 
+• First and foremost, we are sincerely thankful to Saurashtra University for 
+giving us the opportunity to work on this project as part of our curriculum. 
+ 
+• We extend our gratitude to Geetanjali Group Of Colleges for providing us 
+with the resources and environment needed to develop our project. 
+ 
+ 
+• We are particularly grateful to our Head of Department, Prof. Brijesh Shah 
+for their constant support and guidance throughout the project. 
+ 
+• We would like to express our deepest appreciation to our project guide, 
+prof. Kishorsinh Vala, who guided us through the analysis and 
+development phases of our project, providing invaluable advice and 
+support. 
+ 
+ 
+• We are also thankful to all well-wishers and friends who supported us 
+during the project development. 
+ 
+ 
+ 
+ 
+Yours Faithfully, 
+Tankariya Brijesh Jayeshbhai 
+
+=== PAGE 3 ===
+StocksAI 
+ 
+ 
+ 
+Index 
+ 
+SR.NO TOPICNAME PAGENO. 
+1 Project Profile 1 
+2 Project Requirement 2 
+3 Technology Requirement 3 
+4 Data Flow Diagram 4 
+5 E-R Diagram 6 
+6 SDLC 7 
+7 Data Dictionary 8 
+8 Test cases 10 
+9 Screenshots 11 
+10 Future Enhancement of project 32 
+11 Webliography 33 
+ 
+
+=== PAGE 4 ===
+StocksAI 
+1 
+Project Profile 
+➢ Project Title: StocksAI 
+➢ Development Software: Visual Studio Code 
+➢ Front End: React JS 
+➢ Back End: Express JS 
+➢ Academic Year: 2026-2027 
+➢ Developed By: Tankariya Brijesh Jayeshbhai 
+➢ Submitted To: Geetanjali College of Computer Science and Commerce (BBA) 
+Saurashtra University Rajkot 
+➢ Documentation Tool: Microsoft Word 
+➢ Operating System: Windows 11 
+ 
+ 
+ 
+ 
+
+=== PAGE 5 ===
+StocksAI 
+2 
+Project Requirement 
+ 
+ 
+ 
+❖ Processor: Intel Core i3 or higher 
+ 
+❖ RAM: 4 GB or more 
+ 
+❖ Hard Disk: 500 GB or more 
+ 
+  
+
+=== PAGE 6 ===
+StocksAI 
+3 
+Technology Requirement 
+➢ Platform: 8 Bit, 2 core, 1.2 GHz or higher. 
+➢ Operating System: Windows 11 / macOS / Linux 
+➢ Front End Tools: React JS 
+➢ Back End Tools: Express JS 
+➢ Additional Libraries:  React Router, Axios, Tailwind CSS, Chart.js, 
+JWT Authentication, and Mongoose 
+➢ Editing Tool: Visual Studio Code 
+➢ Browser: Google Chrome, Mozilla Firefox, or any modern browser 
+  
+
+=== PAGE 7 ===
+StocksAI 
+4 
+Data Flow Diagram  
+ 
+ 
+ 
+
+
+=== PAGE 8 ===
+StocksAI 
+5 
+Admin Side 
+ 
+ 
+ 
+
+
+=== PAGE 9 ===
+StocksAI 
+6 
+E-R Diagram 
+ 
+• An entity Relationship Diagram (ERD) is a data modeling technique that 
+graphically illustrates an information system’s entities and the relationship 
+between those entities . An ERD is a conceptual and representation model 
+of data used to represent the entity from work infrastructure . 
+ 
+ 
+ 
+ 
+
+
+=== PAGE 10 ===
+StocksAI 
+7 
+Software Development Life Cycle 
+ 
+o Planning and Requirement Analysis:  
+  
+This phase involves defining the project goals, gathering user 
+needs, and documenting requirements.  
+  
+o Design :  
+  
+The design stage focuses on creating the overall architecture, 
+user interface, and system components.  
+    
+o Development:  
+  
+This stage involves coding and implementing the software 
+based on the design specifications.  
+  
+o Testing:  
+  
+Rigorous testing is conducted to identify and resolve bugs and 
+ensure the software meets quality standards.  
+  
+o Deployment:  
+  
+The software is released and made available to users.  
+  
+o Maintenance:  
+  
+Ongoing support, bug fixes, and enhancements are provided 
+to ensure the software continues to function properly.   
+ 
+
+=== PAGE 11 ===
+StocksAI 
+8 
+Data Dictionary 
+o User 
+o Admin 
+ 
+ 
+ 
+ 
+ 
+   
+   
+ 
+
+=== PAGE 12 ===
+StocksAI 
+9 
+ 
+User Table 
+ 
+ 
+Field Name Data Type Constraints 
+_id ObjectId Primary Key 
+name String NOT NULL 
+email String Unique, NOT NULL 
+phone String NOT NULL 
+profession String NOT NULL 
+country String NOT NULL 
+password String NOT NULL 
+resetOtp String Optional 
+resetOtpExpiry Date Optional 
+Admin Table 
+ 
+ 
+Field Name Data Type Constraints 
+_id ObjectId Primary Key 
+email String Unique, NOT NULL 
+password String NOT NULL 
+createdAt Date Auto Generated 
+updatedAt Date Auto Generated 
+ 
+ 
+
+=== PAGE 13 ===
+StocksAI 
+10 
+Test Cases 
+ 
+ 
+Case Name Case Description Actual Output Test Result 
+User  
+Registration 
+Verify user registration with valid details. 
+User account created and  
+redirected to login page. 
+Pass 
+User Login Verify user login functionality with valid 
+credentials. 
+Redirects to user dashboard  
+successfully. 
+Pass 
+Invalid Login Verify login with incorrect email or pass-
+word. 
+Error message displayed: "Invalid 
+credentials". Pass 
+Add Stock to 
+Watchlist 
+Verify user can add a stock to saved 
+stocks list. 
+Selected stock added to user's 
+saved stocks. Pass 
+Remove 
+Stock from 
+Watchlist 
+Verify user can remove stock from saved 
+stocks. 
+Stock removed successfully from 
+watchlist. Pass 
+View Stock 
+Details 
+Verify user can view detailed stock infor-
+mation. 
+Stock details page displayed with 
+price and analysis. Pass 
+View  
+Dashboard 
+Verify dashboard loads market sentiment 
+and predictions. 
+Dashboard displays market mood 
+and stock predictions. Pass 
+View News Verify financial news is displayed 
+properly. 
+Latest market news displayed with 
+details. Pass 
+Update  
+Profile 
+Verify user can update profile infor-
+mation. Updated profile saved successfully. Pass 
+Admin Login Verify admin login functionality with valid 
+credentials. 
+Redirects to admin dashboard suc-
+cessfully. Pass 
+ 
+ 
+ 
+
+=== PAGE 14 ===
+StocksAI 
+11 
+ 
+Screen Shots 
+Login Page: 
+ 
+ 
+ 
+ 
+➢ This is the login page of the website. 
+➢ Users can enter their email address and password to 
+securely access their account. 
+➢ After successful login,the user is redirected to the dashboard 
+to view stock predictions and market insights. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+=== PAGE 15 ===
+StocksAI 
+12 
+ 
+ 
+Registration Page: 
+ 
+ 
+ 
+ 
+➢ This is the registration page of the website. 
+➢ New users can create an account by entering details 
+like full name, email address, phone number, 
+profession, and country. 
+  
+
+
+=== PAGE 16 ===
+StocksAI 
+13 
+ 
+Registration Page: 
+ 
+ 
+ 
+ 
+ 
+➢  This is the second step of the registration page of the 
+website. 
+➢ Users are required to create a secure password and 
+confirm it to complete account setup. 
+➢ The system validates that both passwords match before 
+proceeding. 
+➢ Users can click on the “Continue” button to move to the 
+next step or “Back” to return to the previous step. 
+  
+
+
+=== PAGE 17 ===
+StocksAI 
+14 
+ 
+Registration Page: 
+ 
+   
+ 
+ 
+➢ This is the third step of the registration page of the 
+website. 
+➢ Users are required to verify their email address using a 
+6-digit OTP sent to their registered email. 
+➢ The system ensures secure account creation through 
+email verification. 
+➢ After entering the correct OTP, users can click on 
+“Verify & Create Account” to complete the registration 
+process.  
+
+
+=== PAGE 18 ===
+StocksAI 
+15 
+ 
+Forgot Password Page: 
+ 
+ 
+ 
+ 
+ 
+ 
+➢ This is the forgot password page of the website. 
+➢  Users can enter their registered email address to reset 
+their password. 
+➢ After entering the email, users can click on the “Send 
+OTP” button to receive a verification code. 
+➢  The system sends an OTP to the user’s email for 
+identity verification. 
+➢ This process helps users securely recover access to 
+their account. 
+  
+
+
+=== PAGE 19 ===
+StocksAI 
+16 
+ 
+Forgot Password Page: 
+ 
+ 
+ 
+ 
+ 
+➢ This is the OTP verification page of the website. 
+➢  Users are required to enter the 6-digit OTP received 
+on their registered email. 
+➢ After entering the OTP, users can click on the “Verify 
+OTP” button to proceed. 
+➢  The system validates the OTP to ensure secure 
+identity verification. 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+=== PAGE 20 ===
+StocksAI 
+17 
+ 
+Forgot Password Page: 
+ 
+ 
+ 
+➢ This is the reset password page of the website.  
+➢ Users can enter a new password to update their 
+account credentials. 
+➢ After entering the new password, users can click on 
+the “Update Password” button.  
+➢ Upon successful update, the user can log in with the 
+new password. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+=== PAGE 21 ===
+StocksAI 
+18 
+ 
+Dashboard Page: 
+ 
+ 
+ 
+➢ This is the dashboard page of the website. 
+➢  Users can view market trends, sentiment 
+(bullish/bearish/neutral), and key indices. 
+➢ It helps users understand the market and make better 
+trading decisions. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+=== PAGE 22 ===
+StocksAI 
+19 
+ 
+Dashboard Page: 
+ 
+ 
+ 
+ 
+➢ This section shows stocks added by the user. 
+➢  Users can view stock price, trend, and basic details of 
+their selected stocks. 
+➢ It helps users track and monitor their saved stocks 
+easily. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+=== PAGE 23 ===
+StocksAI 
+20 
+ 
+Stocks Page: 
+ 
+ 
+ 
+ 
+➢ This is the stocks page of the website . 
+➢  Users can view all the stocks they have added and 
+track their performance. 
+➢ Users can also remove stocks and switch between 
+different view modes (grid/list) easily.  
+
+
+=== PAGE 24 ===
+StocksAI 
+21 
+ 
+Stock Detail Page: 
+ 
+ 
+ 
+ 
+ 
+➢ This is the stock detail page of the website. 
+➢  Users can view detailed information like price, trend, 
+volume, and market data. 
+➢ It also provides trade setup, targets, stop loss, and 
+confidence level.  
+
+
+=== PAGE 25 ===
+StocksAI 
+22 
+ 
+Stock Detail Page: 
+ 
+ 
+ 
+ 
+ 
+➢ This section shows the algorithmic trade setup for the 
+selected stock. 
+➢  Users can view entry price, target, stop loss, risk, and 
+reward details. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+=== PAGE 26 ===
+StocksAI 
+23 
+ 
+Stock Detail Page: 
+ 
+ 
+ 
+ 
+➢ This section shows the intraday price chart of the 
+selected stock. 
+➢  Users can analyze price movement over different 
+timeframes like 1D, 1W, 1M, MAX. 
+➢ It helps users understand trends and make better 
+trading decisions. 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+=== PAGE 27 ===
+StocksAI 
+24 
+ 
+Stock Detail Page: 
+ 
+ 
+ 
+ 
+➢ This section shows deep technical analysis of the 
+selected stock. 
+➢  Users can view indicators like RSI, trend strength, 
+support, resistance, and momentum. 
+➢ It helps users understand market signals and make 
+better trading decisions. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+=== PAGE 28 ===
+StocksAI 
+25 
+ 
+Stock Detail Page: 
+ 
+ 
+ 
+ 
+➢ This section shows volatility-based scenario 
+projections of the stock. 
+➢  Users can view best case, expected, and worst case 
+price outcomes with probability. 
+➢ It helps users understand possible future movements 
+and plan trades accordingly. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+=== PAGE 29 ===
+StocksAI 
+26 
+ 
+News Page: 
+ 
+ 
+ 
+ 
+➢ This is the news page of the website. 
+➢  Users can view latest financial news, and corporate 
+announcements. 
+➢ It helps users stay updated with market trends and 
+important events.  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+=== PAGE 30 ===
+StocksAI 
+27 
+ 
+News Page: 
+ 
+ 
+ 
+➢ This is the detailed news view of the website. 
+➢  Users can read full news details along with date, 
+source, and related stock. 
+➢ It provides in-depth information about specific market 
+updates. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+=== PAGE 31 ===
+StocksAI 
+28 
+ 
+Profile Page: 
+ 
+ 
+ 
+ 
+ 
+➢ This is the profile page of the website. 
+➢  Users can view and update personal details like name, 
+email, phone, and profession. 
+➢ Users can also change their password and save profile 
+changes easily. 
+  
+
+
+=== PAGE 32 ===
+StocksAI 
+29 
+ 
+Stock Search Feature: 
+ 
+ 
+ 
+ 
+➢ This is the stock search feature of the website. 
+➢  Users can search and select stocks to add to their list. 
+➢  It displays stock name, price, and trend for easy       
+selection. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+=== PAGE 33 ===
+StocksAI 
+30 
+ 
+Admin Login Page: 
+ 
+ 
+ 
+ 
+➢ This is the admin login page of the website. 
+➢  Admin can enter email and password to access the 
+admin panel. 
+➢  It provides secure access to manage system data and 
+users. 
+  
+
+
+=== PAGE 34 ===
+StocksAI 
+31 
+ 
+Admin Dashboard Page: 
+ 
+ 
+ 
+ 
+ 
+➢ This is the admin dashboard page of the website. 
+➢  Admin can view user details, total users, and platform 
+activity. 
+➢  Admin can manage users and monitor their portfolios 
+easily. 
+  
+
+
+=== PAGE 35 ===
+StocksAI 
+32 
+ 
+Future Enhancement 
+❖ Add real-time trading integration with brokers like Zerodha 
+or Dhan for direct order placement. 
+❖  Implement advanced AI models for more accurate stock 
+predictions and signals. 
+❖  Provide mobile application support for better accessibility. 
+❖  Add portfolio analytics with profit/loss tracking and 
+performance insights. 
+❖  Enable notifications and alerts for price changes, targets, 
+and news updates. 
+❖  Introduce social features like community discussions and 
+expert insights. 
+ 
+  
+
+=== PAGE 36 ===
+StocksAI 
+33 
+Webliography 
+➢ https://tailwindcss.com/ 
+➢ https://reactjs.org/ 
+➢ https://nodejs.org/ 
+➢ https://www.mongodb.com/ 
+ 
+
