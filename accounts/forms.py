@@ -35,3 +35,18 @@ class CustomUserChangeForm(UserChangeForm):
             'role': forms.Select(attrs={'class': 'form-input'}),
             'profile_picture': forms.FileInput(attrs={'class': 'form-input'}),
         }
+
+
+class UserProfileForm(forms.ModelForm):
+    """Form for personal profile editing by any user (role is not editable here)"""
+    class Meta:
+        model = CustomUser
+        fields = ('first_name', 'last_name', 'email', 'phone', 'profile_picture')
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-input'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-input'}),
+            'email': forms.EmailInput(attrs={'class': 'form-input'}),
+            'phone': forms.TextInput(attrs={'class': 'form-input'}),
+            'profile_picture': forms.FileInput(attrs={'class': 'form-input', 'accept': 'image/*'}),
+        }
+

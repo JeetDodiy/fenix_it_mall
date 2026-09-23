@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib import messages
 from .models import CustomUser
-from .forms import CustomUserCreationForm, CustomUserChangeForm
+from .forms import CustomUserCreationForm, CustomUserChangeForm, UserProfileForm
 
 
 def login_view(request):
@@ -59,15 +59,18 @@ def logout_view(request):
 @login_required
 def profile_view(request):
     if request.method == 'POST':
-        form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
+        form = UserProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, 'Your profile has been updated.')
             return redirect('accounts:profile')
+        else:
+            messages.error(request, 'Please correct the error(s) below.')
     else:
-        form = CustomUserChangeForm(instance=request.user)
+        form = UserProfileForm(instance=request.user)
         
     return render(request, 'accounts/profile.html', {'form': form})
+
 
 
 @login_required
