@@ -23,6 +23,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary_storage',
+    'cloudinary',
     # Fenix IT Mall Apps
     'core',
     'accounts',
@@ -117,14 +119,42 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
-    },
-}
+# Storage configuration: Persistent Cloudinary for cloud (Render) or local FileSystem
+CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
+CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
+
+if CLOUDINARY_CLOUD_NAME or CLOUDINARY_URL:
+    import urllib.parse
+    CLOUDINARY_STORAGE = {}
+    if CLOUDINARY_URL:
+        # Support full URL: cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+        clean_url = CLOUDINARY_URL.replace('CLOUDINARY_URL=', '').strip()
+        parsed = urllib.parse.urlparse(clean_url)
+        CLOUDINARY_STORAGE['CLOUD_NAME'] = parsed.hostname
+        CLOUDINARY_STORAGE['API_KEY'] = parsed.username
+        CLOUDINARY_STORAGE['API_SECRET'] = parsed.password
+    else:
+        CLOUDINARY_STORAGE['CLOUD_NAME'] = CLOUDINARY_CLOUD_NAME
+        CLOUDINARY_STORAGE['API_KEY'] = os.environ.get('CLOUDINARY_API_KEY')
+        CLOUDINARY_STORAGE['API_SECRET'] = os.environ.get('CLOUDINARY_API_SECRET')
+
+    STORAGES = {
+        "default": {
+            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
 
 # Media files (product images, logos, etc.)
 MEDIA_URL = '/media/'
