@@ -243,7 +243,7 @@
           <th style="width:36px;text-align:center;">#</th>
           <th>Item & Description</th>
           <th style="width:70px;text-align:center;">Qty</th>
-          <th style="width:110px;text-align:right;">Unit Price</th>
+          <th style="width:110px;text-align:right;">Unit Price (Incl.)</th>
           <th style="width:70px;text-align:center;">GST %</th>
           <th style="width:110px;text-align:right;">Amount (₹)</th>
         </tr>
@@ -279,7 +279,7 @@
       </div>
       <div class="inv-totals">
         <div class="inv-tot-row">
-          <span>Subtotal:</span>
+          <span>Subtotal (MRP):</span>
           <span>₹{{ sale.subtotal|floatformat:2 }}</span>
         </div>
         {% if sale.discount_amount > 0 %}
@@ -288,12 +288,28 @@
           <span>−₹{{ sale.discount_amount|floatformat:2 }}</span>
         </div>
         {% endif %}
-        <div class="inv-tot-row">
-          <span>GST Tax (18%):</span>
+
+        {% if gst_slots %}
+          {% for slot in gst_slots %}
+          <div class="inv-tot-row" style="font-size:12px;color:#475569;">
+            <span>GST {{ slot.rate }}% (CGST {{ slot.cgst_rate }}% + SGST {{ slot.sgst_rate }}%):</span>
+            <span>₹{{ slot.total_tax|floatformat:2 }}</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="inv-tot-row" style="font-size:12px;color:#475569;">
+            <span>GST Tax (Included):</span>
+            <span>₹{{ sale.gst_amount|floatformat:2 }}</span>
+          </div>
+        {% endif %}
+
+        <div class="inv-tot-row" style="font-size:11px;color:#64748b;border-top:1px dashed #cbd5e1;padding-top:4px;">
+          <span>Total Tax (Included in Price):</span>
           <span>₹{{ sale.gst_amount|floatformat:2 }}</span>
         </div>
+
         <div class="inv-tot-grand">
-          <span>Total Payable:</span>
+          <span>Total Amount (Incl. Taxes):</span>
           <span style="{% if sale.status == 'voided' %}color:#dc2626 !important;{% endif %}">₹{{ sale.grand_total|floatformat:2 }}</span>
         </div>
         <div style="font-size:12px;text-align:right;color:#64748b;margin-top:6px;">

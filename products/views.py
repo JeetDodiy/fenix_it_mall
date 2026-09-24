@@ -154,6 +154,7 @@ def product_search_ajax(request):
                 'selling_price': str(product.selling_price),
                 'stock_quantity': product.stock_quantity,
                 'product_code': product.product_code,
+                'gst_percentage': str(product.gst_percentage),
             }})
         return JsonResponse({'product': None})
 
@@ -164,7 +165,8 @@ def product_search_ajax(request):
 
     return JsonResponse({'products': [
         {'id': p.pk, 'name': p.name, 'selling_price': str(p.selling_price),
-         'stock_quantity': p.stock_quantity, 'product_code': p.product_code}
+         'stock_quantity': p.stock_quantity, 'product_code': p.product_code,
+         'gst_percentage': str(p.gst_percentage)}
         for p in products
     ]})
 

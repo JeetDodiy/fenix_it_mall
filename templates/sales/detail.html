@@ -166,7 +166,7 @@
     <div class="card" style="padding:0;overflow:hidden;">
       <div style="padding:16px 20px;border-bottom:1px solid var(--border-glass);display:flex;justify-content:space-between;align-items:center;">
         <h3 class="card-title" style="margin:0;">Purchased Items ({{ sale.items.count }})</h3>
-        <span style="font-size:12px;color:var(--text-muted);">Tax Inclusive (GST 18%)</span>
+        <span style="font-size:12px;color:var(--text-muted);">Prices Inclusive of GST</span>
       </div>
       <div class="table-wrapper" style="border:none;">
         <table class="table">
@@ -175,7 +175,7 @@
               <th style="width:40px;">#</th>
               <th>Product & Details</th>
               <th style="text-align:center;">Qty</th>
-              <th style="text-align:right;">Unit Price</th>
+              <th style="text-align:right;">Unit Price (Incl.)</th>
               <th style="text-align:center;">GST %</th>
               <th style="text-align:right;">Total</th>
             </tr>
@@ -213,7 +213,7 @@
       <div style="padding:20px;border-top:1px solid var(--border-glass);background:rgba(255,255,255,0.01);">
         <div style="max-width:300px;margin-left:auto;">
           <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:var(--text-muted);">
-            <span>Subtotal</span>
+            <span>Subtotal (MRP)</span>
             <span style="color:var(--text-primary);">₹{{ sale.subtotal|floatformat:2 }}</span>
           </div>
           {% if sale.discount_amount > 0 %}
@@ -222,8 +222,18 @@
             <span>−₹{{ sale.discount_amount|floatformat:2 }}</span>
           </div>
           {% endif %}
-          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border-glass);color:var(--text-muted);">
-            <span>GST (18%)</span>
+
+          {% if gst_slots %}
+            {% for slot in gst_slots %}
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;color:var(--text-secondary);">
+              <span>GST {{ slot.rate }}% (CGST {{ slot.cgst_rate }}% + SGST {{ slot.sgst_rate }}%)</span>
+              <span style="color:var(--accent-cyan);font-weight:600;">₹{{ slot.total_tax|floatformat:2 }}</span>
+            </div>
+            {% endfor %}
+          {% endif %}
+
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border-glass);color:var(--text-muted);">
+            <span>Total Tax (Included in Price)</span>
             <span style="color:var(--text-primary);">₹{{ sale.gst_amount|floatformat:2 }}</span>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">

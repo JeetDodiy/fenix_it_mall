@@ -18,14 +18,44 @@ document.addEventListener('alpine:init', function () {
     get discountAmount() {
       return this.subtotal * (this.discountPct / 100);
     },
-    get taxable() {
-      return this.subtotal - this.discountAmount;
+    get grandTotal() {
+      // In India, selling price already INCLUDES GST. Customer pays MRP minus discount!
+      return Math.max(0, this.subtotal - this.discountAmount);
+    },
+    get gstSlots() {
+      const discFraction = ((this.discountPct || 0) / 100);
+      const slots = {};
+      this.items.forEach(function(it) {
+        const rate = parseFloat(it.gstRate != null ? it.gstRate : 18);
+        const gross = it.price * it.qty;
+        const net = gross * (1 - discFraction);
+        const taxable = net / (1 + (rate / 100));
+        const tax = net - taxable;
+        if (!slots[rate]) {
+          slots[rate] = {
+            rate: rate,
+            gross: 0,
+            net: 0,
+            taxable: 0,
+            cgst: 0,
+            sgst: 0,
+            totalTax: 0,
+          };
+        }
+        slots[rate].gross += gross;
+        slots[rate].net += net;
+        slots[rate].taxable += taxable;
+        slots[rate].totalTax += tax;
+        slots[rate].cgst += tax / 2;
+        slots[rate].sgst += tax / 2;
+      });
+      return Object.values(slots).sort(function(a, b) { return b.rate - a.rate; });
     },
     get gstAmount() {
-      return this.taxable * 0.18;
+      return this.gstSlots.reduce(function(acc, s) { return acc + s.totalTax; }, 0);
     },
-    get grandTotal() {
-      return this.taxable + this.gstAmount;
+    get taxable() {
+      return this.grandTotal - this.gstAmount;
     },
     get change() {
       return Math.max(0, parseFloat(this.amountPaid) - this.grandTotal);
@@ -44,6 +74,7 @@ document.addEventListener('alpine:init', function () {
           id: product.id,
           name: product.name,
           price: parseFloat(product.selling_price),
+          gstRate: parseFloat(product.gst_percentage != null ? product.gst_percentage : 18),
           qty: 1,
           stock: product.stock_quantity,
           code: product.product_code

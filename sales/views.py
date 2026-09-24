@@ -14,6 +14,53 @@ from customers.models import Customer
 from notifications.utils import create_stock_notification
 
 
+def get_sale_gst_slots(sale):
+    """
+    Computes GST slot breakdown (Taxable, CGST, SGST, Total GST)
+    for a sale where product selling prices are Inclusive of GST (Indian MRP standard).
+    """
+    disc_factor = 1.0 - (float(sale.discount_percentage or 0) / 100.0)
+    slots = {}
+    for item in sale.items.select_related('product').all():
+        rate = float(item.gst_percentage if item.gst_percentage is not None else (item.product.gst_percentage or 18.0))
+        net_item = float(item.total_price) * disc_factor
+        taxable = net_item / (1.0 + (rate / 100.0))
+        gst = net_item - taxable
+        if rate not in slots:
+            slots[rate] = {
+                'rate': rate,
+                'cgst_rate': round(rate / 2, 2),
+                'sgst_rate': round(rate / 2, 2),
+                'gross': 0.0,
+                'net': 0.0,
+                'taxable': 0.0,
+                'cgst': 0.0,
+                'sgst': 0.0,
+                'total_tax': 0.0,
+            }
+        slots[rate]['gross'] += float(item.total_price)
+        slots[rate]['net'] += net_item
+        slots[rate]['taxable'] += taxable
+        slots[rate]['total_tax'] += gst
+        slots[rate]['cgst'] += gst / 2
+        slots[rate]['sgst'] += gst / 2
+
+    slot_list = []
+    for s in sorted(slots.values(), key=lambda x: x['rate'], reverse=True):
+        slot_list.append({
+            'rate': s['rate'],
+            'cgst_rate': s['cgst_rate'],
+            'sgst_rate': s['sgst_rate'],
+            'gross': round(s['gross'], 2),
+            'net': round(s['net'], 2),
+            'taxable': round(s['taxable'], 2),
+            'cgst': round(s['cgst'], 2),
+            'sgst': round(s['sgst'], 2),
+            'total_tax': round(s['total_tax'], 2),
+        })
+    return slot_list
+
+
 @login_required
 def pos(request):
     if request.method == 'POST':
@@ -32,12 +79,36 @@ def pos(request):
                     return redirect('sales:pos')
 
                 customer = Customer.objects.filter(pk=customer_id).first() if customer_id else None
-                subtotal = sum(float(p) * int(q) for p, q in zip(prices, quantities))
+
+                # In India, selling price already INCLUDES GST (MRP retail pricing)
+                subtotal = round(sum(float(p) * int(q) for p, q in zip(prices, quantities)), 2)
                 discount_amount = round(subtotal * discount_pct / 100, 2)
-                taxable = subtotal - discount_amount
-                gst_amount = round(taxable * 0.18, 2)
-                grand_total = round(taxable + gst_amount, 2)
-                change_amount = max(0, amount_paid - grand_total)
+                grand_total = round(max(0, subtotal - discount_amount), 2)
+                change_amount = round(max(0, amount_paid - grand_total), 2)
+
+                # Pre-fetch products to validate stock and extract accurate per-item GST
+                disc_factor = 1.0 - (discount_pct / 100.0)
+                total_gst = 0.0
+                items_data = []
+
+                for pid, qty, price in zip(product_ids, quantities, prices):
+                    product = Product.objects.select_for_update().get(pk=pid)
+                    qty_int = int(qty)
+                    price_val = float(price)
+                    if product.stock_quantity < qty_int:
+                        raise ValueError(
+                            'Not enough stock for {}. Available: {}'.format(
+                                product.name, product.stock_quantity))
+
+                    rate = float(product.gst_percentage if product.gst_percentage is not None else 18.0)
+                    item_total = qty_int * price_val
+                    item_net = item_total * disc_factor
+                    item_taxable = item_net / (1.0 + (rate / 100.0))
+                    total_gst += (item_net - item_taxable)
+
+                    items_data.append((product, qty_int, price_val, rate, item_total))
+
+                gst_amount = round(total_gst, 2)
 
                 sale = Sale.objects.create(
                     customer=customer, created_by=request.user,
@@ -49,18 +120,12 @@ def pos(request):
                 )
 
                 from inventory.models import StockMovement
-                for pid, qty, price in zip(product_ids, quantities, prices):
-                    product = Product.objects.select_for_update().get(pk=pid)
-                    qty_int = int(qty)
-                    if product.stock_quantity < qty_int:
-                        raise ValueError(
-                            'Not enough stock for {}. Available: {}'.format(
-                                product.name, product.stock_quantity))
+                for product, qty_int, price_val, rate, item_total in items_data:
                     SaleItem.objects.create(
                         sale=sale, product=product, quantity=qty_int,
-                        unit_price=float(price),
-                        gst_percentage=product.gst_percentage,
-                        total_price=qty_int * float(price),
+                        unit_price=price_val,
+                        gst_percentage=rate,
+                        total_price=item_total,
                     )
                     qty_before = product.stock_quantity
                     product.stock_quantity -= qty_int
@@ -157,7 +222,14 @@ def sale_list(request):
 def sale_detail(request, pk):
     sale = get_object_or_404(Sale.objects.select_related('customer', 'created_by', 'voided_by', 'corrected_by'), pk=pk)
     audit_logs = sale.audit_logs.select_related('user').order_by('-created_at')
-    return render(request, 'sales/detail.html', {'sale': sale, 'audit_logs': audit_logs})
+    gst_slots = get_sale_gst_slots(sale)
+    taxable_total = round(sum(s['taxable'] for s in gst_slots), 2)
+    return render(request, 'sales/detail.html', {
+        'sale': sale,
+        'audit_logs': audit_logs,
+        'gst_slots': gst_slots,
+        'taxable_total': taxable_total,
+    })
 
 
 @login_required
@@ -170,7 +242,14 @@ def sale_invoice(request, pk):
     sale = get_object_or_404(Sale, pk=pk)
     from settings_app.models import CompanySettings
     company = CompanySettings.get_settings()
-    return render(request, 'sales/invoice.html', {'sale': sale, 'company': company})
+    gst_slots = get_sale_gst_slots(sale)
+    taxable_total = round(sum(s['taxable'] for s in gst_slots), 2)
+    return render(request, 'sales/invoice.html', {
+        'sale': sale,
+        'company': company,
+        'gst_slots': gst_slots,
+        'taxable_total': taxable_total,
+    })
 
 
 @login_required
@@ -281,14 +360,26 @@ def sale_invoice_pdf(request, pk):
         story.append(tbl)
         story.append(Spacer(1, 5*mm))
 
+        gst_slots = get_sale_gst_slots(sale)
+        taxable_total = round(sum(s['taxable'] for s in gst_slots), 2)
+
         totals = [
-            ['', 'Subtotal:', 'Rs.{}'.format(sale.subtotal)],
-            ['', 'Discount ({}%):'.format(sale.discount_percentage),
-             '-Rs.{}'.format(sale.discount_amount)],
-            ['', 'GST (18%):', 'Rs.{}'.format(sale.gst_amount)],
-            ['', 'GRAND TOTAL:', 'Rs.{}'.format(sale.grand_total)],
-            ['', 'Payment:', sale.get_payment_method_display()],
+            ['', 'Subtotal (MRP):', 'Rs.{:.2f}'.format(sale.subtotal)],
         ]
+        if sale.discount_amount > 0:
+            totals.append(['', 'Discount ({}%):'.format(sale.discount_percentage),
+                           '-Rs.{:.2f}'.format(sale.discount_amount)])
+
+        for slot in gst_slots:
+            totals.append(['', 'GST {}% (CGST {:.1f}% + SGST {:.1f}%):'.format(
+                slot['rate'], slot['cgst_rate'], slot['sgst_rate']),
+                'Rs.{:.2f}'.format(slot['total_tax'])])
+
+        totals.extend([
+            ['', 'Total Tax (Included in Price):', 'Rs.{:.2f}'.format(sale.gst_amount)],
+            ['', 'GRAND TOTAL PAYABLE:', 'Rs.{:.2f}'.format(sale.grand_total)],
+            ['', 'Payment Method:', sale.get_payment_method_display()],
+        ])
         tt = Table(totals, colWidths=[100*mm, 40*mm, 30*mm])
         tt.setStyle(TableStyle([
             ('FONTNAME', (1, 3), (2, 3), 'Helvetica-Bold'),
@@ -470,11 +561,19 @@ def sale_edit(request, pk):
                     create_stock_notification(product, triggered_by_user=request.user)
                     subtotal += qty_int * price_val
 
-                # ── 3. Recalculate totals ─────────────────────────────────────
+                # ── 3. Recalculate totals (Inclusive GST) ─────────────────────
                 discount_amount = round(subtotal * discount_pct / 100, 2)
-                taxable         = subtotal - discount_amount
-                gst_amount      = round(taxable * 0.18, 2)
-                grand_total     = round(taxable + gst_amount, 2)
+                grand_total     = round(max(0, subtotal - discount_amount), 2)
+
+                disc_factor = 1.0 - (discount_pct / 100.0)
+                total_gst = 0.0
+                for item in sale.items.all():
+                    rate = float(item.gst_percentage if item.gst_percentage is not None else 18.0)
+                    net_item = float(item.total_price) * disc_factor
+                    item_taxable = net_item / (1.0 + (rate / 100.0))
+                    total_gst += (net_item - item_taxable)
+
+                gst_amount = round(total_gst, 2)
 
                 sale.subtotal          = subtotal
                 sale.discount_amount   = discount_amount

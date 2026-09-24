@@ -190,12 +190,18 @@
             <span class="text-muted-label">New Discount:</span>
             <span class="text-discount-neg" x-text="'-₹' + discountAmt.toFixed(2)"></span>
           </div>
+          <template x-for="slot in gstSlots" :key="slot.rate">
+            <div class="totals-row" style="font-size:12px;">
+              <span class="text-muted-label" x-text="'GST (' + slot.rate + '%):'"></span>
+              <span style="color:var(--accent-cyan);" x-text="'₹' + slot.totalTax.toFixed(2)"></span>
+            </div>
+          </template>
           <div class="totals-row">
-            <span class="text-muted-label">GST (18%):</span>
+            <span class="text-muted-label">Total Tax (Included):</span>
             <span x-text="'₹' + gst.toFixed(2)"></span>
           </div>
           <div class="totals-row grand">
-            <span>New Total:</span>
+            <span>New Total (Incl. Taxes):</span>
             <span x-text="'₹' + grandTotal.toFixed(2)"></span>
           </div>
         </div>
@@ -219,9 +225,15 @@ const PRODUCT_PRICES = {
   {% endfor %}
 };
 
+const PRODUCT_GST = {
+  {% for p in products %}
+  "{{ p.pk }}": {{ p.gst_percentage|default:18 }},
+  {% endfor %}
+};
+
 const EXISTING_ROWS = [
   {% for item in sale.items.all %}
-  { product_id: "{{ item.product_id }}", qty: {{ item.quantity }}, price: {{ item.unit_price }} },
+  { product_id: "{{ item.product_id }}", qty: {{ item.quantity }}, price: {{ item.unit_price }}, gst_rate: {{ item.gst_percentage|default:18 }} },
   {% endfor %}
 ];
 
@@ -233,12 +245,13 @@ function editSale() {
     subtotal: 0,
     discountAmt: 0,
     gst: 0,
+    gstSlots: [],
     grandTotal: 0,
 
     init() { this.recalc(); },
 
     addRow() {
-      this.rows.push({ product_id: '', qty: 1, price: 0 });
+      this.rows.push({ product_id: '', qty: 1, price: 0, gst_rate: 18 });
     },
 
     removeRow(i) {
@@ -250,6 +263,7 @@ function editSale() {
       const pid = this.rows[i].product_id;
       if (pid && PRODUCT_PRICES[pid]) {
         this.rows[i].price = parseFloat(PRODUCT_PRICES[pid]);
+        this.rows[i].gst_rate = parseFloat(PRODUCT_GST[pid] || 18);
       }
       this.recalc();
     },
@@ -257,9 +271,25 @@ function editSale() {
     recalc() {
       this.subtotal = this.rows.reduce((s, r) => s + (parseFloat(r.price) || 0) * (parseInt(r.qty) || 0), 0);
       this.discountAmt = this.subtotal * (parseFloat(this.discount) || 0) / 100;
-      const taxable = this.subtotal - this.discountAmt;
-      this.gst = taxable * 0.18;
-      this.grandTotal = taxable + this.gst;
+      this.grandTotal = Math.max(0, this.subtotal - this.discountAmt);
+
+      const discFraction = (parseFloat(this.discount) || 0) / 100;
+      let totalTax = 0;
+      const slots = {};
+      this.rows.forEach(r => {
+        const rate = parseFloat(r.gst_rate || 18);
+        const gross = (parseFloat(r.price) || 0) * (parseInt(r.qty) || 0);
+        const net = gross * (1 - discFraction);
+        const taxable = net / (1 + (rate / 100));
+        const tax = net - taxable;
+        totalTax += tax;
+        if (!slots[rate]) {
+          slots[rate] = { rate: rate, totalTax: 0 };
+        }
+        slots[rate].totalTax += tax;
+      });
+      this.gst = totalTax;
+      this.gstSlots = Object.values(slots).sort((a, b) => b.rate - a.rate);
     },
   };
 }

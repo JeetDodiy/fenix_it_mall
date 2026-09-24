@@ -806,7 +806,7 @@ html.light-theme .pm-tab.active { background: rgba(2, 132, 199, 0.1); border-col
         data-code="{{ p.product_code|default:''|lower }}"
         data-barcode="{{ p.barcode_number|default:''|lower }}"
         data-brand="{{ p.brand.name|default:''|lower }}"
-        @click="{% if p.stock_quantity > 0 %}addToCart({{ p.pk }}, '{{ p.name|escapejs }}', '{{ p.brand.name|default:''|escapejs }}', {{ p.selling_price|stringformat:'.2f' }}, {{ p.stock_quantity|default:0 }}, '{{ p.product_code|default:''|escapejs }}', '{% if p.main_image %}{{ p.main_image.image.url|escapejs }}{% endif %}'){% endif %}"
+        @click="{% if p.stock_quantity > 0 %}addToCart({{ p.pk }}, '{{ p.name|escapejs }}', '{{ p.brand.name|default:''|escapejs }}', {{ p.selling_price|stringformat:'.2f' }}, {{ p.stock_quantity|default:0 }}, '{{ p.product_code|default:''|escapejs }}', '{% if p.main_image %}{{ p.main_image.image.url|escapejs }}{% endif %}', {{ p.gst_percentage|stringformat:'.2f'|default:'18.00' }}){% endif %}"
       >
         <div class="ptile-img-box">
           {% if p.main_image %}
@@ -840,7 +840,7 @@ html.light-theme .pm-tab.active { background: rgba(2, 132, 199, 0.1); border-col
                 type="button"
                 class="ptile-add-btn"
                 title="Add to Cart"
-                @click.stop="addToCart({{ p.pk }}, '{{ p.name|escapejs }}', '{{ p.brand.name|default:''|escapejs }}', {{ p.selling_price|stringformat:'.2f' }}, {{ p.stock_quantity|default:0 }}, '{{ p.product_code|default:''|escapejs }}', '{% if p.main_image %}{{ p.main_image.image.url|escapejs }}{% endif %}')"
+                @click.stop="addToCart({{ p.pk }}, '{{ p.name|escapejs }}', '{{ p.brand.name|default:''|escapejs }}', {{ p.selling_price|stringformat:'.2f' }}, {{ p.stock_quantity|default:0 }}, '{{ p.product_code|default:''|escapejs }}', '{% if p.main_image %}{{ p.main_image.image.url|escapejs }}{% endif %}', {{ p.gst_percentage|stringformat:'.2f'|default:'18.00' }})"
               >+</button>
             {% endif %}
           </div>
@@ -907,7 +907,7 @@ html.light-theme .pm-tab.active { background: rgba(2, 132, 199, 0.1); border-col
         <div class="cart-row">
           <div class="cart-row-info">
             <div class="cart-row-name" x-text="item.name"></div>
-            <div class="cart-row-price" x-text="'₹' + item.price.toFixed(2)"></div>
+            <div class="cart-row-price" x-text="'₹' + item.price.toFixed(2) + ' (GST ' + item.gstRate + '%)"></div>
           </div>
           <div class="cart-qty-wrap">
             <button class="cart-qty-btn" @click="changeQty(idx, -1)">−</button>
@@ -943,9 +943,20 @@ html.light-theme .pm-tab.active { background: rgba(2, 132, 199, 0.1); border-col
         </div>
       </div>
 
-      <div class="calc-row">
-        <span>GST (18%)</span>
-        <span style="color:var(--text-primary);" x-text="'₹' + getGST().toFixed(2)">₹0.00</span>
+      <!-- Dynamic GST Slots (Included in Price) -->
+      <template x-for="slot in getGSTSlots()" :key="slot.rate">
+        <div class="calc-row" style="font-size:11.5px;color:var(--text-secondary);">
+          <span>
+            GST (<span x-text="slot.rate"></span>%):
+            <span style="font-size:10px;color:var(--text-muted);" x-text="'(CGST ' + (slot.rate/2).toFixed(1) + '% + SGST ' + (slot.rate/2).toFixed(1) + '%)'"></span>
+          </span>
+          <span style="color:var(--accent-cyan);font-weight:600;" x-text="'₹' + slot.totalTax.toFixed(2)">₹0.00</span>
+        </div>
+      </template>
+
+      <div class="calc-row" style="font-size:11px;color:var(--text-muted);border-top:1px dashed var(--border-glass);padding-top:4px;margin-top:2px;">
+        <span>Total GST (Included in Price)</span>
+        <span x-text="'₹' + getTotalGST().toFixed(2)">₹0.00</span>
       </div>
 
       <!-- Grand Total Anchor -->
@@ -1121,7 +1132,7 @@ function posTerminal() {
         .then(data => {
           if (data.product) {
             const p = data.product;
-            this.addToCart(p.id, p.name, '', parseFloat(p.selling_price), parseInt(p.stock_quantity), p.product_code, '');
+            this.addToCart(p.id, p.name, '', parseFloat(p.selling_price), parseInt(p.stock_quantity), p.product_code, '', parseFloat(p.gst_percentage || 18));
           } else {
             alert('Product not found for barcode: ' + barcode);
           }
@@ -1130,10 +1141,11 @@ function posTerminal() {
     },
 
     // ── Cart Operations ──
-    addToCart(id, name, brand, price, maxStock, code, img) {
+    addToCart(id, name, brand, price, maxStock, code, img, gstRate) {
       const pId = parseInt(id);
       const numPrice = parseFloat(price);
       const stock = parseInt(maxStock);
+      const rate = parseFloat(gstRate != null ? gstRate : 18);
       const found = this.cartItems.find(i => i.id === pId);
 
       if (found) {
@@ -1148,6 +1160,7 @@ function posTerminal() {
           name: name,
           brand: brand || '',
           price: numPrice,
+          gstRate: rate,
           qty: 1,
           stock: stock,
           code: code || '',
@@ -1201,11 +1214,57 @@ function posTerminal() {
       }
     },
 
-    // ── Calculations ──
-    getSubtotal()      { return this.cartItems.reduce((acc, it) => acc + (it.price * it.qty), 0); },
-    getDiscountAmt()   { return this.getSubtotal() * ((this.discountPct || 0) / 100); },
-    getGST()           { return (this.getSubtotal() - this.getDiscountAmt()) * 0.18; },
-    getGrandTotal()    { return this.getSubtotal() - this.getDiscountAmt() + this.getGST(); },
+    // ── Inclusive Indian GST Calculations ──
+    getSubtotal() {
+      // MRP Total of all items
+      return this.cartItems.reduce((acc, it) => acc + (it.price * it.qty), 0);
+    },
+    getDiscountAmt() {
+      return this.getSubtotal() * ((this.discountPct || 0) / 100);
+    },
+    getGrandTotal() {
+      // In India, selling price already INCLUDES GST. Customer pays exactly MRP minus discount!
+      return Math.max(0, this.getSubtotal() - this.getDiscountAmt());
+    },
+    getGSTSlots() {
+      // Automatically groups items by GST percentage and extracts included tax
+      const discFraction = ((this.discountPct || 0) / 100);
+      const slots = {};
+      this.cartItems.forEach(it => {
+        const rate = parseFloat(it.gstRate != null ? it.gstRate : 18);
+        const gross = it.price * it.qty;
+        const net = gross * (1 - discFraction);
+        const taxable = net / (1 + (rate / 100));
+        const tax = net - taxable;
+        if (!slots[rate]) {
+          slots[rate] = {
+            rate: rate,
+            gross: 0,
+            net: 0,
+            taxable: 0,
+            cgst: 0,
+            sgst: 0,
+            totalTax: 0,
+          };
+        }
+        slots[rate].gross += gross;
+        slots[rate].net += net;
+        slots[rate].taxable += taxable;
+        slots[rate].totalTax += tax;
+        slots[rate].cgst += tax / 2;
+        slots[rate].sgst += tax / 2;
+      });
+      return Object.values(slots).sort((a, b) => b.rate - a.rate);
+    },
+    getTotalGST() {
+      return this.getGSTSlots().reduce((acc, s) => acc + s.totalTax, 0);
+    },
+    getGST() {
+      return this.getTotalGST();
+    },
+    getTaxableAmount() {
+      return this.getGrandTotal() - this.getTotalGST();
+    },
 
     // ── Hold Cart ──
     holdCurrentCart() {
