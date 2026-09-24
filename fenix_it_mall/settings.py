@@ -6,6 +6,20 @@ Production-quality IT Shop Management System
 from pathlib import Path
 import os
 
+# Auto-clean Cloudinary environment variable if pasted with quotes or 'CLOUDINARY_URL=' prefix
+if 'CLOUDINARY_URL' in os.environ:
+    val = os.environ['CLOUDINARY_URL'].strip()
+    if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+        val = val[1:-1].strip()
+    if 'CLOUDINARY_URL=' in val:
+        val = val.split('CLOUDINARY_URL=', 1)[1].strip()
+    if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+        val = val[1:-1].strip()
+    if val.startswith('cloudinary://'):
+        os.environ['CLOUDINARY_URL'] = val
+    else:
+        del os.environ['CLOUDINARY_URL']
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-fenix-it-mall-bca-project-2024-secret-key-change-in-production')
