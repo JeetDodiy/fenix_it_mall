@@ -135,31 +135,54 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Storage configuration: Persistent Cloudinary for cloud (Render) or local FileSystem
 CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
+CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY')
+CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET')
 CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
 
 if CLOUDINARY_CLOUD_NAME or CLOUDINARY_URL:
-    import urllib.parse
-    CLOUDINARY_STORAGE = {}
-    if CLOUDINARY_URL:
-        # Support full URL: cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+    import urllib.parse, cloudinary
+    c_name, c_key, c_secret = None, None, None
+
+    if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
+        c_name = CLOUDINARY_CLOUD_NAME.strip()
+        c_key = CLOUDINARY_API_KEY.strip()
+        c_secret = CLOUDINARY_API_SECRET.strip()
+    elif CLOUDINARY_URL and CLOUDINARY_URL.startswith('cloudinary://'):
         clean_url = CLOUDINARY_URL.replace('CLOUDINARY_URL=', '').strip()
         parsed = urllib.parse.urlparse(clean_url)
-        CLOUDINARY_STORAGE['CLOUD_NAME'] = parsed.hostname
-        CLOUDINARY_STORAGE['API_KEY'] = parsed.username
-        CLOUDINARY_STORAGE['API_SECRET'] = parsed.password
-    else:
-        CLOUDINARY_STORAGE['CLOUD_NAME'] = CLOUDINARY_CLOUD_NAME
-        CLOUDINARY_STORAGE['API_KEY'] = os.environ.get('CLOUDINARY_API_KEY')
-        CLOUDINARY_STORAGE['API_SECRET'] = os.environ.get('CLOUDINARY_API_SECRET')
+        c_name = parsed.hostname
+        c_key = parsed.username
+        c_secret = parsed.password
 
-    STORAGES = {
-        "default": {
-            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
-        },
-        "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
-        },
-    }
+    if c_name and c_key and c_secret:
+        CLOUDINARY_STORAGE = {
+            'CLOUD_NAME': c_name,
+            'API_KEY': c_key,
+            'API_SECRET': c_secret,
+        }
+        cloudinary.config(
+            cloud_name=c_name,
+            api_key=c_key,
+            api_secret=c_secret,
+            secure=True,
+        )
+        STORAGES = {
+            "default": {
+                "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+            },
+            "staticfiles": {
+                "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+            },
+        }
+    else:
+        STORAGES = {
+            "default": {
+                "BACKEND": "django.core.files.storage.FileSystemStorage",
+            },
+            "staticfiles": {
+                "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+            },
+        }
 else:
     STORAGES = {
         "default": {
