@@ -3,6 +3,7 @@ Settings App – Forms
 """
 from django import forms
 from .models import CompanySettings
+from core.utils import sanitize_and_process_image
 
 
 class CompanySettingsForm(forms.ModelForm):
@@ -26,3 +27,12 @@ class CompanySettingsForm(forms.ModelForm):
             'theme': forms.Select(attrs={'class': 'form-select'}),
             'website': forms.URLInput(attrs={'class': 'form-input'}),
         }
+
+    def clean_company_logo(self):
+        logo = self.cleaned_data.get("company_logo")
+        if logo and hasattr(logo, "file"):
+            try:
+                return sanitize_and_process_image(logo)
+            except Exception as e:
+                raise forms.ValidationError(f"Invalid image file: {e}")
+        return logo

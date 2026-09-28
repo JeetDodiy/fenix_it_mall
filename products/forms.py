@@ -1,6 +1,7 @@
 """Products App – Forms"""
 from django import forms
 from .models import Product, Category, Brand, ProductImage
+from core.utils import sanitize_and_process_image
 
 
 class CategoryForm(forms.ModelForm):
@@ -15,6 +16,15 @@ class CategoryForm(forms.ModelForm):
         }
 
 
+    def clean_image(self):
+        img = self.cleaned_data.get("image")
+        if img and hasattr(img, "file"):
+            try:
+                return sanitize_and_process_image(img)
+            except Exception as e:
+                raise forms.ValidationError(f"Invalid image file: {e}")
+        return img
+
 class BrandForm(forms.ModelForm):
     class Meta:
         model = Brand
@@ -27,6 +37,15 @@ class BrandForm(forms.ModelForm):
             'is_active': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
         }
 
+
+    def clean_logo(self):
+        logo = self.cleaned_data.get("logo")
+        if logo and hasattr(logo, "file"):
+            try:
+                return sanitize_and_process_image(logo)
+            except Exception as e:
+                raise forms.ValidationError(f"Invalid image file: {e}")
+        return logo
 
 class ProductForm(forms.ModelForm):
     class Meta:

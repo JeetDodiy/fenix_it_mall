@@ -4,6 +4,7 @@ Accounts App – Forms
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .models import CustomUser
+from core.utils import sanitize_and_process_image
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -50,3 +51,12 @@ class UserProfileForm(forms.ModelForm):
             'profile_picture': forms.FileInput(attrs={'class': 'form-input', 'accept': 'image/*'}),
         }
 
+
+    def clean_profile_picture(self):
+        pic = self.cleaned_data.get("profile_picture")
+        if pic and hasattr(pic, "file"):
+            try:
+                return sanitize_and_process_image(pic)
+            except Exception as e:
+                raise forms.ValidationError(f"Invalid image file: {e}")
+        return pic

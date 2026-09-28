@@ -9,6 +9,7 @@ from django.http import JsonResponse, HttpResponse
 from django.db.models import Q
 from .models import Product, Category, Brand, ProductImage
 from .forms import ProductForm, CategoryForm, BrandForm, ProductImageForm
+from core.utils import sanitize_and_process_image
 
 
 # ─── Product Views ───
@@ -71,10 +72,26 @@ def product_add(request):
 
     if request.method == 'POST' and form.is_valid():
         product = form.save()
-        # Handle multiple images
+        # Handle multiple images with robust validation & normalization
+        image_errors = []
+        uploaded_count = 0
         for f in request.FILES.getlist('images'):
-            ProductImage.objects.create(product=product, image=f)
-        messages.success(request, f'Product "{product.name}" added successfully!')
+            if not f or (hasattr(f, 'size') and f.size == 0):
+                continue
+            try:
+                clean_img = sanitize_and_process_image(f)
+                ProductImage.objects.create(product=product, image=clean_img)
+                uploaded_count += 1
+            except Exception as e:
+                image_errors.append(f"{getattr(f, 'name', 'Image')}: {str(e)}")
+
+        if image_errors:
+            messages.warning(
+                request,
+                f'Product "{product.name}" was saved, but some images could not be processed: ' + "; ".join(image_errors)
+            )
+        else:
+            messages.success(request, f'Product "{product.name}" added successfully!')
         return redirect('products:detail', pk=product.pk)
 
     return render(request, 'products/form.html', {
@@ -97,9 +114,25 @@ def product_edit(request, pk):
 
     if request.method == 'POST' and form.is_valid():
         product = form.save()
+        image_errors = []
+        uploaded_count = 0
         for f in request.FILES.getlist('images'):
-            ProductImage.objects.create(product=product, image=f)
-        messages.success(request, f'Product "{product.name}" updated successfully!')
+            if not f or (hasattr(f, 'size') and f.size == 0):
+                continue
+            try:
+                clean_img = sanitize_and_process_image(f)
+                ProductImage.objects.create(product=product, image=clean_img)
+                uploaded_count += 1
+            except Exception as e:
+                image_errors.append(f"{getattr(f, 'name', 'Image')}: {str(e)}")
+
+        if image_errors:
+            messages.warning(
+                request,
+                f'Product "{product.name}" was updated, but some images could not be processed: ' + "; ".join(image_errors)
+            )
+        else:
+            messages.success(request, f'Product "{product.name}" updated successfully!')
         return redirect('products:detail', pk=product.pk)
 
     return render(request, 'products/form.html', {
