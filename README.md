@@ -43,7 +43,7 @@
 - **1-Click Export**: Download reports in styled landscape **PDF** or spreadsheet **CSV**.
 
 ### 🧾 4. Sequential Sales Invoicing
-- **Year-Based Invoice Series**: Clean, sequential invoice numbering (`INV-26-01`, `INV-26-02`, ..., `INV-26-15`) that rolls over automatically to `INV-27-01` in 2027.
+- **Year-Based Invoice Series**: Clean, sequential invoice numbering (`INV-26-01`, `INV-26-02`, ...) that rolls over automatically to `INV-27-01` in 2027.
 - **Historical Audit Logs**: Complete invoice audit trail tracking customer name, line items, and payment methods.
 
 ### 👥 5. Customer CRM & Loyalty Points
@@ -51,19 +51,32 @@
 - Automatic loyalty reward points accrued per rupee spent and redeemable at POS checkout.
 
 ### 👔 6. Employees & HR Management
-- Unique auto-generated Employee ID (`EMP-XXXXXX`), designation, department, and salary.
+- **Manual or Auto Employee ID**: Employee IDs can be entered manually (e.g. `EMP-001`) or left blank to auto-generate a unique `EMP-XXXXXX` ID.
+- **Permanent Delete**: Admins can permanently delete employee records from the database (with cascade delete of attendance & leave records). A confirmation page with clear warnings is shown before deletion.
+- **Delete Button on Cards**: Each employee card shows a 🗑️ Delete button (visible to admin users only) with a browser confirmation prompt.
 - Daily attendance tracking (Present, Absent, Half-Day, Leave) with duplicate prevention per date.
 - Leave application and manager approval workflows.
 
-### 📊 7. Executive Financial Reports
+### 👤 7. System Users Management
+- **User Delete**: Admins can permanently delete user accounts from the database via a red 🗑️ Delete button in the Users list.
+- **Safety Guards**: Cannot delete your own account; cannot delete the last remaining admin account.
+- **Confirmation Page**: Shows the user's avatar, role, and a clear warning before permanent deletion.
+- Role-based access control: Admin, Manager, Cashier, Employee.
+
+### 📊 8. Executive Financial Reports
 - **Sales Reports**: Daily, monthly, and custom range sales metrics.
 - **Profit & Loss**: Gross revenue, COGS (Cost of Goods Sold), and net margins.
 - **Inventory Valuation**: Current asset value by cost price and retail price.
 
-### 🎨 8. Design Aesthetics & Adaptive Splash Screen
+### 🎨 9. Design Aesthetics & Adaptive Splash Screen
 - **Dark & Light Mode**: Curated dark-mode default with vibrant neon accents, plus 1-click **Light Theme** toggle.
 - **Adaptive Splash Screen**: Automatically renders pure white in light mode and deep black/navy in dark mode.
 - **Dynamic Company Logo**: Custom logo upload with live preview and persistent cloud media serving.
+
+### ✅ 10. Data Validation & Input Safety
+- **10-Digit Phone Enforcement**: All phone number fields across the entire app (Customers, Suppliers, Employees, Users, Profile) enforce exactly **10 digits** — matching Indian mobile number format.
+  - **Browser-side**: `maxlength`, `minlength`, `pattern="[0-9]{10}"` attributes prevent invalid input instantly.
+  - **Server-side**: `clean_phone()` Django form validator rejects non-numeric or wrong-length numbers with a clear error message.
 
 ---
 
@@ -159,7 +172,6 @@ The project is deployed live on Render with automated GitHub CI/CD:
 - **Live URL**: **`https://fenix-it-mall.onrender.com`**
 - **Build Command**: `./build.sh`
 - **Start Command**: `gunicorn fenix_it_mall.wsgi:application`
-- **Full Guide**: See [upoald_project.txt](upoald_project.txt) for step-by-step instructions.
 
 ---
 
@@ -167,7 +179,7 @@ The project is deployed live on Render with automated GitHub CI/CD:
 
 ```text
 fenix_it_mall/
-├── accounts/          # Custom user model & authentication
+├── accounts/          # Custom user model, authentication & user management
 ├── core/              # Global views, context processors & utilities
 ├── customers/         # Customer CRM & loyalty points
 ├── dashboard/         # Executive KPIs, revenue charts & activity logs
@@ -185,12 +197,22 @@ fenix_it_mall/
 ├── Procfile           # Production WSGI process declaration
 ├── build.sh           # Cloud build, migration & seed script
 ├── render.yaml        # Render 1-click blueprint configuration
-├── upoald_project.txt # Complete deployment guide for Render
 ├── Finaly_doc_project.md # Full academic project report (Semester 5)
 ├── requirements.txt   # Python package dependencies
 ├── manage.py          # Django management script
 └── test_all_195_cases.py # 195/195 automated test suite
 ```
+
+---
+
+## 📋 Recent Updates
+
+| Date | Change |
+| :--- | :--- |
+| Sep 2026 | 🗑️ Permanent delete for Employees — hard DB delete with cascade, confirmation page |
+| Sep 2026 | 🗑️ Permanent delete for Users — with safety guards (can't delete self / last admin) |
+| Sep 2026 | 🪪 Manual Employee ID entry — type your own ID or leave blank to auto-generate |
+| Sep 2026 | 📱 10-digit phone validation — enforced on all phone fields (browser + server-side) |
 
 ---
 
