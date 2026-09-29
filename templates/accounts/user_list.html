@@ -47,6 +47,12 @@
             <div style="display:flex;gap:6px;">
               <a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-outline btn-sm" title="Edit User">✏️</a>
               <a href="{% url 'accounts:admin_change_password' u.pk %}" class="btn btn-warning btn-sm" title="Change Password">🔑</a>
+              {% if u.pk != request.user.pk %}
+              <a href="{% url 'accounts:user_delete' u.pk %}"
+                 class="btn btn-sm"
+                 style="background:rgba(239,68,68,0.12);color:var(--accent-red);border:1px solid rgba(239,68,68,0.3);"
+                 title="Delete User">🗑️</a>
+              {% endif %}
             </div>
           </td>
         </tr>

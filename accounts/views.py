@@ -167,3 +167,30 @@ def admin_change_user_password(request, pk):
             return redirect('accounts:user_edit', pk=pk)
     
     return render(request, 'accounts/admin_change_password.html', {'user_obj': user_obj})
+
+
+@login_required
+def user_delete(request, pk):
+    if not request.user.is_admin:
+        messages.error(request, 'Permission denied.')
+        return redirect('dashboard:index')
+
+    user_obj = get_object_or_404(CustomUser, pk=pk)
+
+    # Safety: cannot delete yourself
+    if user_obj.pk == request.user.pk:
+        messages.error(request, 'You cannot delete your own account.')
+        return redirect('accounts:user_list')
+
+    # Safety: cannot delete last admin
+    if user_obj.role == 'admin' and CustomUser.objects.filter(role='admin').count() <= 1:
+        messages.error(request, 'Cannot delete the last admin account.')
+        return redirect('accounts:user_list')
+
+    if request.method == 'POST':
+        username = user_obj.username
+        user_obj.delete()
+        messages.success(request, f'User "{username}" has been permanently deleted.')
+        return redirect('accounts:user_list')
+
+    return render(request, 'accounts/user_delete_confirm.html', {'user_obj': user_obj})
