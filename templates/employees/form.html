@@ -14,8 +14,9 @@
       {% csrf_token %}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         {% for field in form %}
-        <div class="form-group {% if field.name == 'address' or field.name == 'designation' %}col-span-2{% endif %}">
+        <div class="form-group {% if field.name == 'address' or field.name == 'designation' or field.name == 'employee_id' %}col-span-2{% endif %}">
           <label class="form-label">{{ field.label }}</label>{{ field }}
+          {% if field.help_text %}<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">{{ field.help_text }}</div>{% endif %}
           {% if field.errors %}<div class="form-error">{{ field.errors.0 }}</div>{% endif %}
         </div>
         {% endfor %}

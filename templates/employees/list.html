@@ -39,9 +39,17 @@
       {% elif e.status == 'terminated' %}<span class="badge badge-danger">Terminated</span>
       {% else %}<span class="badge badge-muted">Inactive</span>{% endif %}
     </div>
-    <div style="display:flex;gap:8px;margin-top:14px;justify-content:center;">
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:center;flex-wrap:wrap;">
       <a href="{% url 'employees:detail' e.pk %}" class="btn btn-outline btn-sm">👁️ View</a>
       <a href="{% url 'employees:edit' e.pk %}" class="btn btn-primary btn-sm">✏️ Edit</a>
+      {% if request.user.is_admin %}
+      <a href="{% url 'employees:delete' e.pk %}"
+         class="btn btn-sm"
+         style="background:rgba(239,68,68,0.12);color:var(--accent-red);border:1px solid rgba(239,68,68,0.3);"
+         onclick="return confirm('Delete {{ e.full_name }}? This will mark them as Terminated.')">
+        🗑️ Delete
+      </a>
+      {% endif %}
     </div>
   </div>
   {% empty %}

@@ -8,9 +8,13 @@ from .models import Employee, Attendance, Leave
 class EmployeeForm(forms.ModelForm):
     class Meta:
         model = Employee
-        fields = ['first_name', 'last_name', 'email', 'phone', 'address',
+        fields = ['employee_id', 'first_name', 'last_name', 'email', 'phone', 'address',
                   'designation', 'department', 'salary', 'join_date', 'status', 'profile_picture']
         widgets = {
+            'employee_id': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'e.g. EMP-001  (leave blank to auto-generate)',
+            }),
             'first_name': forms.TextInput(attrs={'class': 'form-input'}),
             'last_name': forms.TextInput(attrs={'class': 'form-input'}),
             'email': forms.EmailInput(attrs={'class': 'form-input'}),
@@ -23,6 +27,12 @@ class EmployeeForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-select'}),
             'profile_picture': forms.FileInput(attrs={'class': 'form-input'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make employee_id optional in the form (model auto-generates if blank)
+        self.fields['employee_id'].required = False
+        self.fields['employee_id'].help_text = 'Leave blank to auto-generate.'
 
 
 class AttendanceForm(forms.ModelForm):
