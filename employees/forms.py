@@ -18,7 +18,7 @@ class EmployeeForm(forms.ModelForm):
             'first_name': forms.TextInput(attrs={'class': 'form-input'}),
             'last_name': forms.TextInput(attrs={'class': 'form-input'}),
             'email': forms.EmailInput(attrs={'class': 'form-input'}),
-            'phone': forms.TextInput(attrs={'class': 'form-input'}),
+            'phone': forms.TextInput(attrs={'class': 'form-input', 'placeholder': '10-digit number', 'maxlength': '10', 'minlength': '10', 'pattern': '[0-9]{10}', 'title': 'Enter 10-digit phone number'}),
             'address': forms.Textarea(attrs={'class': 'form-textarea', 'rows': 3}),
             'designation': forms.TextInput(attrs={'class': 'form-input'}),
             'department': forms.TextInput(attrs={'class': 'form-input'}),
@@ -33,6 +33,12 @@ class EmployeeForm(forms.ModelForm):
         # Make employee_id optional in the form (model auto-generates if blank)
         self.fields['employee_id'].required = False
         self.fields['employee_id'].help_text = 'Leave blank to auto-generate.'
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone', '').strip()
+        if phone and (not phone.isdigit() or len(phone) != 10):
+            raise forms.ValidationError('Phone number must be exactly 10 digits.')
+        return phone
 
 
 class AttendanceForm(forms.ModelForm):

@@ -16,10 +16,16 @@ class CustomUserCreationForm(UserCreationForm):
             'email': forms.EmailInput(attrs={'class': 'form-input'}),
             'first_name': forms.TextInput(attrs={'class': 'form-input'}),
             'last_name': forms.TextInput(attrs={'class': 'form-input'}),
-            'phone': forms.TextInput(attrs={'class': 'form-input'}),
+            'phone': forms.TextInput(attrs={'class': 'form-input', 'placeholder': '10-digit number', 'maxlength': '10', 'minlength': '10', 'pattern': '[0-9]{10}', 'title': 'Enter 10-digit phone number'}),
             'role': forms.Select(attrs={'class': 'form-input'}),
             'profile_picture': forms.FileInput(attrs={'class': 'form-input'}),
         }
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone', '').strip()
+        if phone and (not phone.isdigit() or len(phone) != 10):
+            raise forms.ValidationError('Phone number must be exactly 10 digits.')
+        return phone
 
 
 class CustomUserChangeForm(UserChangeForm):
@@ -32,10 +38,16 @@ class CustomUserChangeForm(UserChangeForm):
             'first_name': forms.TextInput(attrs={'class': 'form-input'}),
             'last_name': forms.TextInput(attrs={'class': 'form-input'}),
             'email': forms.EmailInput(attrs={'class': 'form-input'}),
-            'phone': forms.TextInput(attrs={'class': 'form-input'}),
+            'phone': forms.TextInput(attrs={'class': 'form-input', 'placeholder': '10-digit number', 'maxlength': '10', 'minlength': '10', 'pattern': '[0-9]{10}', 'title': 'Enter 10-digit phone number'}),
             'role': forms.Select(attrs={'class': 'form-input'}),
             'profile_picture': forms.FileInput(attrs={'class': 'form-input'}),
         }
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone', '').strip()
+        if phone and (not phone.isdigit() or len(phone) != 10):
+            raise forms.ValidationError('Phone number must be exactly 10 digits.')
+        return phone
 
 
 class UserProfileForm(forms.ModelForm):
@@ -47,9 +59,15 @@ class UserProfileForm(forms.ModelForm):
             'first_name': forms.TextInput(attrs={'class': 'form-input'}),
             'last_name': forms.TextInput(attrs={'class': 'form-input'}),
             'email': forms.EmailInput(attrs={'class': 'form-input'}),
-            'phone': forms.TextInput(attrs={'class': 'form-input'}),
+            'phone': forms.TextInput(attrs={'class': 'form-input', 'placeholder': '10-digit number', 'maxlength': '10', 'minlength': '10', 'pattern': '[0-9]{10}', 'title': 'Enter 10-digit phone number'}),
             'profile_picture': forms.FileInput(attrs={'class': 'form-input', 'accept': 'image/*'}),
         }
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone', '').strip()
+        if phone and (not phone.isdigit() or len(phone) != 10):
+            raise forms.ValidationError('Phone number must be exactly 10 digits.')
+        return phone
 
 
     def clean_profile_picture(self):
