@@ -1,16 +1,36 @@
 {% extends 'base.html' %}
-{% block title %}Terminate Employee{% endblock %}
-{% block page_title %}Terminate Employee{% endblock %}
+{% block title %}Delete Employee{% endblock %}
+{% block page_title %}Delete Employee{% endblock %}
 {% block content %}
-<div style="max-width:480px;margin:0 auto;">
-  <div class="card">
-    <div class="card-header"><h3 class="card-title" style="color:var(--accent-red);">⚠️ Terminate Employee</h3></div>
-    <p style="margin-bottom:20px;color:var(--text-secondary);">Are you sure you want to mark <strong style="color:var(--text-primary);">{{ employee.full_name }}</strong> as terminated? This action can be undone by editing the employee record.</p>
-    <form method="post" style="display:flex;gap:12px;">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-danger">✅ Yes, Terminate</button>
-      <a href="{% url 'employees:detail' employee.pk %}" class="btn btn-outline">Cancel</a>
-    </form>
+<div style="max-width:500px;margin:0 auto;">
+  <div class="card" style="border:1px solid rgba(239,68,68,0.4);">
+    <div class="card-header" style="background:rgba(239,68,68,0.08);">
+      <h3 class="card-title" style="color:var(--accent-red);">🗑️ Permanently Delete Employee</h3>
+    </div>
+    <div style="padding:20px;">
+      <p style="color:var(--text-secondary);margin-bottom:12px;">
+        You are about to <strong style="color:var(--accent-red);">permanently delete</strong>
+        <strong style="color:var(--text-primary);">{{ employee.full_name }}</strong>
+        (<code style="color:var(--accent-cyan);">{{ employee.employee_id }}</code>) from the database.
+      </p>
+      <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:12px 16px;margin-bottom:20px;">
+        <div style="font-size:12px;font-weight:700;color:var(--accent-red);margin-bottom:6px;">⚠️ This will also delete:</div>
+        <ul style="font-size:13px;color:var(--text-muted);margin:0;padding-left:18px;line-height:1.8;">
+          <li>All attendance records for this employee</li>
+          <li>All leave requests for this employee</li>
+          <li>All linked data — <strong>this cannot be undone</strong></li>
+        </ul>
+      </div>
+      <form method="post" style="display:flex;gap:12px;">
+        {% csrf_token %}
+        <button type="submit"
+                class="btn btn-sm"
+                style="background:var(--accent-red);color:#fff;border:none;padding:10px 20px;font-size:14px;font-weight:600;border-radius:8px;cursor:pointer;">
+          🗑️ Yes, Permanently Delete
+        </button>
+        <a href="{% url 'employees:list' %}" class="btn btn-outline">Cancel</a>
+      </form>
+    </div>
   </div>
 </div>
 {% endblock %}

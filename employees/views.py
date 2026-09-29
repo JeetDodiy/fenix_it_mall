@@ -98,9 +98,9 @@ def employee_delete(request, pk):
 
     employee = get_object_or_404(Employee, pk=pk)
     if request.method == 'POST':
-        employee.status = 'terminated'
-        employee.save()
-        messages.success(request, f'{employee.full_name} marked as terminated.')
+        name = employee.full_name
+        employee.delete()  # Permanently removes from database
+        messages.success(request, f'{name} has been permanently deleted.')
         return redirect('employees:list')
     return render(request, 'employees/delete_confirm.html', {'employee': employee})
 
