@@ -311,6 +311,7 @@
             <input type="checkbox" name="remember" />
             Remember me
           </label>
+          <a href="{% url 'accounts:password_reset' %}" style="font-size:13px;color:var(--accent-cyan);text-decoration:none;font-weight:500;transition:opacity .2s;" onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'">Forgot password?</a>
         </div>
 
         <button type="submit" class="login-btn" id="login-submit">

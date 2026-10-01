@@ -5,9 +5,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
+from django.contrib.auth.views import (
+    PasswordResetView, PasswordResetDoneView,
+    PasswordResetConfirmView, PasswordResetCompleteView
+)
 from django.contrib import messages
+from django.urls import reverse_lazy
 from .models import CustomUser
-from .forms import CustomUserCreationForm, CustomUserChangeForm, UserProfileForm
+from .forms import CustomUserCreationForm, CustomUserChangeForm, UserProfileForm, CustomPasswordResetForm
 
 
 def login_view(request):
@@ -194,3 +199,30 @@ def user_delete(request, pk):
         return redirect('accounts:user_list')
 
     return render(request, 'accounts/user_delete_confirm.html', {'user_obj': user_obj})
+
+
+# ── PASSWORD RESET VIEWS ──
+
+class FenixPasswordResetView(PasswordResetView):
+    """Step 1: User enters email → sends reset link."""
+    form_class = CustomPasswordResetForm
+    template_name = 'accounts/password_reset.html'
+    email_template_name = 'accounts/password_reset_email.html'
+    subject_template_name = 'accounts/password_reset_subject.txt'
+    success_url = reverse_lazy('accounts:password_reset_done')
+
+
+class FenixPasswordResetDoneView(PasswordResetDoneView):
+    """Step 2: Confirmation that email was sent."""
+    template_name = 'accounts/password_reset_done.html'
+
+
+class FenixPasswordResetConfirmView(PasswordResetConfirmView):
+    """Step 3: User clicks link in email → sets new password."""
+    template_name = 'accounts/password_reset_confirm.html'
+    success_url = reverse_lazy('accounts:password_reset_complete')
+
+
+class FenixPasswordResetCompleteView(PasswordResetCompleteView):
+    """Step 4: Password changed successfully."""
+    template_name = 'accounts/password_reset_complete.html'

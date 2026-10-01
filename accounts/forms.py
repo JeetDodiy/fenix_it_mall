@@ -3,6 +3,7 @@ Accounts App – Forms
 """
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import PasswordResetForm
 from .models import CustomUser
 from core.utils import sanitize_and_process_image
 
@@ -78,3 +79,22 @@ class UserProfileForm(forms.ModelForm):
             except Exception as e:
                 raise forms.ValidationError(f"Invalid image file: {e}")
         return pic
+
+
+class CustomPasswordResetForm(PasswordResetForm):
+    """Password reset form: validates email exists in database."""
+    email = forms.EmailField(
+        label='Email Address',
+        max_length=254,
+        widget=forms.EmailInput(attrs={
+            'class': 'login-input',
+            'placeholder': 'Enter your registered email',
+            'autofocus': True,
+        })
+    )
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip().lower()
+        if not CustomUser.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError('No account found with this email address.')
+        return email

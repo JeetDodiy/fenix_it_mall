@@ -220,3 +220,22 @@ MESSAGE_TAGS = {
 # File upload size limit: 10MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+
+# ── EMAIL SETTINGS (Password Reset) ──
+# For production: set EMAIL_HOST_USER and EMAIL_HOST_PASSWORD as environment variables
+# For development: emails are printed to console
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    DEFAULT_FROM_EMAIL = f'Fenix IT Mall <{EMAIL_HOST_USER}>'
+else:
+    # Development fallback: prints email content to terminal
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_FROM_EMAIL = 'noreply@fenixitmall.com'
+
+PASSWORD_RESET_TIMEOUT = 3600  # Reset link expires in 1 hour

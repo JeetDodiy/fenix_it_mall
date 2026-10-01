@@ -14,4 +14,10 @@ urlpatterns = [
     path('users/<int:pk>/edit/', views.user_edit, name='user_edit'),
     path('users/<int:pk>/change-password/', views.admin_change_user_password, name='admin_change_password'),
     path('users/<int:pk>/delete/', views.user_delete, name='user_delete'),
+
+    # ── Password Reset URLs ──
+    path('password-reset/', views.FenixPasswordResetView.as_view(), name='password_reset'),
+    path('password-reset/done/', views.FenixPasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('password-reset/<uidb64>/<token>/', views.FenixPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('password-reset/complete/', views.FenixPasswordResetCompleteView.as_view(), name='password_reset_complete'),
 ]
