@@ -35,7 +35,7 @@ class EmployeeForm(forms.ModelForm):
         self.fields['employee_id'].help_text = 'Leave blank to auto-generate.'
 
     def clean_phone(self):
-        phone = self.cleaned_data.get('phone', '').strip()
+        phone = (self.cleaned_data.get('phone') or '').strip()
         if phone and (not phone.isdigit() or len(phone) != 10):
             raise forms.ValidationError('Phone number must be exactly 10 digits.')
         return phone

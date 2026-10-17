@@ -23,7 +23,7 @@ class CustomUserCreationForm(UserCreationForm):
         }
 
     def clean_phone(self):
-        phone = self.cleaned_data.get('phone', '').strip()
+        phone = (self.cleaned_data.get('phone') or '').strip()
         if phone and (not phone.isdigit() or len(phone) != 10):
             raise forms.ValidationError('Phone number must be exactly 10 digits.')
         return phone
@@ -45,7 +45,7 @@ class CustomUserChangeForm(UserChangeForm):
         }
 
     def clean_phone(self):
-        phone = self.cleaned_data.get('phone', '').strip()
+        phone = (self.cleaned_data.get('phone') or '').strip()
         if phone and (not phone.isdigit() or len(phone) != 10):
             raise forms.ValidationError('Phone number must be exactly 10 digits.')
         return phone
@@ -65,7 +65,7 @@ class UserProfileForm(forms.ModelForm):
         }
 
     def clean_phone(self):
-        phone = self.cleaned_data.get('phone', '').strip()
+        phone = (self.cleaned_data.get('phone') or '').strip()
         if phone and (not phone.isdigit() or len(phone) != 10):
             raise forms.ValidationError('Phone number must be exactly 10 digits.')
         return phone
@@ -94,7 +94,7 @@ class CustomPasswordResetForm(PasswordResetForm):
     )
 
     def clean_email(self):
-        email = self.cleaned_data.get('email', '').strip().lower()
+        email = (self.cleaned_data.get('email') or '').strip().lower()
         if not CustomUser.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError('No account found with this email address.')
         return email

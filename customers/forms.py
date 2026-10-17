@@ -19,7 +19,7 @@ class CustomerForm(forms.ModelForm):
         }
 
     def clean_phone(self):
-        phone = self.cleaned_data.get('phone', '').strip()
+        phone = (self.cleaned_data.get('phone') or '').strip()
         if phone and (not phone.isdigit() or len(phone) != 10):
             raise forms.ValidationError('Phone number must be exactly 10 digits.')
         return phone
