@@ -9,6 +9,13 @@ from core.utils import sanitize_and_process_image
 
 
 class CustomUserCreationForm(UserCreationForm):
+    is_superuser_status = forms.BooleanField(
+        required=False,
+        label='Grant Super Admin Privileges',
+        help_text='Grants full root access including Django Admin and system configuration.',
+        widget=forms.CheckboxInput(attrs={'class': 'form-checkbox'})
+    )
+
     class Meta:
         model = CustomUser
         fields = ('username', 'email', 'first_name', 'last_name', 'phone', 'role', 'profile_picture')
@@ -22,15 +29,39 @@ class CustomUserCreationForm(UserCreationForm):
             'profile_picture': forms.FileInput(attrs={'class': 'form-input'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        current_user = kwargs.pop('current_user', None)
+        super().__init__(*args, **kwargs)
+        if not (current_user and current_user.is_superuser):
+            if 'is_superuser_status' in self.fields:
+                del self.fields['is_superuser_status']
+
     def clean_phone(self):
         phone = (self.cleaned_data.get('phone') or '').strip()
         if phone and (not phone.isdigit() or len(phone) != 10):
             raise forms.ValidationError('Phone number must be exactly 10 digits.')
         return phone
 
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if 'is_superuser_status' in self.cleaned_data:
+            user.is_superuser = self.cleaned_data['is_superuser_status']
+            user.is_staff = self.cleaned_data['is_superuser_status']
+            if user.is_superuser:
+                user.role = 'admin'
+        if commit:
+            user.save()
+        return user
+
 
 class CustomUserChangeForm(UserChangeForm):
     password = None  # Remove password field from profile edit
+    is_superuser_status = forms.BooleanField(
+        required=False,
+        label='Grant Super Admin Privileges',
+        help_text='Grants full root access including Django Admin and system configuration.',
+        widget=forms.CheckboxInput(attrs={'class': 'form-checkbox'})
+    )
     
     class Meta:
         model = CustomUser
@@ -44,11 +75,31 @@ class CustomUserChangeForm(UserChangeForm):
             'profile_picture': forms.FileInput(attrs={'class': 'form-input'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        current_user = kwargs.pop('current_user', None)
+        super().__init__(*args, **kwargs)
+        if current_user and current_user.is_superuser:
+            self.fields['is_superuser_status'].initial = self.instance.is_superuser
+        else:
+            if 'is_superuser_status' in self.fields:
+                del self.fields['is_superuser_status']
+
     def clean_phone(self):
         phone = (self.cleaned_data.get('phone') or '').strip()
         if phone and (not phone.isdigit() or len(phone) != 10):
             raise forms.ValidationError('Phone number must be exactly 10 digits.')
         return phone
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if 'is_superuser_status' in self.cleaned_data:
+            user.is_superuser = self.cleaned_data['is_superuser_status']
+            user.is_staff = self.cleaned_data['is_superuser_status']
+            if user.is_superuser:
+                user.role = 'admin'
+        if commit:
+            user.save()
+        return user
 
 
 class UserProfileForm(forms.ModelForm):

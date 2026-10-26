@@ -257,6 +257,17 @@
         <span class="nav-label">Settings</span>
       </a>
       {% endif %}
+
+      {% if request.user.is_superuser %}
+      <a href="/admin/" target="_blank" class="nav-item">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </span>
+        <span class="nav-label">Django Admin ↗</span>
+      </a>
+      {% endif %}
     </nav>
 
     <div class="sidebar-footer">
@@ -270,7 +281,7 @@
         </span>
         <span class="nav-label" style="flex:1;overflow:hidden;">
           <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ request.user.get_full_name|default:request.user.username }}</div>
-          <div style="font-size:10px;color:var(--text-muted);">{{ request.user.get_role_display }}</div>
+          <div style="font-size:10px;color:var(--text-muted);">{% if request.user.is_superuser %}Super Admin{% else %}{{ request.user.get_role_display }}{% endif %}</div>
         </span>
       </a>
       <a href="{% url 'accounts:logout' %}" class="nav-item" style="margin:2px 0 0;color:var(--accent-red);">

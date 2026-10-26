@@ -8,7 +8,10 @@
     <div class="page-header-title">System Users</div>
     <div class="page-header-sub">{{ users|length }} registered users</div>
   </div>
-  <div class="page-header-actions">
+  <div class="page-header-actions" style="display:flex;gap:10px;align-items:center;">
+    {% if request.user.is_superuser %}
+    <a href="/admin/" target="_blank" class="btn btn-outline" title="Open Django Super Admin Panel">🛠️ Django Admin ↗</a>
+    {% endif %}
     <a href="{% url 'accounts:user_add' %}" class="btn btn-primary">➕ Add User</a>
   </div>
 </div>
@@ -34,24 +37,37 @@
           </td>
           <td>{{ u.username }}</td>
           <td>
-            {% if u.role == 'admin' %}<span class="badge badge-danger">Admin</span>
-            {% elif u.role == 'manager' %}<span class="badge badge-purple">Manager</span>
-            {% elif u.role == 'cashier' %}<span class="badge badge-info">Cashier</span>
-            {% else %}<span class="badge badge-muted">Employee</span>{% endif %}
+            {% if u.is_superuser %}
+              <span class="badge" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.35);font-weight:700;">⭐ Super Admin</span>
+            {% elif u.role == 'admin' %}
+              <span class="badge badge-danger">Admin</span>
+            {% elif u.role == 'manager' %}
+              <span class="badge badge-purple">Manager</span>
+            {% elif u.role == 'cashier' %}
+              <span class="badge badge-info">Cashier</span>
+            {% else %}
+              <span class="badge badge-muted">Employee</span>
+            {% endif %}
           </td>
           <td>{{ u.email|default:"—" }}</td>
           <td>{{ u.phone|default:"—" }}</td>
           <td>{% if u.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-danger">Inactive</span>{% endif %}</td>
           <td>{{ u.date_joined|date:"d M Y" }}</td>
           <td>
-            <div style="display:flex;gap:6px;">
-              <a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-outline btn-sm" title="Edit User">✏️</a>
-              <a href="{% url 'accounts:admin_change_password' u.pk %}" class="btn btn-warning btn-sm" title="Change Password">🔑</a>
-              {% if u.pk != request.user.pk %}
-              <a href="{% url 'accounts:user_delete' u.pk %}"
-                 class="btn btn-sm"
-                 style="background:rgba(239,68,68,0.12);color:var(--accent-red);border:1px solid rgba(239,68,68,0.3);"
-                 title="Delete User">🗑️</a>
+            <div style="display:flex;gap:6px;align-items:center;">
+              {% if u.is_superuser and not request.user.is_superuser %}
+                <span class="badge" style="background:rgba(239,68,68,0.1);color:var(--accent-red);border:1px solid rgba(239,68,68,0.3);font-size:11px;" title="Only Super Admin can manage this user">🔒 Protected</span>
+              {% else %}
+                <a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-outline btn-sm" title="Edit User">✏️</a>
+                <a href="{% url 'accounts:admin_change_password' u.pk %}" class="btn btn-warning btn-sm" title="Change Password">🔑</a>
+                {% if u.pk != request.user.pk %}
+                  {% if not u.is_superuser or request.user.is_superuser %}
+                  <a href="{% url 'accounts:user_delete' u.pk %}"
+                     class="btn btn-sm"
+                     style="background:rgba(239,68,68,0.12);color:var(--accent-red);border:1px solid rgba(239,68,68,0.3);"
+                     title="Delete User">🗑️</a>
+                  {% endif %}
+                {% endif %}
               {% endif %}
             </div>
           </td>

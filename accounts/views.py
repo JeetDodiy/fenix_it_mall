@@ -116,13 +116,13 @@ def user_add(request):
         return redirect('dashboard:index')
         
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST, request.FILES)
+        form = CustomUserCreationForm(request.POST, request.FILES, current_user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, 'User created successfully.')
             return redirect('accounts:user_list')
     else:
-        form = CustomUserCreationForm()
+        form = CustomUserCreationForm(current_user=request.user)
         
     return render(request, 'accounts/user_form.html', {'form': form, 'title': 'Add New User'})
 
@@ -134,15 +134,20 @@ def user_edit(request, pk):
         return redirect('dashboard:index')
         
     user_obj = get_object_or_404(CustomUser, pk=pk)
+
+    # Protection: Only a Super Admin can edit Super Admin accounts
+    if user_obj.is_superuser and not request.user.is_superuser:
+        messages.error(request, 'Permission denied: Only a Super Admin can edit Super Admin accounts.')
+        return redirect('accounts:user_list')
     
     if request.method == 'POST':
-        form = CustomUserChangeForm(request.POST, request.FILES, instance=user_obj)
+        form = CustomUserChangeForm(request.POST, request.FILES, instance=user_obj, current_user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, 'User updated successfully.')
             return redirect('accounts:user_list')
     else:
-        form = CustomUserChangeForm(instance=user_obj)
+        form = CustomUserChangeForm(instance=user_obj, current_user=request.user)
         
     return render(request, 'accounts/user_form.html', {'form': form, 'title': f'Edit User: {user_obj.username}', 'user_obj': user_obj})
 
@@ -154,6 +159,11 @@ def admin_change_user_password(request, pk):
         return redirect('dashboard:index')
     
     user_obj = get_object_or_404(CustomUser, pk=pk)
+
+    # Protection: Only a Super Admin can change a Super Admin's password
+    if user_obj.is_superuser and not request.user.is_superuser:
+        messages.error(request, 'Permission denied: Only a Super Admin can change Super Admin passwords.')
+        return redirect('accounts:user_list')
     
     if request.method == 'POST':
         new_password = request.POST.get('new_password')
@@ -186,6 +196,15 @@ def user_delete(request, pk):
     if user_obj.pk == request.user.pk:
         messages.error(request, 'You cannot delete your own account.')
         return redirect('accounts:user_list')
+
+    # Protection: Only a Super Admin can delete a Super Admin account
+    if user_obj.is_superuser:
+        if not request.user.is_superuser:
+            messages.error(request, 'Permission denied: Only a Super Admin can delete Super Admin accounts.')
+            return redirect('accounts:user_list')
+        if CustomUser.objects.filter(is_superuser=True).count() <= 1:
+            messages.error(request, 'Cannot delete the only Super Admin account.')
+            return redirect('accounts:user_list')
 
     # Safety: cannot delete last admin
     if user_obj.role == 'admin' and CustomUser.objects.filter(role='admin').count() <= 1:
